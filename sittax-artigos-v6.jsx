@@ -657,7 +657,7 @@ export default function App() {
 
       setFase("polimento");
       log_("Polindo transição e voz ativa... (Claude)");
-      await pausa(20, "", log_);
+      await pausa(45, "", log_);
       try {
         const polido = await callClaude(PROMPTS.polimento(textoCompleto), 6000);
         if (polido?.length > 500) {
@@ -683,7 +683,7 @@ export default function App() {
 
         setFase(`auditoria${rodada}`);
         log_(`Auditoria ${rodada}/3 — verificando qualidade, Yoast e linguagem... (${auditor})`);
-        await pausa(20, "", log_);
+        await pausa(45, "", log_);
 
         let rawA;
         if (auditor === "ChatGPT") {
@@ -713,7 +713,7 @@ export default function App() {
         setFase(`revisao${rodada}`);
         log_(`Revisão ${rodada}/3 — corrigindo ${problemas.length} problema(s)... (${revisor})`, "warn");
         problemas.forEach(p => log_(`  → ${p}`, "warn"));
-        await pausa(20, "", log_);
+        await pausa(45, "", log_);
 
         let revisado;
         if (revisor === "ChatGPT") {
@@ -733,7 +733,7 @@ export default function App() {
         if (rodada === 1) {
           setFase("fontes");
           log_("Verificando legislação e inserindo links para fontes oficiais... (Claude)");
-          await pausa(20, "", log_);
+          await pausa(45, "", log_);
           try {
             const comLinks = await callClaudeSearch(PROMPTS.linkagem(textoFinal), 4500);
             if (comLinks?.length > 500) {
@@ -745,7 +745,7 @@ export default function App() {
 
           setFase("links_internos");
           log_("Buscando artigos do blog Sittax para inserir links internos... (Claude)");
-          await pausa(20, "", log_);
+          await pausa(45, "", log_);
           try {
             const comLinksInt = await callClaudeSearch(PROMPTS.linksInternos(textoFinal, tema), 4500);
             if (comLinksInt?.length > 500) {
