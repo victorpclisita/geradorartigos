@@ -625,26 +625,26 @@ export default function App() {
 
       setFase("corpo");
       log_("Escrevendo introdução e seções principais... (Claude)");
-      await pausa(8, "", log_);
+      await pausa(30, "", log_);
       const corpoPart = await callClaude(PROMPTS.corpo(tema, pd), 2500);
       if (corpoPart.length < 400) throw new Error("Corpo do artigo muito curto. Tente um tema mais específico.");
       log_(`✓ Corpo: ~${contarPalavras(corpoPart)} palavras`, "ok");
 
       setFase("faq");
       log_("Escrevendo seção de Perguntas Frequentes... (Claude)");
-      await pausa(12, "", log_);
+      await pausa(35, "", log_);
       const faqPart = await callClaude(PROMPTS.faq(tema, pd, corpoPart), 900);
       if (faqPart.length < 100) throw new Error("FAQ não gerado corretamente.");
       log_(`✓ FAQ: ~${contarPalavras(faqPart)} palavras`, "ok");
 
       setFase("cta");
       log_("Escrevendo conclusão... (Claude)");
-      await pausa(10, "", log_);
+      await pausa(30, "", log_);
       const conclusaoPart = await callClaude(PROMPTS.conclusao(tema, pd), 400);
       log_(`✓ Conclusão: ~${contarPalavras(conclusaoPart)} palavras`, "ok");
 
       log_("Escrevendo CTA... (Claude)");
-      await pausa(8, "", log_);
+      await pausa(30, "", log_);
       const ctaPart = await callClaude(PROMPTS.cta(tema, pd), 300);
       log_(`✓ CTA: ~${contarPalavras(ctaPart)} palavras`, "ok");
 
