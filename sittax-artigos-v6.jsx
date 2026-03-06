@@ -55,8 +55,8 @@ REGRA DE VOZ ATIVA (obrigatório):
 - CERTO (ativa): "a Receita calcula o imposto", "a lei definiu as alíquotas"
 
 REGRA DE PALAVRAS DE TRANSIÇÃO (obrigatório):
-- Pelo menos 30% das frases devem começar ou conter uma palavra/expressão de transição.
-- Use naturalmente: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo, apesar disso, de fato, ao mesmo tempo, mesmo que
+- Pelo menos 30% das frases devem conter uma palavra/expressão de transição — no início, no meio ou no fim da frase. Varie a posição para soar natural: não coloque transição sempre no início.
+- Exemplos no INÍCIO: "Além disso, a alíquota do Simples Nacional..." | Exemplos no MEIO: "A empresa, portanto, deve recolher o DAS..." | Integrado: "Essa regra vale inclusive para MEIs com faturamento acima de..."
 
 FORMATO EXATO:
 # [Título H1 com keyword]
@@ -168,7 +168,7 @@ ${textoCompleto}`,
 Sua única tarefa é reescrever o artigo abaixo para atingir dois critérios obrigatórios:
 
 CRITÉRIO 1 — PALAVRAS DE TRANSIÇÃO (meta: ≥ 30% das frases)
-Percorra cada frase do artigo. Se menos de 30% delas contiver uma palavra/expressão de transição, adicione conectivos naturais nas frases que estiverem "soltas".
+Percorra cada frase do artigo. Se menos de 30% delas contiver uma palavra/expressão de transição, adicione conectivos naturais nas frases que estiverem "soltas". IMPORTANTE: insira as transições em posições variadas — início, meio ou fim da frase — para soar natural. Não coloque transição sempre no começo da frase.
 Palavras válidas (use com naturalidade): portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo, apesar disso, de fato, ao mesmo tempo, mesmo que, anteriormente, posteriormente, igualmente, salvo, sobretudo, certamente, então, entretanto, ademais, aliás, afinal, principalmente
 
 CRITÉRIO 2 — VOZ ATIVA (meta: ≤ 10% das frases em voz passiva)
@@ -329,7 +329,8 @@ REGRAS:
 - Preserve todos os links externos já existentes no texto (fontes de legislação etc.)
 
 Retorne APENAS o artigo completo com os links internos inseridos, mantendo todos os marcadores # ## ###.
-Não adicione explicações nem texto fora do artigo.
+PROIBIDO incluir qualquer texto antes ou depois do artigo: sem explicações, sem lista de artigos encontrados, sem comentários sobre o processo, sem "Após realizar a pesquisa...", sem "Vou usar web_search...".
+A sua resposta deve começar diretamente com o título # do artigo e terminar na última linha do artigo.
 
 ARTIGO:
 ${textoCompleto}`,
@@ -348,7 +349,7 @@ REGRAS DA REESCRITA:
 - Linguagem de contador experiente, direta, sem marcadores de IA
 
 SE HOUVER PROBLEMA DE PALAVRAS DE TRANSIÇÃO (meta: ≥ 30% das frases):
-- Adicione conectivos naturais no início ou meio de frases que estejam isoladas
+- Adicione conectivos naturais em posições variadas — início, meio ou fim das frases isoladas. Não coloque transição sempre no início: prefira inserir no meio da frase quando possível (ex: "A empresa, portanto, deve..." ou "Esse prazo vale inclusive para...")
 - Use palavras da lista: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo
 - Não force — insira apenas onde a transição for natural e melhore a leitura
 
@@ -813,7 +814,14 @@ export default function App() {
           log_("Buscando artigos do blog Sittax para inserir links internos... (ChatGPT)");
           await pausa(45, "", log_);
           try {
-            const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, tema), 4500);
+            let comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, tema), 4500);
+            // Remove qualquer texto de processo interno antes do título do artigo
+            const primeiroH1 = comLinksInt.indexOf("\n#");
+            if (primeiroH1 > 0) comLinksInt = comLinksInt.slice(primeiroH1).trim();
+            else if (comLinksInt.startsWith("#") === false) {
+              const h1direto = comLinksInt.indexOf("#");
+              if (h1direto > 0) comLinksInt = comLinksInt.slice(h1direto).trim();
+            }
             if (comLinksInt?.length > 500) {
               textoFinal = comLinksInt; setArtigo(comLinksInt);
               const qtdInt = (comLinksInt.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
