@@ -546,8 +546,18 @@ export default function App() {
   const log_ = (msg, tipo = "info") =>
     setLog(prev => [...prev, { msg, tipo, ts: new Date().toLocaleTimeString("pt-BR") }]);
 
-  // Chama o backend Vercel → Anthropic (Claude)
-  async function callClaude(prompt, maxTokens) {
+  // Detecta se o erro é de rate limit
+  function isRateLimit(msg) {
+    return typeof msg === "string" && (
+      msg.includes("rate limit") ||
+      msg.includes("Rate limit") ||
+      msg.includes("tokens per minute") ||
+      msg.includes("429")
+    );
+  }
+
+  // Chama o backend Vercel → Anthropic (Claude) com retry automático
+  async function callClaude(prompt, maxTokens, tentativa = 1) {
     const res = await fetch("/api/gerar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -555,13 +565,20 @@ export default function App() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error || `Erro no servidor (${res.status})`);
+      const msg = err?.error || `Erro no servidor (${res.status})`;
+      if (isRateLimit(msg) && tentativa <= 3) {
+        const espera = 60 * tentativa;
+        log_(`⏳ Limite de tokens atingido — aguardando ${espera}s e tentando novamente (${tentativa}/3)...`, "warn");
+        await pausa(espera, "", null);
+        return callClaude(prompt, maxTokens, tentativa + 1);
+      }
+      throw new Error(msg);
     }
     return (await res.json()).texto || "";
   }
 
-  // Chama o backend Vercel → Anthropic com web_search
-  async function callClaudeSearch(prompt, maxTokens) {
+  // Chama o backend Vercel → Anthropic com web_search e retry automático
+  async function callClaudeSearch(prompt, maxTokens, tentativa = 1) {
     const res = await fetch("/api/pesquisar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -569,13 +586,20 @@ export default function App() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error || `Erro no servidor (${res.status})`);
+      const msg = err?.error || `Erro no servidor (${res.status})`;
+      if (isRateLimit(msg) && tentativa <= 3) {
+        const espera = 60 * tentativa;
+        log_(`⏳ Limite de tokens atingido — aguardando ${espera}s e tentando novamente (${tentativa}/3)...`, "warn");
+        await pausa(espera, "", null);
+        return callClaudeSearch(prompt, maxTokens, tentativa + 1);
+      }
+      throw new Error(msg);
     }
     return (await res.json()).texto || "";
   }
 
-  // Chama o backend Vercel → OpenAI (GPT-4o)
-  async function callGPT(prompt, maxTokens) {
+  // Chama o backend Vercel → OpenAI (GPT-4o) com retry automático
+  async function callGPT(prompt, maxTokens, tentativa = 1) {
     const res = await fetch("/api/auditar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -583,7 +607,14 @@ export default function App() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error || `Erro OpenAI (${res.status})`);
+      const msg = err?.error || `Erro OpenAI (${res.status})`;
+      if (isRateLimit(msg) && tentativa <= 3) {
+        const espera = 60 * tentativa;
+        log_(`⏳ Limite de tokens OpenAI — aguardando ${espera}s e tentando novamente (${tentativa}/3)...`, "warn");
+        await pausa(espera, "", null);
+        return callGPT(prompt, maxTokens, tentativa + 1);
+      }
+      throw new Error(msg);
     }
     return (await res.json()).texto || "";
   }
