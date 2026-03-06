@@ -354,8 +354,7 @@ Máximo 4 artigos. Só inclua URLs que você realmente encontrou — NUNCA inven
 Insira os links internos abaixo no artigo, nos trechos mais relevantes.
 
 LINKS DISPONÍVEIS:
-${artigos.map((a, i) => (i+1) + '. [' + a.titulo + '](' + a.url + ') — ' + a.relevancia).join('
-')}
+${artigos.map((a, i) => (i+1) + ". [" + a.titulo + "](" + a.url + ") — " + a.relevancia).join("\n")}
 
 REGRAS:
 - Máximo 4 links internos no total
