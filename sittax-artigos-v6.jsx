@@ -687,10 +687,10 @@ export default function App() {
       let auditFinal = null;
 
       setFase("polimento");
-      log_("Polindo transição e voz ativa... (Claude)");
+      log_("Polindo transição e voz ativa... (ChatGPT)");
       await pausa(45, "", log_);
       try {
-        const polido = await callClaude(PROMPTS.polimento(textoCompleto), 6000);
+        const polido = await callGPT(PROMPTS.polimento(textoCompleto), 6000);
         if (polido?.length > 500) {
           textoFinal = polido; setArtigo(polido);
           log_(`✓ Polimento aplicado — ${contarPalavras(polido)} palavras`, "ok");
@@ -701,16 +701,14 @@ export default function App() {
         log_(`⚠ Polimento falhou (${e.message}). Continuando.`, "warn");
       }
 
-      // ── Fluxo de auditorias intercalado ──────────────────────────────────
-      // Rodada 1: Claude audita → Claude revisa → Claude fontes + links
-      // Rodada 2: ChatGPT audita → ChatGPT revisa
-      // Rodada 3: Claude audita → Claude revisa
-      const AUDITORES = { 1: "Claude", 2: "ChatGPT", 3: "Claude" };
-      const REVISORES = { 1: "Claude", 2: "ChatGPT", 3: "Claude" };
+      // ── Fluxo de auditorias ───────────────────────────────────────────────
+      // Rodada 1: Claude audita → Claude revisa → Claude fontes → ChatGPT links
+      // Rodada 2: Claude audita → Claude revisa
+      // Rodada 3: ChatGPT audita → Claude revisa
+      const AUDITORES = { 1: "Claude", 2: "Claude", 3: "ChatGPT" };
 
       for (let rodada = 1; rodada <= 3; rodada++) {
         const auditor = AUDITORES[rodada];
-        const revisor = REVISORES[rodada];
 
         setFase(`auditoria${rodada}`);
         log_(`Auditoria ${rodada}/3 — verificando qualidade, Yoast e linguagem... (${auditor})`);
@@ -742,16 +740,11 @@ export default function App() {
         if (rodada === 3) { log_(`⚠ Score final ${ad.score_geral}/100 após 3 rodadas. Entregando melhor versão.`, "warn"); break; }
 
         setFase(`revisao${rodada}`);
-        log_(`Revisão ${rodada}/3 — corrigindo ${problemas.length} problema(s)... (${revisor})`, "warn");
+        log_(`Revisão ${rodada}/3 — corrigindo ${problemas.length} problema(s)... (Claude)`, "warn");
         problemas.forEach(p => log_(`  → ${p}`, "warn"));
         await pausa(45, "", log_);
 
-        let revisado;
-        if (revisor === "ChatGPT") {
-          revisado = await callGPT(PROMPTS.revisar(textoFinal, problemas), 6000);
-        } else {
-          revisado = await callClaude(PROMPTS.revisar(textoFinal, problemas), 6000);
-        }
+        const revisado = await callClaude(PROMPTS.revisar(textoFinal, problemas), 6000);
 
         if (revisado?.length > 500) {
           textoFinal = revisado; setArtigo(revisado);
@@ -760,7 +753,7 @@ export default function App() {
           log_(`⚠ Revisão ${rodada} retornou texto curto, mantendo versão anterior.`, "warn");
         }
 
-        // Fontes e links internos apenas após rodada 1 (Claude)
+        // Fontes (Claude) e links internos (ChatGPT) após rodada 1
         if (rodada === 1) {
           setFase("fontes");
           log_("Verificando legislação e inserindo links para fontes oficiais... (Claude)");
@@ -775,10 +768,10 @@ export default function App() {
           } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
           setFase("links_internos");
-          log_("Buscando artigos do blog Sittax para inserir links internos... (Claude)");
+          log_("Buscando artigos do blog Sittax para inserir links internos... (ChatGPT)");
           await pausa(45, "", log_);
           try {
-            const comLinksInt = await callClaudeSearch(PROMPTS.linksInternos(textoFinal, tema), 4500);
+            const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, tema), 4500);
             if (comLinksInt?.length > 500) {
               textoFinal = comLinksInt; setArtigo(comLinksInt);
               const qtdInt = (comLinksInt.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
