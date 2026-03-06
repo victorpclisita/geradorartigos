@@ -335,6 +335,41 @@ A sua resposta deve começar diretamente com o título # do artigo e terminar na
 ARTIGO:
 ${textoCompleto}`,
 
+  buscaLinksInternos: (tema) => `Você é especialista em SEO da Sittax.
+
+Use web_search para encontrar artigos reais do blog da Sittax relacionados ao tema "${tema}".
+Faça 3-4 buscas variadas como: site:sittax.com.br/blog [keyword do tema]
+
+Retorne APENAS um JSON com os artigos encontrados, sem texto antes ou depois:
+{
+  "artigos": [
+    { "titulo": "Título do artigo", "url": "https://sittax.com.br/blog/slug-do-artigo", "relevancia": "por que é relevante para o tema" },
+    { "titulo": "Título do artigo 2", "url": "https://sittax.com.br/blog/slug-2", "relevancia": "motivo" }
+  ]
+}
+Máximo 4 artigos. Só inclua URLs que você realmente encontrou — NUNCA invente.`,
+
+  inserirLinksInternos: (textoCompleto, artigos) => `Você é especialista em SEO da Sittax.
+
+Insira os links internos abaixo no artigo, nos trechos mais relevantes.
+
+LINKS DISPONÍVEIS:
+${artigos.map((a, i) => `${i+1}. [${a.titulo}](${a.url}) — ${a.relevancia}`).join('
+')}
+
+REGRAS:
+- Máximo 4 links internos no total
+- Formato markdown: [âncora natural](url)
+- O âncora deve ser uma expressão já existente no texto — não adicione texto novo
+- Não altere nenhuma outra parte do texto
+- Preserve todos os links externos já existentes
+- PROIBIDO: texto fora do artigo, explicações, comentários
+
+Retorne APENAS o artigo completo. Comece diretamente com o # do título.
+
+ARTIGO:
+${textoCompleto}`,
+
   revisar: (textoCompleto, problemas) => `Você é redator especialista da Sittax. Reescreva o artigo abaixo corrigindo TODOS os problemas listados.
 
 PROBLEMAS A CORRIGIR:
@@ -556,6 +591,7 @@ export default function App() {
   const [tema,         setTema]         = useState("");
   const [keyAnthropic, setKeyAnthropic] = useState("");
   const [fase,         setFase]         = useState("idle");
+  const [melhorando,   setMelhorando]   = useState(false);
   const [log,          setLog]          = useState([]);
   const [pesquisa,     setPesquisa]     = useState(null);
   const [artigo,       setArtigo]       = useState("");
@@ -645,7 +681,6 @@ export default function App() {
 
   async function gerar() {
     if (!tema.trim()) return;
-    if (!keyAnthropic.trim()) { setErro("Insira a chave da API Anthropic (Claude)."); return; }
     setLog([]); setErro(""); setArtigo("");
     setPesquisa(null); setAudit(null);
 
@@ -803,26 +838,53 @@ export default function App() {
             } else { log_("⚠ Etapa de fontes não alterou o texto — mantendo versão anterior.", "warn"); }
           } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
-          setFase("links_internos");
-          log_("Buscando artigos do blog Sittax para inserir links internos... (Claude)");
-          await pausa(45, "", log_);
+          // Etapa dividida: 1) busca leve  2) inserção no texto
+          setFase("links_busca");
+          log_("Buscando artigos do blog Sittax... (Claude + web_search)");
+          await pausa(30, "", log_);
+          let artigosEncontrados = [];
           try {
-            let comLinksInt = await callClaudeSearch(PROMPTS.linksInternos(textoFinal, tema), 4500);
-            // Remove qualquer texto de processo interno antes do título do artigo
-            const primeiroH1 = comLinksInt.indexOf("\n#");
-            if (primeiroH1 > 0) comLinksInt = comLinksInt.slice(primeiroH1).trim();
-            else if (comLinksInt.startsWith("#") === false) {
-              const h1direto = comLinksInt.indexOf("#");
-              if (h1direto > 0) comLinksInt = comLinksInt.slice(h1direto).trim();
-            }
-            if (comLinksInt?.length > 500) {
-              textoFinal = comLinksInt; setArtigo(comLinksInt);
-              const qtdInt = (comLinksInt.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
-              log_(`✓ ${qtdInt} link(s) interno(s) do blog Sittax inserido(s)`, "ok");
-            } else { log_("⚠ Nenhum link interno inserido — mantendo versão anterior.", "warn"); }
-          } catch (e) { log_(`⚠ Etapa de links internos falhou (${e.message}). Continuando.`, "warn"); }
+            const rawArtigos = await callClaudeSearch(PROMPTS.buscaLinksInternos(tema), 800);
+            const jsonArtigos = parseJSON(rawArtigos);
+            if (jsonArtigos?.artigos?.length > 0) {
+              artigosEncontrados = jsonArtigos.artigos;
+              log_(`✓ ${artigosEncontrados.length} artigo(s) do blog encontrado(s)`, "ok");
+            } else { log_("⚠ Nenhum artigo encontrado — pulando links internos.", "warn"); }
+          } catch (e) { log_(`⚠ Busca de links falhou (${e.message}). Continuando.`, "warn"); }
+
+          if (artigosEncontrados.length > 0) {
+            setFase("links_internos");
+            log_("Inserindo links internos no artigo... (Claude)");
+            await pausa(35, "", log_);
+            try {
+              let comLinksInt = await callClaude(PROMPTS.inserirLinksInternos(textoFinal, artigosEncontrados), 4500);
+              const primeiroH1 = comLinksInt.indexOf("\n#");
+              if (primeiroH1 > 0) comLinksInt = comLinksInt.slice(primeiroH1).trim();
+              else if (!comLinksInt.startsWith("#")) {
+                const h1direto = comLinksInt.indexOf("#");
+                if (h1direto > 0) comLinksInt = comLinksInt.slice(h1direto).trim();
+              }
+              if (comLinksInt?.length > 500) {
+                textoFinal = comLinksInt; setArtigo(comLinksInt);
+                const qtdInt = (comLinksInt.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
+                log_(`✓ ${qtdInt} link(s) interno(s) inserido(s)`, "ok");
+              } else { log_("⚠ Inserção retornou texto curto — mantendo versão anterior.", "warn"); }
+            } catch (e) { log_(`⚠ Inserção de links falhou (${e.message}). Continuando.`, "warn"); }
+          }
         }
       }
+
+      // ── Polimento Yoast final — garante transição ≥30% e passiva ≤10% ────
+      setFase("polimento_final");
+      log_("Polimento Yoast final — ajustando transição e voz passiva... (Claude)");
+      await pausa(45, "", log_);
+      try {
+        const polFinal = await callClaude(PROMPTS.polimento(textoFinal), 6000);
+        if (polFinal?.length > 500) {
+          textoFinal = polFinal; setArtigo(polFinal);
+          log_("✓ Polimento final aplicado", "ok");
+        } else { log_("⚠ Polimento final retornou texto curto — mantendo versão anterior.", "warn"); }
+      } catch (e) { log_(`⚠ Polimento final falhou (${e.message}). Continuando.`, "warn"); }
 
       setAudit(auditFinal);
       setFase("pronto");
@@ -831,6 +893,54 @@ export default function App() {
       setErro(err.message || "Erro inesperado.");
       setFase("erro");
       log_(`✗ ${err.message}`, "erro");
+    }
+  }
+
+  // Função de melhoria pós-entrega
+  async function melhorar() {
+    if (!artigo || melhorando) return;
+    setMelhorando(true);
+    setErro("");
+    try {
+      log_("── Iniciando melhoria pós-entrega ──────────────────", "ok");
+      let textoAtual = artigo;
+
+      setFase("auditoria1");
+      log_("Auditoria de melhoria — identificando problemas... (Claude)");
+      await pausa(45, "", log_);
+      const rawA = await callClaude(PROMPTS.auditoria(textoAtual, 1), 1500);
+      const ad = parseJSON(rawA);
+      if (!ad) { log_("⚠ Auditoria não retornou JSON válido.", "warn"); setMelhorando(false); setFase("pronto"); return; }
+      setAudit(ad);
+
+      const yoastOk = !ad.yoast || (ad.yoast.status_transicao === "verde" && ad.yoast.status_passiva === "verde");
+      const scoreSuficiente = ad.score_geral >= 90 && yoastOk;
+      log_(`✓ Score: ${ad.score_geral}/100${scoreSuficiente ? " — já está 90+!" : " — aplicando correções..."}`, scoreSuficiente ? "ok" : "warn");
+
+      if (!scoreSuficiente) {
+        const problemas = (ad.problemas || []).filter(p => p?.trim() && p.length > 5);
+        setFase("revisao1");
+        log_(`Revisão de melhoria — corrigindo ${problemas.length} problema(s)... (Claude)`, "warn");
+        problemas.forEach(p => log_(`  → ${p}`, "warn"));
+        await pausa(45, "", log_);
+        const revisado = await callClaude(PROMPTS.revisar(textoAtual, problemas), 6000);
+        if (revisado?.length > 500) { textoAtual = revisado; setArtigo(revisado); log_(`✓ Revisão aplicada — ${contarPalavras(revisado)} palavras`, "ok"); }
+
+        setFase("polimento_final");
+        log_("Polimento Yoast final... (Claude)");
+        await pausa(45, "", log_);
+        const polFinal = await callClaude(PROMPTS.polimento(textoAtual), 6000);
+        if (polFinal?.length > 500) { textoAtual = polFinal; setArtigo(polFinal); log_("✓ Polimento aplicado", "ok"); }
+      }
+
+      setFase("pronto");
+      log_("✓ Melhoria concluída!", "ok");
+    } catch (e) {
+      setErro(e.message || "Erro na melhoria.");
+      setFase("pronto");
+      log_(`✗ ${e.message}`, "erro");
+    } finally {
+      setMelhorando(false);
     }
   }
 
@@ -891,30 +1001,6 @@ export default function App() {
         {/* Input */}
         <div style={{ padding: "24px 28px", borderBottom: `1px solid ${BRAND.border}` }}>
 
-          {/* Linha das chaves */}
-          <div style={{ display: "flex", gap: "12px", marginBottom: "14px" }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: BRAND.textMuted, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                🔑 Chave Anthropic (Claude)
-              </label>
-              <input
-                type="password"
-                value={keyAnthropic}
-                onChange={e => setKeyAnthropic(e.target.value)}
-                placeholder="sk-ant-..."
-                disabled={busy}
-                style={{
-                  width: "100%", padding: "10px 12px",
-                  borderRadius: BRAND.radius,
-                  border: `1.5px solid ${BRAND.border}`,
-                  fontSize: "13px", color: BRAND.text,
-                  background: busy ? "#F7F7F7" : "#fff",
-                  fontFamily: BRAND.font,
-                }}
-              />
-            </div>
-          </div>
-
           {/* Linha do tema + botão */}
           <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: BRAND.textMuted, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
             Tema do artigo
@@ -938,17 +1024,17 @@ export default function App() {
             />
             <button
               onClick={gerar}
-              disabled={busy || !tema.trim() || !keyAnthropic.trim()}
+              disabled={busy || !tema.trim()}
               style={{
                 padding: "11px 22px",
                 borderRadius: BRAND.radius,
                 border: "none",
-                background: busy || !tema.trim() || !keyAnthropic.trim() ? "#E0E0E0" : BRAND.primary,
-                color: busy || !tema.trim() || !keyAnthropic.trim() ? "#ABABAB" : "#fff",
+                background: busy || !tema.trim() ? "#E0E0E0" : BRAND.primary,
+                color: busy || !tema.trim() ? "#ABABAB" : "#fff",
                 fontSize: "14px", fontWeight: "600",
-                cursor: busy || !tema.trim() || !keyAnthropic.trim() ? "not-allowed" : "pointer",
+                cursor: busy || !tema.trim() ? "not-allowed" : "pointer",
                 whiteSpace: "nowrap", fontFamily: BRAND.font,
-                boxShadow: busy || !tema.trim() || !keyAnthropic.trim() ? "none" : `0 2px 8px rgba(242,107,55,0.3)`,
+                boxShadow: busy || !tema.trim() ? "none" : `0 2px 8px rgba(242,107,55,0.3)`,
                 transition: "background 0.15s, box-shadow 0.15s",
               }}
             >
@@ -956,7 +1042,7 @@ export default function App() {
             </button>
           </div>
           <p style={{ margin: "8px 0 0", fontSize: "12px", color: BRAND.textLight }}>
-            A chave é usada apenas nesta sessão e nunca armazenada
+            O processo leva ~10 minutos. Inclui pesquisa em portais tributários, auditoria e polimento Yoast.
           </p>
         </div>
 
@@ -1131,8 +1217,28 @@ export default function App() {
               >
                 ⬇ Baixar arquivo para PDF
               </button>
+              {audit && audit.score_geral < 90 && !melhorando && (
+                <button
+                  onClick={melhorar}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                    padding: "12px 24px", borderRadius: BRAND.radius, border: "none",
+                    background: "#F59E0B", color: "#fff",
+                    fontSize: "14px", fontWeight: "600", cursor: "pointer",
+                    boxShadow: "0 2px 10px rgba(245,158,11,0.35)",
+                    fontFamily: BRAND.font,
+                  }}
+                >
+                  ⚡ Melhorar para 90+
+                </button>
+              )}
+              {melhorando && (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 20px", background: "#FEF3C7", borderRadius: BRAND.radius, fontSize: "13px", color: "#92400E", fontWeight: "500" }}>
+                  ⏳ Melhorando artigo...
+                </div>
+              )}
               <button
-                onClick={() => { setFase("idle"); setTema(""); setLog([]); setPesquisa(null); setArtigo(""); setAudit(null); }}
+                onClick={() => { setFase("idle"); setTema(""); setLog([]); setPesquisa(null); setArtigo(""); setAudit(null); setMelhorando(false); }}
                 style={{
                   padding: "12px 20px", borderRadius: BRAND.radius,
                   border: `1.5px solid ${BRAND.border}`,
