@@ -26,7 +26,7 @@ IMPORTANTE: Responda SOMENTE com o JSON abaixo preenchido. Nenhum texto antes ou
   "fontes_primarias": ["Lei ou norma 1", "Lei ou norma 2"]
 }`,
 
-  // Parte 1: corpo principal (intro + seções) — ~750 palavras
+  // Parte 1: corpo principal (intro + seções) — ~900 palavras
   corpo: (tema, p) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
 Escreva como contador experiente. NUNCA use linguagem de IA.
 
@@ -41,13 +41,13 @@ ${p.secoes.map((s, i) => `${i + 1}. H2: "${s.h2}" — Foco: ${s.foco}${s.h3s.len
 REGRAS OBRIGATÓRIAS:
 - Escreva APENAS: título H1 + introdução + as ${p.secoes.length} seções H2 acima
 - NÃO inclua FAQ, conclusão nem CTA — serão escritos separadamente
-- Introdução: 2-3 frases diretas com a keyword primária. Sem rodeios.
-- Cada H2: máximo 3 parágrafos de 2 linhas cada. Seja denso e direto.
+- Introdução: 3-4 frases diretas com a keyword primária. Sem rodeios.
+- Cada H2: mínimo 3 parágrafos de 3-4 linhas cada. Seja denso, detalhado e prático.
 - Ao menos 1 dado numérico por seção H2 (alíquota, prazo, valor, percentual)
 - Cite as fontes primárias naturalmente (ex: "conforme a Lei Complementar 123/2006")
 - NUNCA cite leis que não existem com certeza — use "conforme a legislação tributária vigente" quando em dúvida
 - PROIBIDO: "No cenário atual", "É crucial", "Vale ressaltar", "Neste contexto", "Abrangente", "Robusto", "Em suma", "Transformador", "Mergulhe", "Navegar"
-- Meta: ~750 palavras nesta parte
+- Meta OBRIGATÓRIA: mínimo 900 palavras nesta parte
 
 REGRA DE VOZ ATIVA (obrigatório):
 - Escreva SEMPRE na voz ativa. Máximo 10% das frases podem estar na voz passiva.
@@ -61,18 +61,18 @@ REGRA DE PALAVRAS DE TRANSIÇÃO (obrigatório):
 FORMATO EXATO:
 # [Título H1 com keyword]
 
-[Introdução: 2-3 frases]
+[Introdução: 3-4 frases]
 
 ## [H2 da seção 1]
-[conteúdo — máx 3 parágrafos curtos]
+[conteúdo — mín 3 parágrafos densos]
 
 ## [H2 da seção 2]
-[conteúdo — máx 3 parágrafos curtos]
+[conteúdo — mín 3 parágrafos densos]
 
 ## [H2 da seção 3]
-[conteúdo — máx 3 parágrafos curtos]`,
+[conteúdo — mín 3 parágrafos densos]`,
 
-  // Parte 2: FAQ — ~280 palavras
+  // Parte 2: FAQ — ~350 palavras
   faq: (tema, p, corpo) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
 
 CONTEXTO: Artigo sobre "${tema}" (keyword: "${p.keyword_primaria}")
@@ -82,10 +82,11 @@ PERGUNTAS:
 ${p.faq_perguntas.map((q, i) => `${i + 1}. ${q}`).join("\n")}
 
 Escreva SOMENTE a seção FAQ com estas 4 perguntas.
-- Respostas diretas, 2 frases cada (não mais que isso)
+- Respostas completas, 3-4 frases cada
 - Tom de contador experiente, sem linguagem de IA
 - Dados concretos quando aplicável
 - NUNCA cite leis sem certeza — use "conforme a legislação vigente" se em dúvida
+- Meta OBRIGATÓRIA: mínimo 350 palavras no total desta seção
 
 FORMATO EXATO:
 ## Perguntas Frequentes
@@ -106,16 +107,18 @@ FORMATO EXATO:
 
 [Resposta em 2 frases]`,
 
-  // Parte 3: Conclusão — ~120 palavras
+  // Parte 3: Conclusão — ~150 palavras
   conclusao: (tema, p) => `Escreva SOMENTE a seção de conclusão para um artigo da Sittax sobre "${tema}".
 
 Regras:
 - Título H2: "Conclusão"
-- 2 parágrafos curtos (2 linhas cada)
+- 3 parágrafos de 3 linhas cada
 - Primeiro parágrafo: síntese do que foi abordado no artigo, com tom prático
-- Segundo parágrafo: o que o leitor deve fazer agora como próximo passo concreto
+- Segundo parágrafo: consequências práticas para o empresário ou contador
+- Terceiro parágrafo: o que o leitor deve fazer agora como próximo passo concreto
 - Linguagem direta de contador, sem clichês
 - PROIBIDO: "Em suma", "Por fim", "Concluindo", "Portanto", "Em conclusão"
+- Meta OBRIGATÓRIA: mínimo 150 palavras
 
 FORMATO EXATO:
 ## Conclusão
@@ -135,6 +138,29 @@ Regras:
 - Comece com uma frase sobre o impacto prático do tema
 
 Retorne apenas o parágrafo, sem título, sem marcadores.`,
+
+  // Expansão automática — acionada se artigo < 1.500 palavras após montagem
+  expansao: (textoCompleto, palavrasAtuais) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
+
+O artigo abaixo está com ${palavrasAtuais} palavras. Precisa ter no mínimo 1.500 palavras.
+Faltam aproximadamente ${1500 - palavrasAtuais} palavras.
+
+SUA TAREFA: Expandir o artigo até atingir pelo menos 1.500 palavras, sem perder qualidade.
+
+COMO EXPANDIR:
+- Aprofunde as seções H2 existentes com mais detalhes práticos, exemplos concretos ou casos de uso
+- Adicione dados numéricos relevantes (alíquotas, prazos, valores) onde faltarem
+- Expanda as respostas do FAQ com mais contexto e orientações práticas
+- NÃO crie novas seções H2 — expanda o que já existe
+- NÃO repita informações já presentes
+- Mantenha o tom de contador experiente, sem linguagem de IA
+- Preserve toda a estrutura de títulos (# ## ###) e links existentes
+- PROIBIDO: "No cenário atual", "É crucial", "Vale ressaltar", "Robusto", "Abrangente"
+
+Retorne o artigo completo expandido, com todos os marcadores # ## ###.
+
+ARTIGO ATUAL:
+${textoCompleto}`,
 
   // Etapa de polimento Yoast — corrige transição e voz passiva antes da auditoria
   polimento: (textoCompleto) => `Você é revisor especialista em legibilidade de textos em português brasileiro.
@@ -511,20 +537,18 @@ const BRAND = {
 };
 
 const FASES = [
-  { id: "pesquisa", label: "Pesquisa", icon: "🔍" },
-  { id: "corpo", label: "Corpo", icon: "✍️" },
-  { id: "faq", label: "FAQ", icon: "❓" },
-  { id: "cta", label: "Concl./CTA", icon: "🎯" },
-  { id: "polimento", label: "Polimento", icon: "✨" },
-  { id: "auditoria1", label: "Auditoria 1", icon: "🔎" },
-  { id: "revisao1", label: "Revisão 1", icon: "🛠️" },
-  { id: "fontes", label: "Fontes", icon: "🔗" },
-  { id: "links_internos", label: "Links Int.", icon: "🏠" },
-  { id: "auditoria2", label: "Auditoria 2", icon: "🔎" },
-  { id: "revisao2", label: "Revisão 2", icon: "🛠️" },
-  { id: "auditoria3", label: "Auditoria 3", icon: "🔎" },
-  { id: "revisao3", label: "Revisão 3", icon: "✅" },
-  { id: "pronto", label: "Pronto", icon: "🎉" },
+  { id: "pesquisa",       label: "Pesquisa",    icon: "🔍" },
+  { id: "corpo",          label: "Corpo",       icon: "✍️" },
+  { id: "faq",            label: "FAQ",         icon: "❓" },
+  { id: "cta",            label: "Concl./CTA",  icon: "🎯" },
+  { id: "polimento",      label: "Polimento",   icon: "✨" },
+  { id: "auditoria1",     label: "Auditoria 1", icon: "🔎" },
+  { id: "revisao1",       label: "Revisão 1",   icon: "🛠️" },
+  { id: "fontes",         label: "Fontes",      icon: "🔗" },
+  { id: "links_internos", label: "Links Int.",  icon: "🏠" },
+  { id: "auditoria2",     label: "Auditoria 2", icon: "🔎" },
+  { id: "revisao2",       label: "Revisão 2",   icon: "✅" },
+  { id: "pronto",         label: "Pronto",      icon: "🎉" },
 ];
 
 export default function App() {
@@ -681,9 +705,29 @@ export default function App() {
 
       const textoCompleto = `${corpoPart}\n\n${faqPart}\n\n${conclusaoPart}\n\n${ctaPart}`;
       setArtigo(textoCompleto);
-      log_(`✓ Total montado: ${contarPalavras(textoCompleto)} palavras`, "ok");
+      const totalPalavras = contarPalavras(textoCompleto);
+      log_(`✓ Total montado: ${totalPalavras} palavras`, totalPalavras >= 1500 ? "ok" : "warn");
 
       let textoFinal = textoCompleto;
+
+      // ── Expansão automática se abaixo de 1.500 palavras ──────────────────
+      if (totalPalavras < 1500) {
+        log_(`⚠ Artigo com ${totalPalavras} palavras — abaixo do mínimo de 1.500. Expandindo... (Claude)`, "warn");
+        await pausa(30, "", log_);
+        try {
+          const expandido = await callClaude(PROMPTS.expansao(textoCompleto, totalPalavras), 6000);
+          if (expandido?.length > 500) {
+            const novaContagem = contarPalavras(expandido);
+            textoFinal = expandido; setArtigo(expandido);
+            log_(`✓ Expansão aplicada — ${novaContagem} palavras${novaContagem >= 1500 ? " ✓" : " (ainda abaixo de 1.500)"}`, novaContagem >= 1500 ? "ok" : "warn");
+          } else {
+            log_("⚠ Expansão retornou texto muito curto, mantendo original.", "warn");
+          }
+        } catch (e) {
+          log_(`⚠ Expansão falhou (${e.message}). Continuando com versão atual.`, "warn");
+        }
+      }
+
       let auditFinal = null;
 
       setFase("polimento");
@@ -703,15 +747,14 @@ export default function App() {
 
       // ── Fluxo de auditorias ───────────────────────────────────────────────
       // Rodada 1: Claude audita → Claude revisa → Claude fontes → ChatGPT links
-      // Rodada 2: Claude audita → Claude revisa
-      // Rodada 3: ChatGPT audita → Claude revisa
-      const AUDITORES = { 1: "Claude", 2: "Claude", 3: "ChatGPT" };
+      // Rodada 2: ChatGPT audita (olhos frescos) → Claude revisa
+      const AUDITORES = { 1: "Claude", 2: "ChatGPT" };
 
-      for (let rodada = 1; rodada <= 3; rodada++) {
+      for (let rodada = 1; rodada <= 2; rodada++) {
         const auditor = AUDITORES[rodada];
 
         setFase(`auditoria${rodada}`);
-        log_(`Auditoria ${rodada}/3 — verificando qualidade, Yoast e linguagem... (${auditor})`);
+        log_(`Auditoria ${rodada}/2 — verificando qualidade, Yoast e linguagem... (${auditor})`);
         await pausa(45, "", log_);
 
         let rawA;
@@ -737,15 +780,14 @@ export default function App() {
 
         const problemas = (ad.problemas || []).filter(p => p?.trim() && p.length > 5);
         if (scoreSuficiente && problemas.length === 0) { log_(`✓ Artigo aprovado na rodada ${rodada} (score ${ad.score_geral}/100)`, "ok"); break; }
-        if (rodada === 3) { log_(`⚠ Score final ${ad.score_geral}/100 após 3 rodadas. Entregando melhor versão.`, "warn"); break; }
+        if (rodada === 2) { log_(`⚠ Score final ${ad.score_geral}/100 após 2 rodadas. Entregando melhor versão.`, "warn"); break; }
 
         setFase(`revisao${rodada}`);
-        log_(`Revisão ${rodada}/3 — corrigindo ${problemas.length} problema(s)... (Claude)`, "warn");
+        log_(`Revisão ${rodada}/2 — corrigindo ${problemas.length} problema(s)... (Claude)`, "warn");
         problemas.forEach(p => log_(`  → ${p}`, "warn"));
         await pausa(45, "", log_);
 
         const revisado = await callClaude(PROMPTS.revisar(textoFinal, problemas), 6000);
-
         if (revisado?.length > 500) {
           textoFinal = revisado; setArtigo(revisado);
           log_(`✓ Revisão ${rodada} aplicada — ${contarPalavras(revisado)} palavras`, "ok");
@@ -1143,7 +1185,7 @@ export default function App() {
       {/* Dica inferior */}
       {fase === "idle" && (
         <div style={{ marginTop: "14px", maxWidth: "760px", width: "100%", padding: "13px 18px", borderRadius: BRAND.radius, background: BRAND.primaryLight, border: `1px solid ${BRAND.primaryBorder}`, fontSize: "13px", color: BRAND.primaryDark, lineHeight: "1.65" }}>
-          <strong>Como usar:</strong> Digite o tema e clique em "Gerar artigo". O processo leva ~5 minutos — inclui polimento Yoast (transição + voz ativa) e <strong>3 rodadas de auditoria/revisão</strong> para score ≥ 90. Depois baixe e converta para PDF com Ctrl+P.
+          <strong>Como usar:</strong> Digite o tema e clique em "Gerar artigo". O processo leva ~10 minutos — inclui polimento Yoast (transição + voz ativa) e <strong>2 rodadas de auditoria/revisão</strong> para score ≥ 90. Depois baixe e converta para PDF com Ctrl+P.
         </div>
       )}
 
