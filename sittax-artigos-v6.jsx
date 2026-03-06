@@ -555,7 +555,6 @@ const FASES = [
 export default function App() {
   const [tema,         setTema]         = useState("");
   const [keyAnthropic, setKeyAnthropic] = useState("");
-  const [keyOpenAI,    setKeyOpenAI]    = useState("");
   const [fase,         setFase]         = useState("idle");
   const [log,          setLog]          = useState([]);
   const [pesquisa,     setPesquisa]     = useState(null);
@@ -628,7 +627,7 @@ export default function App() {
     const res = await fetch("/api/auditar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, maxTokens, apiKey: keyOpenAI }),
+      body: JSON.stringify({ prompt, maxTokens, apiKey: keyAnthropic }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -647,7 +646,6 @@ export default function App() {
   async function gerar() {
     if (!tema.trim()) return;
     if (!keyAnthropic.trim()) { setErro("Insira a chave da API Anthropic (Claude)."); return; }
-    if (!keyOpenAI.trim())    { setErro("Insira a chave da API OpenAI (ChatGPT)."); return; }
     setLog([]); setErro(""); setArtigo("");
     setPesquisa(null); setAudit(null);
 
@@ -732,10 +730,10 @@ export default function App() {
       let auditFinal = null;
 
       setFase("polimento");
-      log_("Polindo transição e voz ativa... (ChatGPT)");
+      log_("Polindo transição e voz ativa... (Claude)");
       await pausa(45, "", log_);
       try {
-        const polido = await callGPT(PROMPTS.polimento(textoCompleto), 6000);
+        const polido = await callClaude(PROMPTS.polimento(textoCompleto), 6000);
         if (polido?.length > 500) {
           textoFinal = polido; setArtigo(polido);
           log_(`✓ Polimento aplicado — ${contarPalavras(polido)} palavras`, "ok");
@@ -747,9 +745,9 @@ export default function App() {
       }
 
       // ── Fluxo de auditorias ───────────────────────────────────────────────
-      // Rodada 1: Claude audita → Claude revisa → Claude fontes → ChatGPT links
-      // Rodada 2: ChatGPT audita (olhos frescos) → Claude revisa
-      const AUDITORES = { 1: "Claude", 2: "ChatGPT" };
+      // Rodada 1: Claude audita → Claude revisa → Claude fontes → Claude links
+      // Rodada 2: Claude audita → Claude revisa
+      const AUDITORES = { 1: "Claude", 2: "Claude" };
 
       for (let rodada = 1; rodada <= 2; rodada++) {
         const auditor = AUDITORES[rodada];
@@ -758,12 +756,7 @@ export default function App() {
         log_(`Auditoria ${rodada}/2 — verificando qualidade, Yoast e linguagem... (${auditor})`);
         await pausa(45, "", log_);
 
-        let rawA;
-        if (auditor === "ChatGPT") {
-          rawA = await callGPT(PROMPTS.auditoria(textoFinal, rodada), 1500);
-        } else {
-          rawA = await callClaude(PROMPTS.auditoria(textoFinal, rodada), 1500);
-        }
+        const rawA = await callClaude(PROMPTS.auditoria(textoFinal, rodada), 1500);
 
         const ad = parseJSON(rawA);
         if (!ad) { log_(`⚠ Auditoria ${rodada} não retornou JSON válido, pulando.`, "warn"); break; }
@@ -796,7 +789,7 @@ export default function App() {
           log_(`⚠ Revisão ${rodada} retornou texto curto, mantendo versão anterior.`, "warn");
         }
 
-        // Fontes (Claude) e links internos (ChatGPT) após rodada 1
+        // Fontes e links internos (Claude) após rodada 1
         if (rodada === 1) {
           setFase("fontes");
           log_("Verificando legislação e inserindo links para fontes oficiais... (Claude)");
@@ -811,10 +804,10 @@ export default function App() {
           } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
           setFase("links_internos");
-          log_("Buscando artigos do blog Sittax para inserir links internos... (ChatGPT)");
+          log_("Buscando artigos do blog Sittax para inserir links internos... (Claude)");
           await pausa(45, "", log_);
           try {
-            let comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, tema), 4500);
+            let comLinksInt = await callClaudeSearch(PROMPTS.linksInternos(textoFinal, tema), 4500);
             // Remove qualquer texto de processo interno antes do título do artigo
             const primeiroH1 = comLinksInt.indexOf("\n#");
             if (primeiroH1 > 0) comLinksInt = comLinksInt.slice(primeiroH1).trim();
@@ -920,26 +913,6 @@ export default function App() {
                 }}
               />
             </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: BRAND.textMuted, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                🔑 Chave OpenAI (ChatGPT)
-              </label>
-              <input
-                type="password"
-                value={keyOpenAI}
-                onChange={e => setKeyOpenAI(e.target.value)}
-                placeholder="sk-..."
-                disabled={busy}
-                style={{
-                  width: "100%", padding: "10px 12px",
-                  borderRadius: BRAND.radius,
-                  border: `1.5px solid ${BRAND.border}`,
-                  fontSize: "13px", color: BRAND.text,
-                  background: busy ? "#F7F7F7" : "#fff",
-                  fontFamily: BRAND.font,
-                }}
-              />
-            </div>
           </div>
 
           {/* Linha do tema + botão */}
@@ -965,17 +938,17 @@ export default function App() {
             />
             <button
               onClick={gerar}
-              disabled={busy || !tema.trim() || !keyAnthropic.trim() || !keyOpenAI.trim()}
+              disabled={busy || !tema.trim() || !keyAnthropic.trim()}
               style={{
                 padding: "11px 22px",
                 borderRadius: BRAND.radius,
                 border: "none",
-                background: busy || !tema.trim() || !keyAnthropic.trim() || !keyOpenAI.trim() ? "#E0E0E0" : BRAND.primary,
-                color: busy || !tema.trim() || !keyAnthropic.trim() || !keyOpenAI.trim() ? "#ABABAB" : "#fff",
+                background: busy || !tema.trim() || !keyAnthropic.trim() ? "#E0E0E0" : BRAND.primary,
+                color: busy || !tema.trim() || !keyAnthropic.trim() ? "#ABABAB" : "#fff",
                 fontSize: "14px", fontWeight: "600",
-                cursor: busy || !tema.trim() || !keyAnthropic.trim() || !keyOpenAI.trim() ? "not-allowed" : "pointer",
+                cursor: busy || !tema.trim() || !keyAnthropic.trim() ? "not-allowed" : "pointer",
                 whiteSpace: "nowrap", fontFamily: BRAND.font,
-                boxShadow: busy || !tema.trim() || !keyAnthropic.trim() || !keyOpenAI.trim() ? "none" : `0 2px 8px rgba(242,107,55,0.3)`,
+                boxShadow: busy || !tema.trim() || !keyAnthropic.trim() ? "none" : `0 2px 8px rgba(242,107,55,0.3)`,
                 transition: "background 0.15s, box-shadow 0.15s",
               }}
             >
@@ -983,7 +956,7 @@ export default function App() {
             </button>
           </div>
           <p style={{ margin: "8px 0 0", fontSize: "12px", color: BRAND.textLight }}>
-            As chaves são usadas apenas nesta sessão e nunca armazenadas
+            A chave é usada apenas nesta sessão e nunca armazenada
           </p>
         </div>
 
