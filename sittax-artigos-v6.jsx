@@ -400,53 +400,6 @@ Retorne APENAS o artigo completo. Comece diretamente com o # do título.
 ARTIGO:
 ${textoCompleto}`,
 
-  // Etapa de links internos — busca artigos do blog Sittax e linka palavras relevantes
-  linksInternos: (textoCompleto, tema) => `Você é especialista em SEO e conteúdo da Sittax. Sua tarefa é inserir links internos do blog da Sittax (sittax.com.br/blog/) no artigo abaixo.
-
-PASSO 1 — Use web_search para buscar artigos relevantes do blog Sittax:
-- Faça buscas como: site:sittax.com.br/blog [termo do tema]
-- Termos a buscar baseados no tema "${tema}": use 3-4 variações de keywords relevantes
-- Colete os URLs reais encontrados e os títulos dos artigos
-
-PASSO 2 — Para cada artigo encontrado com URL real e confirmado:
-- Identifique no texto abaixo uma palavra ou expressão que seja o âncora ideal para aquele link
-- O âncora deve ser natural, específico e relevante (ex: "Simples Nacional", "reforma tributária", "ICMS-ST", "recuperação de créditos tributários")
-- Insira o link no formato markdown: [âncora](https://sittax.com.br/blog/...)
-
-REGRAS:
-- Máximo 4 links internos no total
-- Nunca repita o mesmo URL
-- Só insira links de artigos que você realmente encontrou via web_search — NUNCA invente URLs
-- O âncora deve aparecer naturalmente na frase, sem forçar
-- Não altere nenhuma outra parte do texto — apenas insira os links nos locais exatos
-- Preserve todos os links externos já existentes no texto (fontes de legislação etc.)
-
-Retorne APENAS o artigo completo com os links internos inseridos, mantendo todos os marcadores # ## ###.
-PROIBIDO incluir qualquer texto antes ou depois do artigo: sem explicações, sem lista de artigos encontrados, sem comentários sobre o processo, sem "Após realizar a pesquisa...", sem "Vou usar web_search...".
-A sua resposta deve começar diretamente com o título # do artigo e terminar na última linha do artigo.
-
-ARTIGO:
-${textoCompleto}`,
-
-  linksInternos: (textoCompleto, artigos) => `Você é especialista em SEO da Sittax.
-
-Insira os links internos abaixo no artigo, nos trechos mais relevantes.
-
-LINKS DISPONÍVEIS:
-${artigos.map((a, i) => (i+1) + ". [" + a.titulo + "](" + a.url + ") — " + a.relevancia).join("\n")}
-
-REGRAS:
-- Máximo 4 links internos no total
-- Formato markdown: [âncora natural](url)
-- O âncora deve ser uma expressão já existente no texto — não adicione texto novo
-- Não altere nenhuma outra parte do texto
-- Preserve todos os links externos já existentes
-- PROIBIDO: texto fora do artigo, explicações, comentários
-
-Retorne APENAS o artigo completo. Comece diretamente com o # do título.
-
-ARTIGO:
-${textoCompleto}`,
 
   buscaLinksInternos: (tema) => `Você é especialista em SEO da Sittax.
 
