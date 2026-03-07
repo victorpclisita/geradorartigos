@@ -19,7 +19,7 @@ Use web_search para buscar 1 dado recente (2026) sobre o tema — pode ser uma n
   "dado_recente": { "fato": "dado concreto encontrado (número, percentual, estatística ou notícia recente de 2025/2026)", "fonte": "Nome do portal ou órgão", "url": "https://url-real-encontrada.com.br" },
   "secoes": [
     { "h2": "Título da seção 1", "h3s": ["subtópico a", "subtópico b"], "foco": "o que abordar nesta seção" },
-    { "h2": "Título da seção 2", "h3s": [], "foco": "o que abordar nesta seção" },
+    { "h2": "Título da seção 2", "h3s": ["subtópico a"], "foco": "o que abordar nesta seção" },
     { "h2": "Título da seção 3", "h3s": [], "foco": "o que abordar nesta seção" }
   ],
   "faq_perguntas": ["Pergunta real 1?", "Pergunta real 2?", "Pergunta real 3?", "Pergunta real 4?"],
@@ -59,9 +59,10 @@ DADO RECENTE (obrigatório):
 - Exemplo: "Segundo levantamento do Sebrae, [mais de 60% das micro empresas têm irregularidades fiscais](https://url)"
 
 CADA SEÇÃO H2:
-- Mínimo 3 parágrafos de 3-4 linhas
+- Use os H3s fornecidos quando existirem — insira-os onde enriquecerem naturalmente a seção
+- O artigo deve ter pelo menos 2 H3s no total, distribuídos onde fizerem sentido
 - Frases curtas — máximo 2 linhas por frase
-- Ao menos 1 dado numérico (alíquota, prazo, valor, percentual)
+- Ao menos 1 dado numérico por H2 (alíquota, prazo, valor, percentual)
 - Tom de conversa: escreva como se estivesse explicando para um cliente na sua mesa
 - Cite fontes naturalmente: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
 - NUNCA cite leis sem certeza — use "conforme a legislação tributária vigente" quando em dúvida
@@ -82,16 +83,18 @@ Meta OBRIGATÓRIA: mínimo 900 palavras nesta parte
 FORMATO EXATO:
 # [Título H1 com keyword]
 
-[Introdução: cena concreta + 3-4 frases]
+[Introdução: 3-4 frases diretas]
 
 ## [H2 da seção 1]
-[conteúdo — mín 3 parágrafos]
+
+### [H3 quando houver]
+[parágrafos]
 
 ## [H2 da seção 2]
-[conteúdo — mín 3 parágrafos]
+[parágrafos — H3 opcional]
 
 ## [H2 da seção 3]
-[conteúdo — mín 3 parágrafos]`,
+[parágrafos — H3 opcional]`,
 
   // Parte 2: FAQ — ~350 palavras
   faq: (tema, p, corpo) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
