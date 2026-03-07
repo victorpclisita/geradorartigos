@@ -3,9 +3,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Método não permitido" });
   }
 
-  const { prompt, maxTokens = 1500, apiKey } = req.body;
-  if (!prompt)  return res.status(400).json({ error: "prompt é obrigatório" });
-  if (!apiKey)  return res.status(400).json({ error: "apiKey OpenAI não fornecida" });
+  const { prompt, maxTokens = 1500 } = req.body;
+  if (!prompt) return res.status(400).json({ error: "prompt é obrigatório" });
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: "OPENAI_API_KEY não configurada" });
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
