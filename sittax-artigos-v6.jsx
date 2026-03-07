@@ -255,7 +255,6 @@ CRITÉRIO A — CONTEÚDO E ESTRUTURA
 5. FAQ: deve ter exatamente 4 perguntas com respostas completas.
 6. CONCLUSÃO: deve ter seção H2 "Conclusão" com 2 parágrafos.
 7. CTA: deve ter parágrafo final convidando a falar com a Sittax.
-8. HIPERLINKS: conte os hiperlinks markdown [texto](url) no artigo. O artigo deve ter no mínimo 4 hiperlinks. Se tiver menos de 4, marque como problema listando quantos há e quantos faltam.
 
 ═══════════════════════════════════════════
 CRITÉRIO B — PALAVRAS DE TRANSIÇÃO (Yoast)
@@ -316,8 +315,7 @@ Responda SOMENTE em JSON válido, sem markdown:
     "sem_linguagem_ia": true,
     "todas_secoes_completas": true,
     "transicao_yoast_verde": true,
-    "voz_passiva_yoast_verde": true,
-    "minimo_4_hiperlinks": true
+    "voz_passiva_yoast_verde": true
   },
   "yoast": {
     "total_frases": 45,
@@ -334,23 +332,52 @@ Responda SOMENTE em JSON válido, sem markdown:
   // Etapa de busca de fontes — Claude retorna JSON com URLs reais (leve)
   buscarFontes: (textoCompleto) => `Você é especialista em fontes do direito tributário brasileiro.
 
-Analise o trecho abaixo e identifique menções a leis, normas, dados e afirmações atribuídas a órgãos ou entidades.
-Para cada item encontrado, busque a URL real na internet e retorne como fonte linkável.
+Analise o trecho abaixo e identifique menções a leis, normas e dados com fonte implícita.
+Para cada item encontrado, busque a URL oficial real na internet.
 
-Portais aceitos como fonte:
-Governo: planalto.gov.br, gov.br/receitafederal, normas.receita.fazenda.gov.br, pgfn.gov.br, sefaz estaduais
-Entidades: cfc.org.br, fenacon.org.br, sebrae.com.br, ibge.gov.br, ibpt.com.br, cni.org.br, fecomercio.com.br, fgv.br
-Portais contábeis: contabeis.com.br, tax contábil (taxcontabil.com.br), tributanet.com.br
-Notícias: g1.globo.com, valor.globo.com, exame.com, estadao.com.br, folha.uol.com.br, cnnbrasil.com.br
+Fontes prioritárias:
+- Leis federais → planalto.gov.br
+- Instruções Normativas RFB → normas.receita.fazenda.gov.br
+- IBGE, Sebrae, IBPT → sites oficiais
 
 Retorne APENAS um JSON puro, sem texto antes ou depois:
-{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-encontrada.com.br"}]}
+{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-encontrada.gov.br"}]}
 
-Máximo 4 fontes. Só inclua URLs que você confirmou na internet — NUNCA invente.
+Máximo 4 fontes. Só inclua URLs que você confirmou via web_search — NUNCA invente.
 Se não encontrar nenhuma, retorne: {"fontes":[]}
 
 TRECHO DO ARTIGO (primeiros 800 caracteres):
 ${textoCompleto.slice(0, 800)}`,
+
+  // Links internos do blog Sittax — ChatGPT insere links pré-definidos
+  linksInternos: (textoCompleto) => `Você é especialista em SEO da Sittax.
+
+Insira links internos do blog da Sittax no artigo abaixo, nos trechos onde as palavras-âncora aparecerem naturalmente.
+
+LINKS DISPONÍVEIS DO BLOG SITTAX:
+1. [Contador 2026: tendências e oportunidades](https://sittax.com.br/blog/sittax-cast/contador-2026/) — sobre o futuro do contador, oportunidades e desafios para 2026
+2. [Gestão de equipes e inteligência de dados na contabilidade digital](https://sittax.com.br/blog/sittax-cast/gestao-equipes-inteligencia-dados-contabilidade-digital/) — gestão de escritórios contábeis com dados e tecnologia
+3. [Malha fina, IR e desenquadramento do Simples Nacional](https://sittax.com.br/blog/sittax-cast/malha-fina-imposto-desenquadramento-simples-nacional/) — fiscalização digital, malha fina e riscos de desenquadramento
+4. [Tributação como ativo estratégico](https://sittax.com.br/blog/sittax-cast/sittaxcast-14-tributacao-como-ativo-transforme-o-fiscal-em-motor-de-crescimento/) — como usar o fiscal como motor de crescimento empresarial
+5. [O contador do futuro: tecnologia e Reforma Tributária](https://sittax.com.br/blog/sittax-cast/sittaxcast-13-o-contador-do-futuro-tecnologia-reforma-tributaria-e-reinvencao/) — impacto da Reforma Tributária e IA no setor contábil
+6. [Segurança da informação na contabilidade](https://sittax.com.br/blog/sittax-cast/sittaxcast-10-seguranca-da-informacao-na-contabilidade-seus-dados-estao-protegidos/) — proteção de dados e segurança digital para escritórios
+7. [Reforma Tributária: split payment, precificação e fluxo de caixa](https://sittax.com.br/artigo/reforma-tributaria-split-payment-precificacao-fluxo-caixa/) — impacto do split payment no B2B e gestão financeira
+8. [Segregação automática no Simples Nacional](https://sittax.com.br/artigo/segregacao-automatica-simples-nacional/) — automação da segregação fiscal no Simples Nacional
+9. [Regularização no Simples Nacional](https://sittax.com.br/artigo/regularizacao-simples-nacional/) — como regularizar pendências e evitar exclusão do Simples
+
+REGRAS:
+- Insira no máximo 3 links internos
+- Use apenas os links cujo tema for relevante para o conteúdo do artigo
+- O âncora deve ser uma expressão que já existe no texto — não adicione texto novo
+- Nunca repita o mesmo link
+- Preserve todos os links externos já existentes
+- Não altere nenhuma outra parte do texto
+- PROIBIDO: texto fora do artigo, explicações, comentários
+
+Retorne APENAS o artigo completo. Comece diretamente com o # do título.
+
+ARTIGO:
+${textoCompleto}`,
 
   // Etapa de inserção de fontes — ChatGPT insere os links no texto
   inserirFontes: (textoCompleto, fontes) => `Você é editor de conteúdo da Sittax.
@@ -477,12 +504,6 @@ SE HOUVER PROBLEMA DE VOZ PASSIVA (meta: ≤ 10% das frases):
 - Reescreva as frases passivas identificadas na voz ativa
 - Ex: "o imposto é calculado pela Receita" → "a Receita calcula o imposto"
 - Ex: "as alíquotas foram definidas pela lei" → "a lei definiu as alíquotas"
-
-SE HOUVER PROBLEMA DE HIPERLINKS (meta: mínimo 4 no artigo):
-- Adicione hiperlinks reais nos trechos que citam leis, órgãos, dados ou fontes
-- Formato markdown: [âncora natural](url)
-- Use URLs reais de: planalto.gov.br, gov.br/receitafederal, contabeis.com.br, sebrae.com.br, ibge.gov.br, cfc.org.br, fenacon.org.br, g1.globo.com, valor.globo.com
-- NUNCA invente URLs — só insira links de fontes que você conhece com certeza
 
 ARTIGO ORIGINAL:
 ${textoCompleto}
@@ -672,6 +693,7 @@ const FASES = [
   { id: "auditoria1",     label: "Auditoria 1", icon: "🔎" },
   { id: "revisao1",       label: "Revisão 1",   icon: "🛠️" },
   { id: "fontes",         label: "Fontes",      icon: "🔗" },
+  { id: "links_blog",     label: "Links Blog",  icon: "🏠" },
   { id: "auditoria2",     label: "Auditoria 2", icon: "🔎" },
   { id: "revisao2",       label: "Revisão 2",   icon: "✅" },
   { id: "pronto",         label: "Pronto",      icon: "🎉" },
@@ -936,6 +958,20 @@ export default function App() {
         } else { log_("⚠ Nenhuma fonte encontrada — pulando etapa.", "warn"); }
       } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
+      // ── Links internos do blog Sittax ─────────────────────────────────────
+      setFase("links_blog");
+      log_("Inserindo links internos do blog Sittax... (ChatGPT)");
+      await pausa(2, "", log_);
+      try {
+        const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal), 5000);
+        const h1idx = comLinksInt.indexOf("#");
+        const textoComInt = h1idx > 0 ? comLinksInt.slice(h1idx).trim() : comLinksInt.trim();
+        if (textoComInt?.length > 500) {
+          textoFinal = textoComInt; setArtigo(textoComInt);
+          const qtdInt = (textoComInt.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/.+?\)/g) || []).length;
+          log_("✓ " + qtdInt + " link(s) interno(s) do blog inserido(s)", "ok");
+        } else { log_("⚠ Links internos retornou texto curto — mantendo versão anterior.", "warn"); }
+      } catch (e) { log_(`⚠ Links internos falhou (${e.message}). Continuando.`, "warn"); }
 
       // ── Polimento Yoast final — garante transição ≥30% e passiva ≤10% ────
       setFase("polimento_final");
