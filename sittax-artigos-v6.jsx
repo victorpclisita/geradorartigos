@@ -14,7 +14,7 @@ Busque na internet 1 dado recente (2025 ou 2026) sobre o tema — pode ser uma n
 {
   "keyword_primaria": "keyword estratégica de 1-4 palavras para o tema",
   "keywords_secundarias": ["keyword lsi 1", "keyword lsi 2", "keyword lsi 3", "keyword lsi 4", "keyword lsi 5", "keyword lsi 6"],
-  "intencao_busca": "Informacional + Estratégia",
+  "intencao_busca": "Informacional",
   "angulo_diferenciado": "ângulo específico que diferencia este artigo de concorrentes genéricos",
   "dado_recente": { "fato": "dado concreto encontrado (número, percentual, estatística ou notícia recente de 2025/2026)", "fonte": "Nome do portal ou órgão", "url": "https://url-real-encontrada.com.br" },
   "secoes": [
@@ -46,11 +46,6 @@ REGRAS OBRIGATÓRIAS:
 - NÃO inclua FAQ, conclusão nem CTA — serão escritos separadamente
 - Meta OBRIGATÓRIA: mínimo 1.100 palavras nesta parte — escreva com profundidade real
 
-INTENÇÃO DO ARTIGO: Informacional + Estratégia
-- O artigo deve informar com profundidade E entregar insights práticos para contadores e empresários contábeis
-- Informação é a base — estratégia é o destino. Uma não anula a outra: explique o contexto e mostre o que fazer com ele
-- Em cada seção, além de explicar o tema, aponte ao menos 1 decisão, ação ou oportunidade concreta para o leitor
-
 INTRODUÇÃO (obrigatório):
 - 2 a 3 parágrafos — não mais, não menos
 - Primeiro parágrafo: impacto direto do tema com dado concreto ou número real na primeira frase
@@ -79,8 +74,6 @@ CADA SEÇÃO H2:
 - Mínimo 4 parágrafos densos por seção (com ou sem H3s)
 - H3s: use apenas quando subdividirem naturalmente o conteúdo — nunca logo após o H2 sem parágrafo introdutório
 - OBRIGATÓRIO: ao menos uma seção H2 do artigo deve ter H3s — o artigo não pode ter zero H3s no total
-- OBRIGATÓRIO: ao menos uma seção H2 que NÃO tenha H3s deve usar tópicos em lista (bullet points com "-") para quebrar visualmente o texto — evita parágrafos longos seguidos sem respiro visual
-- OBRIGATÓRIO: sempre que houver tópicos em lista dentro de um H2, deve haver ao menos um parágrafo introdutório antes deles — nunca comece uma lista logo após o título H2
 - Frases curtas — máximo 2 linhas por frase
 - Foco em estratégia e aplicação prática: o que fazer, como detectar, como orientar o cliente
 - Ao menos 1 dado numérico por seção (alíquota, prazo, valor, percentual, multa)
@@ -852,52 +845,38 @@ export default function App() {
       }
 
       // ── Fluxo de auditorias ───────────────────────────────────────────────
-      // Rodada 1: Claude audita → Claude revisa → Claude fontes → Claude links
-      // Rodada 2: Claude audita → Claude revisa
-      const AUDITORES = { 1: "ChatGPT", 2: "ChatGPT" };
-
-      for (let rodada = 1; rodada <= 2; rodada++) {
-        const auditor = AUDITORES[rodada];
-
-        setFase(`auditoria${rodada}`);
-        log_(`Auditoria ${rodada}/2 — verificando qualidade, Yoast e linguagem... (${auditor})`);
-        await pausa(2, "", log_);
-
-        const rawA = await callGPT(PROMPTS.auditoria(textoFinal, rodada), 1500);
-
-        const ad = parseJSON(rawA);
-        if (!ad) { log_(`⚠ Auditoria ${rodada} não retornou JSON válido, pulando.`, "warn"); break; }
-        auditFinal = ad;
-
-        const yoastOk = !ad.yoast || (ad.yoast.status_transicao === "verde" && ad.yoast.status_passiva === "verde");
-        const scoreSuficiente = ad.score_geral >= 90 && yoastOk;
-
+      // ── Auditoria 1 ───────────────────────────────────────────────────────────
+      setFase("auditoria1");
+      log_("Auditoria 1/2 — verificando qualidade, Yoast e linguagem... (ChatGPT)");
+      await pausa(2, "", log_);
+      const rawA1 = await callGPT(PROMPTS.auditoria(textoFinal, 1), 1500);
+      const ad1 = parseJSON(rawA1);
+      if (ad1) {
+        auditFinal = ad1;
+        const yoast1Ok = !ad1.yoast || (ad1.yoast.status_transicao === "verde" && ad1.yoast.status_passiva === "verde");
+        const score1Ok = ad1.score_geral >= 90 && yoast1Ok;
         log_(
-          `✓ Score rodada ${rodada}: ${ad.score_geral}/100` +
-          (ad.yoast ? ` | Transição: ${ad.yoast.percentual_transicao}% (${ad.yoast.status_transicao}) | Passiva: ${ad.yoast.percentual_passiva}% (${ad.yoast.status_passiva})` : "") +
-          (scoreSuficiente ? " — aprovado ✓" : " — revisando..."),
-          scoreSuficiente ? "ok" : "warn"
+          `✓ Score rodada 1: ${ad1.score_geral}/100` +
+          (ad1.yoast ? ` | Transição: ${ad1.yoast.percentual_transicao}% (${ad1.yoast.status_transicao}) | Passiva: ${ad1.yoast.percentual_passiva}% (${ad1.yoast.status_passiva})` : "") +
+          (score1Ok ? " — aprovado ✓" : " — revisando..."),
+          score1Ok ? "ok" : "warn"
         );
+        const problemas1 = (ad1.problemas || []).filter(p => p?.trim() && p.length > 5);
+        if (!score1Ok || problemas1.length > 0) {
+          // ── Revisão 1 ───────────────────────────────────────────────────────
+          setFase("revisao1");
+          log_(`Revisão 1/2 — corrigindo ${problemas1.length} problema(s)... (ChatGPT)`, "warn");
+          problemas1.forEach(p => log_(`  → ${p}`, "warn"));
+          await pausa(2, "", log_);
+          const revisado1 = await callGPT(PROMPTS.revisar(textoFinal, problemas1), 6000);
+          if (revisado1?.length > 500) {
+            textoFinal = revisado1; setArtigo(revisado1);
+            log_(`✓ Revisão 1 aplicada — ${contarPalavras(revisado1)} palavras`, "ok");
+          } else { log_("⚠ Revisão 1 retornou texto curto, mantendo versão anterior.", "warn"); }
+        } else { log_(`✓ Artigo aprovado na rodada 1 (score ${ad1.score_geral}/100)`, "ok"); }
+      } else { log_("⚠ Auditoria 1 não retornou JSON válido, pulando.", "warn"); }
 
-        const problemas = (ad.problemas || []).filter(p => p?.trim() && p.length > 5);
-        if (scoreSuficiente && problemas.length === 0) { log_(`✓ Artigo aprovado na rodada ${rodada} (score ${ad.score_geral}/100)`, "ok"); break; }
-        if (rodada === 2) { log_(`⚠ Score final ${ad.score_geral}/100 após 2 rodadas. Entregando melhor versão.`, "warn"); break; }
-
-        setFase(`revisao${rodada}`);
-        log_(`Revisão ${rodada}/2 — corrigindo ${problemas.length} problema(s)... (ChatGPT)`, "warn");
-        problemas.forEach(p => log_(`  → ${p}`, "warn"));
-        await pausa(2, "", log_);
-
-        const revisado = await callGPT(PROMPTS.revisar(textoFinal, problemas), 6000);
-        if (revisado?.length > 500) {
-          textoFinal = revisado; setArtigo(revisado);
-          log_(`✓ Revisão ${rodada} aplicada — ${contarPalavras(revisado)} palavras`, "ok");
-        } else {
-          log_(`⚠ Revisão ${rodada} retornou texto curto, mantendo versão anterior.`, "warn");
-        }
-      }
-
-      // ── Fontes e links — sempre executados, independente do score ────────────
+      // ── Fontes externas — sempre executado ───────────────────────────────────
       setFase("fontes");
       log_("Buscando URLs de fontes oficiais... (ChatGPT)");
       await pausa(2, "", log_);
@@ -918,20 +897,51 @@ export default function App() {
         } else { log_("⚠ Nenhuma fonte encontrada — pulando etapa.", "warn"); }
       } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
-      // ── Links internos do blog Sittax ─────────────────────────────────────
+      // ── Links internos do blog Sittax — sempre executado ─────────────────────
       setFase("links_blog");
       log_("Inserindo links internos do blog Sittax... (ChatGPT)");
       await pausa(2, "", log_);
       try {
         const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal), 5000);
-        const h1idx = comLinksInt.indexOf("#");
-        const textoComInt = h1idx > 0 ? comLinksInt.slice(h1idx).trim() : comLinksInt.trim();
+        const h1idx2 = comLinksInt.indexOf("#");
+        const textoComInt = h1idx2 > 0 ? comLinksInt.slice(h1idx2).trim() : comLinksInt.trim();
         if (textoComInt?.length > 500) {
           textoFinal = textoComInt; setArtigo(textoComInt);
           const qtdInt = (textoComInt.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/.+?\)/g) || []).length;
           log_("✓ " + qtdInt + " link(s) interno(s) do blog inserido(s)", "ok");
         } else { log_("⚠ Links internos retornou texto curto — mantendo versão anterior.", "warn"); }
       } catch (e) { log_(`⚠ Links internos falhou (${e.message}). Continuando.`, "warn"); }
+
+      // ── Auditoria 2 ───────────────────────────────────────────────────────────
+      setFase("auditoria2");
+      log_("Auditoria 2/2 — verificação final de qualidade... (ChatGPT)");
+      await pausa(2, "", log_);
+      const rawA2 = await callGPT(PROMPTS.auditoria(textoFinal, 2), 1500);
+      const ad2 = parseJSON(rawA2);
+      if (ad2) {
+        auditFinal = ad2;
+        const yoast2Ok = !ad2.yoast || (ad2.yoast.status_transicao === "verde" && ad2.yoast.status_passiva === "verde");
+        const score2Ok = ad2.score_geral >= 90 && yoast2Ok;
+        log_(
+          `✓ Score rodada 2: ${ad2.score_geral}/100` +
+          (ad2.yoast ? ` | Transição: ${ad2.yoast.percentual_transicao}% (${ad2.yoast.status_transicao}) | Passiva: ${ad2.yoast.percentual_passiva}% (${ad2.yoast.status_passiva})` : "") +
+          (score2Ok ? " — aprovado ✓" : " — entregando melhor versão"),
+          score2Ok ? "ok" : "warn"
+        );
+        const problemas2 = (ad2.problemas || []).filter(p => p?.trim() && p.length > 5);
+        if (!score2Ok || problemas2.length > 0) {
+          // ── Revisão 2 ─────────────────────────────────────────────────────
+          setFase("revisao2");
+          log_(`Revisão 2/2 — corrigindo ${problemas2.length} problema(s)... (ChatGPT)`, "warn");
+          problemas2.forEach(p => log_(`  → ${p}`, "warn"));
+          await pausa(2, "", log_);
+          const revisado2 = await callGPT(PROMPTS.revisar(textoFinal, problemas2), 6000);
+          if (revisado2?.length > 500) {
+            textoFinal = revisado2; setArtigo(revisado2);
+            log_(`✓ Revisão 2 aplicada — ${contarPalavras(revisado2)} palavras`, "ok");
+          } else { log_("⚠ Revisão 2 retornou texto curto, mantendo versão anterior.", "warn"); }
+        } else { log_(`✓ Artigo aprovado na rodada 2 (score ${ad2.score_geral}/100)`, "ok"); }
+      } else { log_("⚠ Auditoria 2 não retornou JSON válido, pulando.", "warn"); }
 
       // ── Polimento Yoast final — garante transição ≥30% e passiva ≤10% ────
       setFase("polimento_final");
