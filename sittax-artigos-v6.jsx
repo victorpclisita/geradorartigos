@@ -83,6 +83,9 @@ CADA SEÇÃO H2:
 - OBRIGATÓRIO: sempre que houver lista de tópicos, deve haver ao menos um parágrafo de texto antes dela — nunca abra lista direto após título H2
 - FORMATO da lista de tópicos: cada item começa com "- " e tem entre 1 e 2 linhas. Mínimo 3 itens por lista.
 - Frases curtas — máximo 2 linhas por frase
+- TAMANHO DE PARÁGRAFO (obrigatório): cada parágrafo de texto corrido deve ter entre 2 e 4 linhas — nunca um bloco contínuo de 5 linhas ou mais
+- RITMO VISUAL: alterne parágrafos médios (3–4 linhas) com parágrafos curtos (1–2 linhas) — nunca escreva dois parágrafos longos seguidos
+- ATENÇÃO: essa regra vale para texto corrido — não interfere com bullet points, listas de tópicos nem com H3s
 - Foco em estratégia e aplicação prática: o que fazer, como detectar, como orientar o cliente
 - Ao menos 1 dado numérico por seção (alíquota, prazo, valor, percentual, multa)
 - Cite fontes: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
@@ -238,11 +241,16 @@ Identifique frases com construções passivas (ser/estar/foi/são/foram/será/se
 - "as alíquotas foram aprovadas pelo Congresso" → "o Congresso aprovou as alíquotas"
 - "a declaração deve ser entregue" → "o contribuinte deve entregar a declaração"
 
+CRITÉRIO 3 — TAMANHO DE PARÁGRAFO (verifique e corrija se necessário)
+- Parágrafo de texto corrido com 5 linhas ou mais deve ser quebrado em dois
+- Nunca dois parágrafos longos (3–4 linhas) em sequência sem um parágrafo curto (1–2 linhas) entre eles
+- Essa regra não se aplica a bullet points, listas com "-" ou títulos H2/H3
+
 REGRAS:
 - Mexa APENAS nas frases que precisam de ajuste — não reescreva o que já está correto
 - Preserve todo o conteúdo, dados, links e estrutura de títulos (# ## ###)
 - Preserve todos os links markdown [texto](url) exatamente como estão
-- Não corte nenhuma seção, parágrafo ou frase — APENAS adicione conectivos ou ajuste a voz
+- Não corte nenhuma seção, parágrafo ou frase — APENAS adicione conectivos, ajuste a voz ou quebre parágrafos longos
 - Não altere fatos, números, leis ou nomes
 - Não adicione nem remova seções
 - O artigo de saída deve ter o mesmo número de palavras (±5%) que o artigo de entrada
@@ -271,6 +279,7 @@ CRITÉRIO A — CONTEÚDO E ESTRUTURA
 7. CTA: deve ter parágrafo final convidando a falar com a Sittax.
 8. TÓPICOS EM LISTA: verifique se há ao menos uma seção H2 com lista de bullet points ("-"). Se não houver nenhuma lista no artigo, marque como problema.
 9. HIPERLINKS: conte os hiperlinks markdown [texto](url) no artigo. O artigo deve ter no mínimo 4. Se tiver menos, marque como problema informando quantos há.
+10. TAMANHO DE PARÁGRAFO: verifique se há parágrafos de texto corrido com 5 linhas ou mais. Se houver, marque como problema. Bullet points e listas com "-" estão isentos dessa regra.
 
 ═══════════════════════════════════════════
 CRITÉRIO B — PALAVRAS DE TRANSIÇÃO (Yoast)
@@ -485,6 +494,11 @@ SE HOUVER PROBLEMA DE HIPERLINKS (meta: mínimo 4 no artigo):
 - Formato markdown: [âncora natural](url)
 - Use URLs reais de: planalto.gov.br, gov.br/receitafederal, contabeis.com.br, sebrae.com.br, ibge.gov.br, cfc.org.br, fenacon.org.br, g1.globo.com, valor.globo.com
 - NUNCA invente URLs — só insira links de fontes que você conhece com certeza
+
+SE HOUVER PROBLEMA DE TAMANHO DE PARÁGRAFO:
+- Quebre todo parágrafo de texto corrido com 5 linhas ou mais em dois parágrafos menores
+- Se houver dois parágrafos longos (3–4 linhas) seguidos, insira um parágrafo curto (1–2 linhas) entre eles
+- Bullet points e listas com "-" estão isentos — não quebre listas em partes menores
 
 ARTIGO ORIGINAL:
 ${textoCompleto}
