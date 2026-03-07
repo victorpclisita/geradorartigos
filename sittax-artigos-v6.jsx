@@ -79,19 +79,14 @@ CADA SEÇÃO H2:
 - Mínimo 4 parágrafos densos por seção (com ou sem H3s)
 - H3s: use apenas quando subdividirem naturalmente o conteúdo — nunca logo após o H2 sem parágrafo introdutório
 - OBRIGATÓRIO: ao menos uma seção H2 do artigo deve ter H3s — o artigo não pode ter zero H3s no total
-- OBRIGATÓRIO: ao menos uma seção H2 que NÃO tenha H3s deve usar tópicos em lista (bullet points com "-") para quebrar visualmente o texto — evita parágrafos longos seguidos sem respiro visual
-- OBRIGATÓRIO: sempre que houver tópicos em lista dentro de um H2, deve haver ao menos um parágrafo introdutório antes deles — nunca comece uma lista logo após o título H2
+- OBRIGATÓRIO: ao menos uma seção H2 que NÃO tenha H3s deve usar uma lista de tópicos com bullet points ("-") — sem isso o artigo será rejeitado
+- OBRIGATÓRIO: sempre que houver lista de tópicos, deve haver ao menos um parágrafo de texto antes dela — nunca abra lista direto após título H2
+- FORMATO da lista de tópicos: cada item começa com "- " e tem entre 1 e 2 linhas. Mínimo 3 itens por lista.
 - Frases curtas — máximo 2 linhas por frase
 - Foco em estratégia e aplicação prática: o que fazer, como detectar, como orientar o cliente
 - Ao menos 1 dado numérico por seção (alíquota, prazo, valor, percentual, multa)
 - Cite fontes: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
 - NUNCA cite leis sem certeza — use "conforme a legislação tributária vigente" quando em dúvida
-
-NEGRITO (obrigatório):
-- Use negrito (**palavra**) para destacar palavras ou expressões estratégicas para o leitor — máximo 5 palavras por trecho em negrito
-- Destaque: termos técnicos relevantes, prazos críticos, valores e percentuais-chave, ações concretas que o leitor deve tomar
-- Mínimo 4 e máximo 10 negritos por artigo — distribua ao longo do texto, não concentre em um único parágrafo
-- NUNCA negrite a keyword primária repetidamente — apenas na primeira aparição se fizer sentido
 
 PROIBIDO (palavras que denunciam IA):
 "No cenário atual", "É crucial", "Vale ressaltar", "Neste contexto", "Abrangente", "Robusto", "Em suma", "Transformador", "Mergulhe", "Navegar", "Multifacetado", "Dinâmico", "Paradigma", "Holístico", "Sinergias", "Delinear", "Alavancar", "Não se trata apenas de", "Mais do que nunca"
@@ -120,9 +115,15 @@ FORMATO EXATO:
 ### [H3 — só se houver subdivisão natural]
 [parágrafos]
 
-## [H2 da seção 2]
+## [H2 da seção 2 — esta seção DEVE ter lista de tópicos]
 
-[Parágrafos — H3 opcional, nunca sem parágrafo introdutório antes]
+[Parágrafo introdutório obrigatório antes da lista]
+
+- [Item 1: informação ou ação concreta]
+- [Item 2: informação ou ação concreta]
+- [Item 3: informação ou ação concreta]
+
+[Parágrafo continuando após a lista]
 
 ## [H2 da seção 3]
 
@@ -268,6 +269,8 @@ CRITÉRIO A — CONTEÚDO E ESTRUTURA
 5. FAQ: deve ter exatamente 4 perguntas com respostas completas.
 6. CONCLUSÃO: deve ter seção H2 "Conclusão" com 2 parágrafos.
 7. CTA: deve ter parágrafo final convidando a falar com a Sittax.
+8. TÓPICOS EM LISTA: verifique se há ao menos uma seção H2 com lista de bullet points ("-"). Se não houver nenhuma lista no artigo, marque como problema.
+9. HIPERLINKS: conte os hiperlinks markdown [texto](url) no artigo. O artigo deve ter no mínimo 4. Se tiver menos, marque como problema informando quantos há.
 
 ═══════════════════════════════════════════
 CRITÉRIO B — PALAVRAS DE TRANSIÇÃO (Yoast)
@@ -328,7 +331,8 @@ Responda SOMENTE em JSON válido, sem markdown:
     "sem_linguagem_ia": true,
     "todas_secoes_completas": true,
     "transicao_yoast_verde": true,
-    "voz_passiva_yoast_verde": true
+    "voz_passiva_yoast_verde": true,
+    "lista_topicos_presente": true
   },
   "yoast": {
     "total_frases": 45,
@@ -379,8 +383,8 @@ LINKS DISPONÍVEIS DO BLOG SITTAX:
 9. [Regularização no Simples Nacional](https://sittax.com.br/artigo/regularizacao-simples-nacional/) — como regularizar pendências e evitar exclusão do Simples
 
 REGRAS:
-- Insira no MÍNIMO 3 e no máximo 4 links internos — 3 é obrigatório
-- Se o tema for distante de algum link, force ao menos 3 dos mais próximos — sempre haverá pelo menos 3 relevantes entre os 9 disponíveis
+- Insira no máximo 3 links internos
+- Use apenas os links cujo tema for relevante para o conteúdo do artigo
 - O âncora deve ser uma expressão que já existe no texto — não adicione texto novo
 - Nunca repita o mesmo link
 - Preserve todos os links externos já existentes
@@ -470,6 +474,17 @@ SE HOUVER PROBLEMA DE VOZ PASSIVA (meta: ≤ 10% das frases):
 - Reescreva as frases passivas identificadas na voz ativa
 - Ex: "o imposto é calculado pela Receita" → "a Receita calcula o imposto"
 - Ex: "as alíquotas foram definidas pela lei" → "a lei definiu as alíquotas"
+
+SE HOUVER PROBLEMA DE TÓPICOS EM LISTA (ao menos 1 seção H2 deve ter bullet points):
+- Escolha a seção H2 mais adequada que não tenha H3s
+- Adicione um parágrafo introdutório e em seguida uma lista com mínimo 3 itens no formato "- texto"
+- Cada item deve ter 1-2 linhas com informação ou ação concreta
+
+SE HOUVER PROBLEMA DE HIPERLINKS (meta: mínimo 4 no artigo):
+- Adicione hiperlinks reais nos trechos que citam leis, órgãos, dados ou fontes
+- Formato markdown: [âncora natural](url)
+- Use URLs reais de: planalto.gov.br, gov.br/receitafederal, contabeis.com.br, sebrae.com.br, ibge.gov.br, cfc.org.br, fenacon.org.br, g1.globo.com, valor.globo.com
+- NUNCA invente URLs — só insira links de fontes que você conhece com certeza
 
 ARTIGO ORIGINAL:
 ${textoCompleto}
