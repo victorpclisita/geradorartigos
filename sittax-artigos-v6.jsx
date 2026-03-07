@@ -255,6 +255,7 @@ CRITÉRIO A — CONTEÚDO E ESTRUTURA
 5. FAQ: deve ter exatamente 4 perguntas com respostas completas.
 6. CONCLUSÃO: deve ter seção H2 "Conclusão" com 2 parágrafos.
 7. CTA: deve ter parágrafo final convidando a falar com a Sittax.
+8. HIPERLINKS: conte os hiperlinks markdown [texto](url) no artigo. O artigo deve ter no mínimo 4 hiperlinks. Se tiver menos de 4, marque como problema listando quantos há e quantos faltam.
 
 ═══════════════════════════════════════════
 CRITÉRIO B — PALAVRAS DE TRANSIÇÃO (Yoast)
@@ -315,7 +316,8 @@ Responda SOMENTE em JSON válido, sem markdown:
     "sem_linguagem_ia": true,
     "todas_secoes_completas": true,
     "transicao_yoast_verde": true,
-    "voz_passiva_yoast_verde": true
+    "voz_passiva_yoast_verde": true,
+    "minimo_4_hiperlinks": true
   },
   "yoast": {
     "total_frases": 45,
@@ -332,18 +334,19 @@ Responda SOMENTE em JSON válido, sem markdown:
   // Etapa de busca de fontes — Claude retorna JSON com URLs reais (leve)
   buscarFontes: (textoCompleto) => `Você é especialista em fontes do direito tributário brasileiro.
 
-Analise o trecho abaixo e identifique menções a leis, normas e dados com fonte implícita.
-Para cada item encontrado, busque a URL oficial real na internet.
+Analise o trecho abaixo e identifique menções a leis, normas, dados e afirmações atribuídas a órgãos ou entidades.
+Para cada item encontrado, busque a URL real na internet e retorne como fonte linkável.
 
-Fontes prioritárias:
-- Leis federais → planalto.gov.br
-- Instruções Normativas RFB → normas.receita.fazenda.gov.br
-- IBGE, Sebrae, IBPT → sites oficiais
+Portais aceitos como fonte:
+Governo: planalto.gov.br, gov.br/receitafederal, normas.receita.fazenda.gov.br, pgfn.gov.br, sefaz estaduais
+Entidades: cfc.org.br, fenacon.org.br, sebrae.com.br, ibge.gov.br, ibpt.com.br, cni.org.br, fecomercio.com.br, fgv.br
+Portais contábeis: contabeis.com.br, tax contábil (taxcontabil.com.br), tributanet.com.br
+Notícias: g1.globo.com, valor.globo.com, exame.com, estadao.com.br, folha.uol.com.br, cnnbrasil.com.br
 
 Retorne APENAS um JSON puro, sem texto antes ou depois:
-{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-encontrada.gov.br"}]}
+{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-encontrada.com.br"}]}
 
-Máximo 4 fontes. Só inclua URLs que você confirmou via web_search — NUNCA invente.
+Máximo 4 fontes. Só inclua URLs que você confirmou na internet — NUNCA invente.
 Se não encontrar nenhuma, retorne: {"fontes":[]}
 
 TRECHO DO ARTIGO (primeiros 800 caracteres):
@@ -474,6 +477,12 @@ SE HOUVER PROBLEMA DE VOZ PASSIVA (meta: ≤ 10% das frases):
 - Reescreva as frases passivas identificadas na voz ativa
 - Ex: "o imposto é calculado pela Receita" → "a Receita calcula o imposto"
 - Ex: "as alíquotas foram definidas pela lei" → "a lei definiu as alíquotas"
+
+SE HOUVER PROBLEMA DE HIPERLINKS (meta: mínimo 4 no artigo):
+- Adicione hiperlinks reais nos trechos que citam leis, órgãos, dados ou fontes
+- Formato markdown: [âncora natural](url)
+- Use URLs reais de: planalto.gov.br, gov.br/receitafederal, contabeis.com.br, sebrae.com.br, ibge.gov.br, cfc.org.br, fenacon.org.br, g1.globo.com, valor.globo.com
+- NUNCA invente URLs — só insira links de fontes que você conhece com certeza
 
 ARTIGO ORIGINAL:
 ${textoCompleto}
