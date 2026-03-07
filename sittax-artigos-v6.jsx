@@ -431,6 +431,90 @@ ARTIGO:
 ${textoCompleto}`,
 
 
+  // Auditoria Yoast dedicada — apenas transição e voz passiva
+  auditoriaYoast: (textoCompleto) => `Você é revisor especialista em legibilidade. Analise o artigo abaixo e calcule dois indicadores.
+
+ARTIGO:
+${textoCompleto}
+
+═══════════════════════════════
+CÁLCULO 1 — PALAVRAS DE TRANSIÇÃO
+═══════════════════════════════
+1. Separe todas as frases do artigo (por "." "!" "?"). Ignore títulos H1/H2/H3, itens de lista e URLs.
+2. Para cada frase, verifique se contém pelo menos uma palavra/expressão de transição da lista abaixo.
+3. Calcule: (frases com transição / total de frases) × 100
+4. Se o percentual for menor que 30%, liste até 8 frases que NÃO têm transição e que seriam boas candidatas para receber uma.
+
+Lista de transições válidas: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo, apesar disso, de fato, ao mesmo tempo, anteriormente, posteriormente, sobretudo, certamente, então, entretanto, aliás, afinal, principalmente, em razão disso, nesse sentido, por consequência, dessa maneira
+
+═══════════════════════════════
+CÁLCULO 2 — VOZ PASSIVA
+═══════════════════════════════
+1. Identifique todas as frases com voz passiva: construções com ser/estar/foi/são/foram/será/serão + particípio.
+2. Calcule: (frases passivas / total de frases) × 100
+3. Se o percentual for maior que 10%, liste TODAS as frases passivas encontradas.
+
+Responda SOMENTE em JSON válido, sem markdown:
+{
+  "total_frases": 80,
+  "transicao": {
+    "frases_com_transicao": 28,
+    "percentual": 35,
+    "status": "verde",
+    "frases_sem_transicao": []
+  },
+  "passiva": {
+    "frases_passivas": 6,
+    "percentual": 7,
+    "status": "verde",
+    "frases_encontradas": []
+  },
+  "aprovado": true
+}
+
+Regras do JSON:
+- "status" deve ser "verde" (ok) ou "vermelho" (problema)
+- "aprovado" é true apenas se transição ≥ 30% E passiva ≤ 10%
+- "frases_sem_transicao": lista de frases candidatas (só preencher se status for "vermelho")
+- "frases_encontradas": lista de frases passivas (só preencher se status for "vermelho")`,
+
+  // Revisão Yoast dedicada — cirúrgica, sem mexer em links ou estrutura
+  revisaoYoast: (textoCompleto, dadosAuditoria) => `Você é revisor especialista em legibilidade de textos em português brasileiro.
+
+Sua única tarefa é corrigir os dois problemas de legibilidade listados abaixo. Não altere mais nada.
+
+PROBLEMAS A CORRIGIR:
+${dadosAuditoria}
+
+═══════════════════════════════
+REGRAS ABSOLUTAS — LEIA COM ATENÇÃO
+═══════════════════════════════
+- Preserve TODO o conteúdo: fatos, dados, números, leis, nomes, argumentos
+- Preserve TODOS os links markdown [texto](url) exatamente como estão — não remova nem altere nenhum link
+- Preserve a estrutura de títulos (# ## ###) sem nenhuma alteração
+- Preserve bullet points e listas com "-" exatamente como estão
+- NÃO adicione nem remova seções, parágrafos ou tópicos
+- NÃO altere frases que já estão corretas — mexa apenas nas frases problemáticas listadas acima
+
+SE HOUVER PROBLEMA DE TRANSIÇÃO (percentual < 30%):
+- Nas frases listadas como candidatas, insira uma palavra de transição — variando a posição (início, meio ou fim)
+- Prefira inserir no meio da frase: "O contribuinte, portanto, deve..." ou "A multa, inclusive, pode..."
+- Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, bem como, contudo, todavia, inclusive, pois, logo, de fato, nesse sentido, em razão disso
+- A inserção deve soar natural — nunca mecânica
+
+SE HOUVER PROBLEMA DE VOZ PASSIVA (percentual > 10%):
+- Reescreva APENAS as frases passivas listadas, convertendo para voz ativa
+- Coloque o agente como sujeito: "a Receita calcula" em vez de "é calculado pela Receita"
+- "as alíquotas foram definidas pela lei" → "a lei definiu as alíquotas"
+- "o prazo será divulgado pelo Fisco" → "o Fisco divulgará o prazo"
+- Se não houver agente claro, reformule para voz ativa com sujeito genérico: "o contribuinte deve entregar" em vez de "deve ser entregue"
+
+Retorne APENAS o artigo completo corrigido, com todos os marcadores # ## ###.
+Sem explicações, sem comentários fora do artigo.
+
+ARTIGO:
+${textoCompleto}`,
+
   buscaLinksInternos: (tema) => `Você é especialista em SEO da Sittax.
 
 Use web_search para encontrar artigos reais do blog da Sittax relacionados ao tema "${tema}".
@@ -695,7 +779,9 @@ const FASES = [
   { id: "links_blog",     label: "Links Blog",  icon: "🏠" },
   { id: "auditoria2",     label: "Auditoria 2", icon: "🔎" },
   { id: "revisao2",       label: "Revisão 2",   icon: "✅" },
-  { id: "pronto",         label: "Pronto",      icon: "🎉" },
+  { id: "auditoria_yoast", label: "Yoast",      icon: "📊" },
+  { id: "revisao_yoast",   label: "Rev. Yoast", icon: "🔤" },
+  { id: "pronto",          label: "Pronto",     icon: "🎉" },
 ];
 
 export default function App() {
@@ -1002,6 +1088,45 @@ export default function App() {
       } catch (e) { log_(`⚠ Polimento final falhou (${e.message}). Continuando.`, "warn"); }
 
       setAudit(auditFinal);
+
+      // ── Auditoria Yoast dedicada ─────────────────────────────────────────
+      setFase("auditoria_yoast");
+      log_("Auditoria Yoast — verificando transição e voz passiva... (ChatGPT)");
+      await pausa(2, "", log_);
+      try {
+        const rawYoast = await callGPT(PROMPTS.auditoriaYoast(textoFinal), 1500);
+        const dyoast = parseJSON(rawYoast);
+        if (dyoast) {
+          const yAprovado = dyoast.aprovado;
+          log_(
+            `✓ Yoast — Transição: ${dyoast.transicao?.percentual ?? "?"}% (${dyoast.transicao?.status ?? "?"}) | Passiva: ${dyoast.passiva?.percentual ?? "?"}% (${dyoast.passiva?.status ?? "?"})` +
+            (yAprovado ? " — aprovado ✓" : " — corrigindo..."),
+            yAprovado ? "ok" : "warn"
+          );
+          if (!yAprovado) {
+            // ── Revisão Yoast ───────────────────────────────────────────────
+            setFase("revisao_yoast");
+            const problemaDesc = [
+              dyoast.transicao?.status === "vermelho"
+                ? "TRANSIÇÃO: " + dyoast.transicao.percentual + "% das frases têm transição (meta: ≥30%). Frases candidatas:\n" +
+                  (dyoast.transicao.frases_sem_transicao || []).map(f => "  - " + f).join("\n")
+                : null,
+              dyoast.passiva?.status === "vermelho"
+                ? "VOZ PASSIVA: " + dyoast.passiva.percentual + "% das frases estão na voz passiva (meta: ≤10%). Frases a corrigir:\n" +
+                  (dyoast.passiva.frases_encontradas || []).map(f => "  - " + f).join("\n")
+                : null,
+            ].filter(Boolean).join("\n\n");
+            log_("Rev. Yoast — aplicando correções cirúrgicas... (ChatGPT)", "warn");
+            await pausa(2, "", log_);
+            const revisadoYoast = await callGPT(PROMPTS.revisaoYoast(textoFinal, problemaDesc), 6000);
+            if (revisadoYoast?.length > 500) {
+              textoFinal = revisadoYoast; setArtigo(revisadoYoast);
+              log_(`✓ Rev. Yoast aplicada — ${contarPalavras(revisadoYoast)} palavras`, "ok");
+            } else { log_("⚠ Rev. Yoast retornou texto curto — mantendo versão anterior.", "warn"); }
+          }
+        } else { log_("⚠ Auditoria Yoast não retornou JSON válido, pulando.", "warn"); }
+      } catch (e) { log_(`⚠ Auditoria Yoast falhou (${e.message}). Continuando.`, "warn"); }
+
       setFase("pronto");
 
     } catch (err) {
