@@ -87,6 +87,12 @@ CADA SEÇÃO H2:
 - Cite fontes: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
 - NUNCA cite leis sem certeza — use "conforme a legislação tributária vigente" quando em dúvida
 
+NEGRITO (obrigatório):
+- Use negrito (**palavra**) para destacar palavras ou expressões estratégicas para o leitor — máximo 5 palavras por trecho em negrito
+- Destaque: termos técnicos relevantes, prazos críticos, valores e percentuais-chave, ações concretas que o leitor deve tomar
+- Mínimo 4 e máximo 10 negritos por artigo — distribua ao longo do texto, não concentre em um único parágrafo
+- NUNCA negrite a keyword primária repetidamente — apenas na primeira aparição se fizer sentido
+
 PROIBIDO (palavras que denunciam IA):
 "No cenário atual", "É crucial", "Vale ressaltar", "Neste contexto", "Abrangente", "Robusto", "Em suma", "Transformador", "Mergulhe", "Navegar", "Multifacetado", "Dinâmico", "Paradigma", "Holístico", "Sinergias", "Delinear", "Alavancar", "Não se trata apenas de", "Mais do que nunca"
 
@@ -373,8 +379,8 @@ LINKS DISPONÍVEIS DO BLOG SITTAX:
 9. [Regularização no Simples Nacional](https://sittax.com.br/artigo/regularizacao-simples-nacional/) — como regularizar pendências e evitar exclusão do Simples
 
 REGRAS:
-- Insira no máximo 3 links internos
-- Use apenas os links cujo tema for relevante para o conteúdo do artigo
+- Insira no MÍNIMO 3 e no máximo 4 links internos — 3 é obrigatório
+- Se o tema for distante de algum link, force ao menos 3 dos mais próximos — sempre haverá pelo menos 3 relevantes entre os 9 disponíveis
 - O âncora deve ser uma expressão que já existe no texto — não adicione texto novo
 - Nunca repita o mesmo link
 - Preserve todos os links externos já existentes
