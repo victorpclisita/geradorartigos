@@ -219,14 +219,16 @@ Identifique frases com construções passivas (ser/estar/foi/são/foram/será/se
 - "a declaração deve ser entregue" → "o contribuinte deve entregar a declaração"
 
 REGRAS:
+- Mexa APENAS nas frases que precisam de ajuste — não reescreva o que já está correto
 - Preserve todo o conteúdo, dados, links e estrutura de títulos (# ## ###)
 - Preserve todos os links markdown [texto](url) exatamente como estão
-- Não corte nenhuma seção
+- Não corte nenhuma seção, parágrafo ou frase — APENAS adicione conectivos ou ajuste a voz
 - Não altere fatos, números, leis ou nomes
 - Não adicione nem remova seções
+- O artigo de saída deve ter o mesmo número de palavras (±5%) que o artigo de entrada
 - As mudanças devem soar naturais — nunca mecânicas ou forçadas
 
-Retorne APENAS o artigo completo reescrito, com todos os marcadores # ## ###.
+Retorne APENAS o artigo completo, com todos os marcadores # ## ###.
 Sem explicações, sem comentários fora do artigo.
 
 ARTIGO:
