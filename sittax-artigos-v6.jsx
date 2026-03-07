@@ -347,8 +347,7 @@ ${textoCompleto.slice(0, 800)}`,
 Insira os links de fontes abaixo no artigo, nos trechos exatos onde as âncoras aparecem.
 
 FONTES DISPONÍVEIS:
-${fontes.map((f, i) => (i+1) + '. ancora: "' + f.ancora + '" → ' + f.url).join("
-")}
+${fontes.map((f, i) => (i+1) + '. ancora: "' + f.ancora + '" → ' + f.url).join('\n')}
 
 REGRAS:
 - Formato markdown: [âncora](url)
