@@ -762,8 +762,8 @@ export default function App() {
 
     try {
       setFase("pesquisa");
-      log_("Definindo estratégia de keywords e estrutura...");
-      const rawP = await callClaude(PROMPTS.pesquisa(tema), 1500);
+      log_("Definindo estratégia de keywords e estrutura... (Claude + web_search)");
+      const rawP = await callClaudeSearch(PROMPTS.pesquisa(tema), 1500);
       const pd = parseJSON(rawP);
       if (!pd) throw new Error(`Resposta inválida da API na pesquisa. Conteúdo: "${rawP.slice(0, 120)}..."`);
       if (!pd.keyword_primaria) throw new Error("JSON retornado sem campo 'keyword_primaria'. Tente novamente.");
@@ -904,7 +904,7 @@ export default function App() {
       // ── Fontes e links — sempre executados, independente do score ────────────
       setFase("fontes");
       log_("Buscando URLs de fontes oficiais... (Claude + web_search)");
-      await pausa(2, "", log_);
+      await pausa(15, "", log_);
       try {
         const rawFontes = await callClaudeSearch(PROMPTS.buscarFontes(textoFinal), 600);
         const jsonFontes = parseJSON(rawFontes);
@@ -925,7 +925,7 @@ export default function App() {
       // ── Links internos do blog Sittax: Claude busca, ChatGPT insere ──────────
       setFase("links_blog");
       log_("Buscando publicações do blog Sittax... (Claude + web_search)");
-      await pausa(2, "", log_);
+      await pausa(15, "", log_);
       try {
         const rawBlog = await callClaudeSearch(PROMPTS.buscaLinksInternos(tema), 800);
         const jsonBlog = parseJSON(rawBlog);
