@@ -9,7 +9,7 @@ TEMA: "${tema}"
 
 IMPORTANTE: Responda SOMENTE com o JSON abaixo preenchido. Nenhum texto antes ou depois. Nenhum bloco de código. Apenas o JSON puro.
 
-Use web_search para buscar 1 dado recente (2026) sobre o tema — pode ser uma notícia, dado do IBGE, Sebrae, Receita Federal, IBPT ou portal tributário. Inclua o dado e a URL real encontrada no campo "dado_recente".
+Busque na internet 1 dado recente (2025 ou 2026) sobre o tema — pode ser uma notícia, dado do IBGE, Sebrae, Receita Federal, IBPT ou portal tributário. Inclua o dado e a URL real encontrada no campo "dado_recente".
 
 {
   "keyword_primaria": "keyword estratégica de 1-4 palavras para o tema",
@@ -327,7 +327,7 @@ Responda SOMENTE em JSON válido, sem markdown:
   buscarFontes: (textoCompleto) => `Você é especialista em fontes do direito tributário brasileiro.
 
 Analise o trecho abaixo e identifique menções a leis, normas e dados com fonte implícita.
-Para cada item encontrado, busque a URL oficial real usando web_search.
+Para cada item encontrado, busque a URL oficial real na internet.
 
 Fontes prioritárias:
 - Leis federais → planalto.gov.br
@@ -761,8 +761,8 @@ export default function App() {
 
     try {
       setFase("pesquisa");
-      log_("Definindo estratégia de keywords e estrutura... (Claude + web_search)");
-      const rawP = await callClaudeSearch(PROMPTS.pesquisa(tema), 1500);
+      log_("Definindo estratégia de keywords e estrutura... (ChatGPT)");
+      const rawP = await callGPT(PROMPTS.pesquisa(tema), 1500);
       const pd = parseJSON(rawP);
       if (!pd) throw new Error(`Resposta inválida da API na pesquisa. Conteúdo: "${rawP.slice(0, 120)}..."`);
       if (!pd.keyword_primaria) throw new Error("JSON retornado sem campo 'keyword_primaria'. Tente novamente.");
@@ -902,10 +902,10 @@ export default function App() {
 
       // ── Fontes e links — sempre executados, independente do score ────────────
       setFase("fontes");
-      log_("Buscando URLs de fontes oficiais... (Claude + web_search)");
-      await pausa(15, "", log_);
+      log_("Buscando URLs de fontes oficiais... (ChatGPT)");
+      await pausa(2, "", log_);
       try {
-        const rawFontes = await callClaudeSearch(PROMPTS.buscarFontes(textoFinal), 600);
+        const rawFontes = await callGPT(PROMPTS.buscarFontes(textoFinal), 600);
         const jsonFontes = parseJSON(rawFontes);
         if (jsonFontes?.fontes?.length > 0) {
           log_("✓ " + jsonFontes.fontes.length + " fonte(s) encontrada(s) — inserindo no artigo... (ChatGPT)", "ok");
