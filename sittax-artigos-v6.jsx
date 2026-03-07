@@ -59,6 +59,11 @@ DADO RECENTE (obrigatório):
 - Formato: [texto âncora descritivo](url)
 - Exemplo: "Segundo o Sebrae, [mais de 60% das microempresas têm irregularidades no PGDAS](https://url)"
 
+REGRA DE FONTES (obrigatório):
+- Toda afirmação atribuída a um órgão, governo, lei ou pesquisa DEVE ter hiperlink para a fonte
+- PROIBIDO citar "segundo a Receita Federal", "o governo anunciou", "conforme o IBGE" etc. sem linkar a fonte
+- Se não tiver a URL real, reescreva a frase sem atribuir a fonte — use "conforme a legislação vigente" ou retire a atribuição
+
 DADOS NUMÉRICOS (obrigatório):
 - Preserve e utilize TODOS os dados numéricos fornecidos pela pesquisa (alíquotas, percentuais, prazos, valores)
 - Verifique se são aplicáveis a 2026 — se sim, insira no contexto mais relevante do artigo
@@ -68,6 +73,7 @@ CADA SEÇÃO H2:
 - Parágrafo introdutório logo após o título H2 — antes de qualquer H3
 - Mínimo 4 parágrafos densos por seção (com ou sem H3s)
 - H3s: use apenas quando subdividirem naturalmente o conteúdo — nunca logo após o H2 sem parágrafo introdutório
+- OBRIGATÓRIO: ao menos uma seção H2 do artigo deve ter H3s — o artigo não pode ter zero H3s no total
 - Frases curtas — máximo 2 linhas por frase
 - Foco em estratégia e aplicação prática: o que fazer, como detectar, como orientar o cliente
 - Ao menos 1 dado numérico por seção (alíquota, prazo, valor, percentual, multa)
