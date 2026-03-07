@@ -9,11 +9,15 @@ TEMA: "${tema}"
 
 IMPORTANTE: Responda SOMENTE com o JSON abaixo preenchido. Nenhum texto antes ou depois. Nenhum bloco de código. Apenas o JSON puro.
 
+Use web_search para buscar 1 dado recente (2026) sobre o tema — pode ser uma notícia, dado do IBGE, Sebrae, Receita Federal, IBPT ou portal tributário. Inclua o dado e a URL real encontrada no campo "dado_recente".
+
 {
   "keyword_primaria": "keyword estratégica de 1-4 palavras para o tema",
   "keywords_secundarias": ["keyword lsi 1", "keyword lsi 2", "keyword lsi 3", "keyword lsi 4", "keyword lsi 5", "keyword lsi 6"],
   "intencao_busca": "Informacional",
   "angulo_diferenciado": "ângulo específico que diferencia este artigo de concorrentes genéricos",
+  "dado_recente": { "fato": "dado concreto encontrado (número, percentual, estatística ou notícia recente de 2025/2026)", "fonte": "Nome do portal ou órgão", "url": "https://url-real-encontrada.com.br" },
+  "cena_abertura": "descreva uma situação concreta do dia a dia de um empresário ou contador que ilustra o problema central do tema — algo que acontece no escritório ou na empresa, com números específicos quando possível",
   "secoes": [
     { "h2": "Título da seção 1", "h3s": ["subtópico a", "subtópico b"], "foco": "o que abordar nesta seção" },
     { "h2": "Título da seção 2", "h3s": [], "foco": "o que abordar nesta seção" },
@@ -21,56 +25,73 @@ IMPORTANTE: Responda SOMENTE com o JSON abaixo preenchido. Nenhum texto antes ou
   ],
   "faq_perguntas": ["Pergunta real 1?", "Pergunta real 2?", "Pergunta real 3?", "Pergunta real 4?"],
   "meta_title": "title tag até 60 caracteres com keyword",
-  "meta_description": "meta description até 155 caracteres",
+  "meta_description": "meta description até 155 caracteres respondendo a intenção de busca diretamente",
   "slug": "slug-com-keyword",
   "fontes_primarias": ["Lei ou norma 1", "Lei ou norma 2"]
 }`,
 
   // Parte 1: corpo principal (intro + seções) — ~900 palavras
   corpo: (tema, p) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
-Escreva como contador experiente. NUNCA use linguagem de IA.
+Escreva como um contador experiente que está do lado do cliente — direto, humano, prático. NUNCA use linguagem de IA.
 
 TEMA: "${tema}"
 KEYWORD PRIMÁRIA: "${p.keyword_primaria}"
 KEYWORDS SECUNDÁRIAS: ${p.keywords_secundarias.join(", ")}
 ÂNGULO: ${p.angulo_diferenciado}
 FONTES PRIMÁRIAS: ${p.fontes_primarias.join("; ")}
+CENA DE ABERTURA: ${p.cena_abertura}
+DADO RECENTE PARA USAR NO ARTIGO: "${p.dado_recente?.fato}" — Fonte: ${p.dado_recente?.fonte} — URL: ${p.dado_recente?.url}
 SEÇÕES A ESCREVER:
-${p.secoes.map((s, i) => `${i + 1}. H2: "${s.h2}" — Foco: ${s.foco}${s.h3s.length ? "\n   H3s: " + s.h3s.join(", ") : ""}`).join("\n")}
+${p.secoes.map((s, i) => (i + 1) + ". H2: \"" + s.h2 + "\" — Foco: " + s.foco + (s.h3s.length ? "\n   H3s: " + s.h3s.join(", ") : "")).join("\n")}
 
 REGRAS OBRIGATÓRIAS:
 - Escreva APENAS: título H1 + introdução + as ${p.secoes.length} seções H2 acima
 - NÃO inclua FAQ, conclusão nem CTA — serão escritos separadamente
-- Introdução: 3-4 frases diretas com a keyword primária. Sem rodeios.
-- Cada H2: mínimo 3 parágrafos de 3-4 linhas cada. Seja denso, detalhado e prático.
-- Ao menos 1 dado numérico por seção H2 (alíquota, prazo, valor, percentual)
-- Cite as fontes primárias naturalmente (ex: "conforme a Lei Complementar 123/2006")
-- NUNCA cite leis que não existem com certeza — use "conforme a legislação tributária vigente" quando em dúvida
-- PROIBIDO: "No cenário atual", "É crucial", "Vale ressaltar", "Neste contexto", "Abrangente", "Robusto", "Em suma", "Transformador", "Mergulhe", "Navegar"
-- Meta OBRIGATÓRIA: mínimo 900 palavras nesta parte
+
+INTRODUÇÃO (obrigatório):
+- Abra com a CENA DE ABERTURA fornecida acima — descreva a situação concreta, com números reais, como se estivesse contando um caso que você acompanhou
+- 3-4 frases curtas. A keyword primária aparece naturalmente.
+- A última frase da introdução deve dizer o que o artigo vai mostrar ao leitor
+
+DADO RECENTE (obrigatório):
+- Insira o DADO RECENTE em alguma seção do corpo onde ele se encaixar naturalmente
+- Formato: mencione o fato e faça um hiperlink markdown para a URL: [texto âncora](url)
+- Exemplo: "Segundo levantamento do Sebrae, [mais de 60% das micro empresas têm irregularidades fiscais](https://url)"
+
+CADA SEÇÃO H2:
+- Mínimo 3 parágrafos de 3-4 linhas
+- Frases curtas — máximo 2 linhas por frase
+- Ao menos 1 dado numérico (alíquota, prazo, valor, percentual)
+- Tom de conversa: escreva como se estivesse explicando para um cliente na sua mesa
+- Cite fontes naturalmente: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
+- NUNCA cite leis sem certeza — use "conforme a legislação tributária vigente" quando em dúvida
+
+PROIBIDO (palavras que denunciam IA):
+"No cenário atual", "É crucial", "Vale ressaltar", "Neste contexto", "Abrangente", "Robusto", "Em suma", "Transformador", "Mergulhe", "Navegar", "Multifacetado", "Dinâmico", "Paradigma", "Holístico", "Sinergias", "Delinear", "Alavancar"
 
 REGRA DE VOZ ATIVA (obrigatório):
-- Escreva SEMPRE na voz ativa. Máximo 10% das frases podem estar na voz passiva.
-- ERRADO (passiva): "o imposto é calculado pela Receita", "as alíquotas foram definidas pela lei"
-- CERTO (ativa): "a Receita calcula o imposto", "a lei definiu as alíquotas"
+- Escreva SEMPRE na voz ativa. Máximo 10% das frases na voz passiva.
+- ERRADO: "o imposto é calculado pela Receita" | CERTO: "a Receita calcula o imposto"
 
-REGRA DE PALAVRAS DE TRANSIÇÃO (obrigatório):
-- Pelo menos 30% das frases devem conter uma palavra/expressão de transição — no início, no meio ou no fim da frase. Varie a posição para soar natural: não coloque transição sempre no início.
-- Exemplos no INÍCIO: "Além disso, a alíquota do Simples Nacional..." | Exemplos no MEIO: "A empresa, portanto, deve recolher o DAS..." | Integrado: "Essa regra vale inclusive para MEIs com faturamento acima de..."
+REGRA DE TRANSIÇÃO (obrigatório):
+- Pelo menos 30% das frases com palavra de transição — variando posição (início, meio ou fim)
+- Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, inclusive, conforme, já que, bem como, contudo, todavia, pois, logo
+
+Meta OBRIGATÓRIA: mínimo 900 palavras nesta parte
 
 FORMATO EXATO:
 # [Título H1 com keyword]
 
-[Introdução: 3-4 frases]
+[Introdução: cena concreta + 3-4 frases]
 
 ## [H2 da seção 1]
-[conteúdo — mín 3 parágrafos densos]
+[conteúdo — mín 3 parágrafos]
 
 ## [H2 da seção 2]
-[conteúdo — mín 3 parágrafos densos]
+[conteúdo — mín 3 parágrafos]
 
 ## [H2 da seção 3]
-[conteúdo — mín 3 parágrafos densos]`,
+[conteúdo — mín 3 parágrafos]`,
 
   // Parte 2: FAQ — ~350 palavras
   faq: (tema, p, corpo) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
@@ -79,13 +100,17 @@ CONTEXTO: Artigo sobre "${tema}" (keyword: "${p.keyword_primaria}")
 Início do artigo: ${corpo.slice(0, 250)}...
 
 PERGUNTAS:
-${p.faq_perguntas.map((q, i) => `${i + 1}. ${q}`).join("\n")}
+${p.faq_perguntas.map((q, i) => (i + 1) + ". " + q).join("\n")}
 
 Escreva SOMENTE a seção FAQ com estas 4 perguntas.
-- Respostas completas, 3-4 frases cada
-- Tom de contador experiente, sem linguagem de IA
-- Dados concretos quando aplicável
+
+REGRAS:
+- Cada resposta começa com a resposta direta à pergunta — sem preamble
+- 3-4 frases por resposta, curtas e objetivas
+- Tom de contador que está respondendo um cliente pessoalmente: direto, sem enrolação
+- Dados concretos quando aplicável (prazos, valores, percentuais)
 - NUNCA cite leis sem certeza — use "conforme a legislação vigente" se em dúvida
+- PROIBIDO: "É importante ressaltar", "Vale destacar", "É fundamental", "Neste contexto"
 - Meta OBRIGATÓRIA: mínimo 350 palavras no total desta seção
 
 FORMATO EXATO:
@@ -93,39 +118,39 @@ FORMATO EXATO:
 
 ### [Pergunta 1]
 
-[Resposta em 2 frases]
+[Resposta direta, 3-4 frases]
 
 ### [Pergunta 2]
 
-[Resposta em 2 frases]
+[Resposta direta, 3-4 frases]
 
 ### [Pergunta 3]
 
-[Resposta em 2 frases]
+[Resposta direta, 3-4 frases]
 
 ### [Pergunta 4]
 
-[Resposta em 2 frases]`,
+[Resposta direta, 3-4 frases]`,
 
   // Parte 3: Conclusão — ~150 palavras
   conclusao: (tema, p) => `Escreva SOMENTE a seção de conclusão para um artigo da Sittax sobre "${tema}".
 
 Regras:
 - Título H2: "Conclusão"
-- 3 parágrafos de 3 linhas cada
-- Primeiro parágrafo: síntese do que foi abordado no artigo, com tom prático
-- Segundo parágrafo: consequências práticas para o empresário ou contador
-- Terceiro parágrafo: o que o leitor deve fazer agora como próximo passo concreto
-- Linguagem direta de contador, sem clichês
-- PROIBIDO: "Em suma", "Por fim", "Concluindo", "Portanto", "Em conclusão"
+- 2-3 parágrafos curtos
+- Primeiro parágrafo: o que o leitor aprendeu — em termos práticos, não acadêmicos
+- Segundo parágrafo: o que muda na prática para o empresário ou contador a partir de agora
+- Tom de conversa: como se você estivesse encerrando uma reunião de consultoria
+- Frases curtas. Sem enrolação.
+- PROIBIDO: "Em suma", "Por fim", "Concluindo", "Em conclusão", "É crucial", "Vale ressaltar", "Neste contexto"
 - Meta OBRIGATÓRIA: mínimo 150 palavras
 
 FORMATO EXATO:
 ## Conclusão
 
-[Parágrafo 1: síntese prática]
+[Parágrafo 1: o que o leitor aprendeu, em termos práticos]
 
-[Parágrafo 2: próximo passo concreto]`,
+[Parágrafo 2: o que fazer agora — passo concreto]`,
 
   // Parte 4: CTA — ~80 palavras
   cta: (tema, p) => `Escreva SOMENTE um parágrafo de CTA para um artigo da Sittax sobre "${tema}".
