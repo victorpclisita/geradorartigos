@@ -900,7 +900,7 @@ Só inclua artigos que realmente existam no blog — nunca invente URLs.`, 600
             );
             const jsonBlog = parseJSON(rawBlog);
             if (jsonBlog?.artigos?.length > 0) {
-              log_(\`✓ \${jsonBlog.artigos.length} artigo(s) do blog encontrado(s)\`, "ok");
+              log_("✓ " + jsonBlog.artigos.length + " artigo(s) do blog encontrado(s)", "ok");
               await pausa(2, "", log_);
               const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, jsonBlog.artigos), 5000);
               const h1idx = comLinksInt.indexOf("#");
@@ -908,7 +908,7 @@ Só inclua artigos que realmente existam no blog — nunca invente URLs.`, 600
               if (textoLimpo?.length > 500) {
                 textoFinal = textoLimpo; setArtigo(textoLimpo);
                 const qtdInt = (textoLimpo.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
-                log_(\`✓ \${qtdInt} link(s) interno(s) inserido(s)\`, "ok");
+                log_("✓ " + qtdInt + " link(s) interno(s) inserido(s)", "ok");
               } else { log_("⚠ Inserção retornou texto curto — mantendo versão anterior.", "warn"); }
             } else { log_("⚠ Nenhum artigo do blog encontrado — pulando links internos.", "warn"); }
           } catch (e) { log_(`⚠ Links do blog falhou (${e.message}). Continuando.`, "warn"); }
