@@ -661,7 +661,7 @@ export default function App() {
     const res = await fetch("/api/auditar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, maxTokens, apiKey: keyAnthropic }),
+      body: JSON.stringify({ prompt, maxTokens }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -711,28 +711,28 @@ export default function App() {
       log_(`✓ ${pd.secoes.length} seções + ${pd.faq_perguntas.length} FAQs planejados`, "ok");
 
       setFase("corpo");
-      log_("Escrevendo introdução e seções principais... (Claude)");
+      log_("Escrevendo introdução e seções principais... (ChatGPT)");
       await pausa(30, "", log_);
-      const corpoPart = await callClaude(PROMPTS.corpo(tema, pd), 2500);
+      const corpoPart = await callGPT(PROMPTS.corpo(tema, pd), 2500);
       if (corpoPart.length < 400) throw new Error("Corpo do artigo muito curto. Tente um tema mais específico.");
       log_(`✓ Corpo: ~${contarPalavras(corpoPart)} palavras`, "ok");
 
       setFase("faq");
-      log_("Escrevendo seção de Perguntas Frequentes... (Claude)");
+      log_("Escrevendo seção de Perguntas Frequentes... (ChatGPT)");
       await pausa(35, "", log_);
-      const faqPart = await callClaude(PROMPTS.faq(tema, pd, corpoPart), 900);
+      const faqPart = await callGPT(PROMPTS.faq(tema, pd, corpoPart), 900);
       if (faqPart.length < 100) throw new Error("FAQ não gerado corretamente.");
       log_(`✓ FAQ: ~${contarPalavras(faqPart)} palavras`, "ok");
 
       setFase("cta");
-      log_("Escrevendo conclusão... (Claude)");
+      log_("Escrevendo conclusão... (ChatGPT)");
       await pausa(30, "", log_);
-      const conclusaoPart = await callClaude(PROMPTS.conclusao(tema, pd), 400);
+      const conclusaoPart = await callGPT(PROMPTS.conclusao(tema, pd), 400);
       log_(`✓ Conclusão: ~${contarPalavras(conclusaoPart)} palavras`, "ok");
 
-      log_("Escrevendo CTA... (Claude)");
+      log_("Escrevendo CTA... (ChatGPT)");
       await pausa(30, "", log_);
-      const ctaPart = await callClaude(PROMPTS.cta(tema, pd), 300);
+      const ctaPart = await callGPT(PROMPTS.cta(tema, pd), 300);
       log_(`✓ CTA: ~${contarPalavras(ctaPart)} palavras`, "ok");
 
       const textoCompleto = `${corpoPart}\n\n${faqPart}\n\n${conclusaoPart}\n\n${ctaPart}`;
@@ -747,7 +747,7 @@ export default function App() {
         log_(`⚠ Artigo com ${totalPalavras} palavras — abaixo do mínimo de 1.500. Expandindo... (Claude)`, "warn");
         await pausa(30, "", log_);
         try {
-          const expandido = await callClaude(PROMPTS.expansao(textoCompleto, totalPalavras), 6000);
+          const expandido = await callGPT(PROMPTS.expansao(textoCompleto, totalPalavras), 6000);
           if (expandido?.length > 500) {
             const novaContagem = contarPalavras(expandido);
             textoFinal = expandido; setArtigo(expandido);
@@ -763,10 +763,10 @@ export default function App() {
       let auditFinal = null;
 
       setFase("polimento");
-      log_("Polindo transição e voz ativa... (Claude)");
+      log_("Polindo transição e voz ativa... (ChatGPT)");
       await pausa(45, "", log_);
       try {
-        const polido = await callClaude(PROMPTS.polimento(textoCompleto), 6000);
+        const polido = await callGPT(PROMPTS.polimento(textoCompleto), 6000);
         if (polido?.length > 500) {
           textoFinal = polido; setArtigo(polido);
           log_(`✓ Polimento aplicado — ${contarPalavras(polido)} palavras`, "ok");
@@ -780,7 +780,7 @@ export default function App() {
       // ── Fluxo de auditorias ───────────────────────────────────────────────
       // Rodada 1: Claude audita → Claude revisa → Claude fontes → Claude links
       // Rodada 2: Claude audita → Claude revisa
-      const AUDITORES = { 1: "Claude", 2: "Claude" };
+      const AUDITORES = { 1: "ChatGPT", 2: "ChatGPT" };
 
       for (let rodada = 1; rodada <= 2; rodada++) {
         const auditor = AUDITORES[rodada];
@@ -789,7 +789,7 @@ export default function App() {
         log_(`Auditoria ${rodada}/2 — verificando qualidade, Yoast e linguagem... (${auditor})`);
         await pausa(45, "", log_);
 
-        const rawA = await callClaude(PROMPTS.auditoria(textoFinal, rodada), 1500);
+        const rawA = await callGPT(PROMPTS.auditoria(textoFinal, rodada), 1500);
 
         const ad = parseJSON(rawA);
         if (!ad) { log_(`⚠ Auditoria ${rodada} não retornou JSON válido, pulando.`, "warn"); break; }
@@ -814,7 +814,7 @@ export default function App() {
         problemas.forEach(p => log_(`  → ${p}`, "warn"));
         await pausa(45, "", log_);
 
-        const revisado = await callClaude(PROMPTS.revisar(textoFinal, problemas), 6000);
+        const revisado = await callGPT(PROMPTS.revisar(textoFinal, problemas), 6000);
         if (revisado?.length > 500) {
           textoFinal = revisado; setArtigo(revisado);
           log_(`✓ Revisão ${rodada} aplicada — ${contarPalavras(revisado)} palavras`, "ok");
@@ -841,10 +841,10 @@ export default function App() {
 
       // ── Polimento Yoast final — garante transição ≥30% e passiva ≤10% ────
       setFase("polimento_final");
-      log_("Polimento Yoast final — ajustando transição e voz passiva... (Claude)");
+      log_("Polimento Yoast final — ajustando transição e voz passiva... (ChatGPT)");
       await pausa(45, "", log_);
       try {
-        const polFinal = await callClaude(PROMPTS.polimento(textoFinal), 6000);
+        const polFinal = await callGPT(PROMPTS.polimento(textoFinal), 6000);
         if (polFinal?.length > 500) {
           textoFinal = polFinal; setArtigo(polFinal);
           log_("✓ Polimento final aplicado", "ok");
@@ -873,7 +873,7 @@ export default function App() {
       setFase("auditoria1");
       log_("Auditoria de melhoria — identificando problemas... (Claude)");
       await pausa(45, "", log_);
-      const rawA = await callClaude(PROMPTS.auditoria(textoAtual, 1), 1500);
+      const rawA = await callGPT(PROMPTS.auditoria(textoAtual, 1), 1500);
       const ad = parseJSON(rawA);
       if (!ad) { log_("⚠ Auditoria não retornou JSON válido.", "warn"); setMelhorando(false); setFase("pronto"); return; }
       setAudit(ad);
@@ -888,13 +888,13 @@ export default function App() {
         log_(`Revisão de melhoria — corrigindo ${problemas.length} problema(s)... (Claude)`, "warn");
         problemas.forEach(p => log_(`  → ${p}`, "warn"));
         await pausa(45, "", log_);
-        const revisado = await callClaude(PROMPTS.revisar(textoAtual, problemas), 6000);
+        const revisado = await callGPT(PROMPTS.revisar(textoAtual, problemas), 6000);
         if (revisado?.length > 500) { textoAtual = revisado; setArtigo(revisado); log_(`✓ Revisão aplicada — ${contarPalavras(revisado)} palavras`, "ok"); }
 
         setFase("polimento_final");
         log_("Polimento Yoast final... (Claude)");
         await pausa(45, "", log_);
-        const polFinal = await callClaude(PROMPTS.polimento(textoAtual), 6000);
+        const polFinal = await callGPT(PROMPTS.polimento(textoAtual), 6000);
         if (polFinal?.length > 500) { textoAtual = polFinal; setArtigo(polFinal); log_("✓ Polimento aplicado", "ok"); }
       }
 
