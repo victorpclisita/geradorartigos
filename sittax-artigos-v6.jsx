@@ -872,7 +872,7 @@ export default function App() {
         if (rodada === 2) { log_(`⚠ Score final ${ad.score_geral}/100 após 2 rodadas. Entregando melhor versão.`, "warn"); break; }
 
         setFase(`revisao${rodada}`);
-        log_(`Revisão ${rodada}/2 — corrigindo ${problemas.length} problema(s)... (Claude)`, "warn");
+        log_(`Revisão ${rodada}/2 — corrigindo ${problemas.length} problema(s)... (ChatGPT)`, "warn");
         problemas.forEach(p => log_(`  → ${p}`, "warn"));
         await pausa(2, "", log_);
 
@@ -883,45 +883,42 @@ export default function App() {
         } else {
           log_(`⚠ Revisão ${rodada} retornou texto curto, mantendo versão anterior.`, "warn");
         }
-
-        // Fontes e links internos (Claude) após rodada 1
-        if (rodada === 1) {
-          setFase("fontes");
-          log_("Verificando legislação e inserindo links para fontes oficiais... (Claude)");
-          await pausa(2, "", log_);
-          try {
-            const comLinks = await callClaudeSearch(PROMPTS.linkagem(textoFinal), 4500);
-            if (comLinks?.length > 500) {
-              textoFinal = comLinks; setArtigo(comLinks);
-              const qtdLinks = (comLinks.match(/\[.+?\]\(https?:\/\/.+?\)/g) || []).length;
-              log_(`✓ ${qtdLinks} link(s) externo(s) de fontes inserido(s)`, "ok");
-            } else { log_("⚠ Etapa de fontes não alterou o texto — mantendo versão anterior.", "warn"); }
-          } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
-
-          // ── Links internos do blog Sittax: Claude busca, ChatGPT insere ──────
-          setFase("links_blog");
-          log_("Buscando publicações do blog Sittax... (Claude + web_search)");
-          await pausa(2, "", log_);
-          try {
-            const rawBlog = await callClaudeSearch(PROMPTS.buscaLinksInternos(tema), 800);
-            const jsonBlog = parseJSON(rawBlog);
-            if (jsonBlog?.artigos?.length > 0) {
-              log_("✓ " + jsonBlog.artigos.length + " artigo(s) do blog encontrado(s)", "ok");
-              log_("Inserindo links internos no artigo... (ChatGPT)");
-              await pausa(2, "", log_);
-              const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, jsonBlog.artigos), 5000);
-              const h1idx = comLinksInt.indexOf("#");
-              const textoLimpo = h1idx > 0 ? comLinksInt.slice(h1idx).trim() : comLinksInt.trim();
-              if (textoLimpo?.length > 500) {
-                textoFinal = textoLimpo; setArtigo(textoLimpo);
-                const qtdInt = (textoLimpo.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
-                log_("✓ " + qtdInt + " link(s) interno(s) inserido(s)", "ok");
-              } else { log_("⚠ Inserção retornou texto curto — mantendo versão anterior.", "warn"); }
-            } else { log_("⚠ Nenhum artigo do blog encontrado — pulando links internos.", "warn"); }
-          } catch (e) { log_(`⚠ Links do blog falhou (${e.message}). Continuando.`, "warn"); }
-
-        }
       }
+
+      // ── Fontes e links — sempre executados, independente do score ────────────
+      setFase("fontes");
+      log_("Verificando legislação e inserindo links para fontes oficiais... (Claude)");
+      await pausa(2, "", log_);
+      try {
+        const comLinks = await callClaudeSearch(PROMPTS.linkagem(textoFinal), 4500);
+        if (comLinks?.length > 500) {
+          textoFinal = comLinks; setArtigo(comLinks);
+          const qtdLinks = (comLinks.match(/\[.+?\]\(https?:\/\/.+?\)/g) || []).length;
+          log_(`✓ ${qtdLinks} link(s) externo(s) de fontes inserido(s)`, "ok");
+        } else { log_("⚠ Etapa de fontes não alterou o texto — mantendo versão anterior.", "warn"); }
+      } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
+
+      // ── Links internos do blog Sittax: Claude busca, ChatGPT insere ──────────
+      setFase("links_blog");
+      log_("Buscando publicações do blog Sittax... (Claude + web_search)");
+      await pausa(2, "", log_);
+      try {
+        const rawBlog = await callClaudeSearch(PROMPTS.buscaLinksInternos(tema), 800);
+        const jsonBlog = parseJSON(rawBlog);
+        if (jsonBlog?.artigos?.length > 0) {
+          log_("✓ " + jsonBlog.artigos.length + " artigo(s) do blog encontrado(s)", "ok");
+          log_("Inserindo links internos no artigo... (ChatGPT)");
+          await pausa(2, "", log_);
+          const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, jsonBlog.artigos), 5000);
+          const h1idx = comLinksInt.indexOf("#");
+          const textoLimpo = h1idx > 0 ? comLinksInt.slice(h1idx).trim() : comLinksInt.trim();
+          if (textoLimpo?.length > 500) {
+            textoFinal = textoLimpo; setArtigo(textoLimpo);
+            const qtdInt = (textoLimpo.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
+            log_("✓ " + qtdInt + " link(s) interno(s) inserido(s)", "ok");
+          } else { log_("⚠ Inserção retornou texto curto — mantendo versão anterior.", "warn"); }
+        } else { log_("⚠ Nenhum artigo do blog encontrado — pulando links internos.", "warn"); }
+      } catch (e) { log_(`⚠ Links do blog falhou (${e.message}). Continuando.`, "warn"); }
 
       // ── Polimento Yoast final — garante transição ≥30% e passiva ≤10% ────
       setFase("polimento_final");
