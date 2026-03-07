@@ -47,15 +47,22 @@ REGRAS OBRIGATÓRIAS:
 - Meta OBRIGATÓRIA: mínimo 1.100 palavras nesta parte — escreva com profundidade real
 
 INTRODUÇÃO (obrigatório):
-- Primeira frase: impacto direto do tema com dado concreto ou número real
+- 2 a 3 parágrafos — não mais, não menos
+- Primeiro parágrafo: impacto direto do tema com dado concreto ou número real na primeira frase
+- Segundo parágrafo: aprofunda o contexto — o que está em jogo, o que mudou ou está mudando
+- Terceiro parágrafo (opcional): o que o artigo vai mostrar ao leitor
 - NÃO invente personagens, NÃO conte histórias fictícias, NÃO use "Imagine que..."
-- 3-4 frases. Keyword primária aparece naturalmente.
-- Última frase: o que o artigo vai mostrar ao leitor
+- Keyword primária aparece naturalmente no primeiro ou segundo parágrafo
 
 DADO RECENTE (obrigatório):
 - Insira o DADO RECENTE em uma seção onde se encaixe naturalmente, com hiperlink markdown
 - Formato: [texto âncora descritivo](url)
 - Exemplo: "Segundo o Sebrae, [mais de 60% das microempresas têm irregularidades no PGDAS](https://url)"
+
+DADOS NUMÉRICOS (obrigatório):
+- Preserve e utilize TODOS os dados numéricos fornecidos pela pesquisa (alíquotas, percentuais, prazos, valores)
+- Verifique se são aplicáveis a 2026 — se sim, insira no contexto mais relevante do artigo
+- NUNCA remova dados numéricos já presentes no rascunho — apenas reposicione se necessário
 
 CADA SEÇÃO H2:
 - Parágrafo introdutório logo após o título H2 — antes de qualquer H3
@@ -81,7 +88,11 @@ REGRA DE TRANSIÇÃO (obrigatório):
 FORMATO EXATO:
 # [Título H1 com keyword]
 
-[Introdução: 3-4 frases diretas com dado concreto]
+[Parágrafo 1: dado concreto + impacto direto]
+
+[Parágrafo 2: contexto e o que está em jogo]
+
+[Parágrafo 3 opcional: o que o artigo vai mostrar]
 
 ## [H2 da seção 1]
 
@@ -887,20 +898,16 @@ export default function App() {
             } else { log_("⚠ Etapa de fontes não alterou o texto — mantendo versão anterior.", "warn"); }
           } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
-          // ── Links internos do blog Sittax (ChatGPT acessa o blog) ──────────
+          // ── Links internos do blog Sittax: Claude busca, ChatGPT insere ──────
           setFase("links_blog");
-          log_("Buscando publicações do blog Sittax para inserir links internos... (ChatGPT)");
+          log_("Buscando publicações do blog Sittax... (Claude + web_search)");
           await pausa(2, "", log_);
           try {
-            const rawBlog = await callGPT(
-              `Acesse https://sittax.com.br/blog/ e encontre até 4 artigos publicados que sejam relevantes para o tema: "${tema}".
-Retorne APENAS um JSON puro, sem texto antes ou depois, sem blocos de código:
-{"artigos":[{"titulo":"Título do artigo","url":"https://sittax.com.br/blog/slug-do-artigo","relevancia":"motivo da relevância"}]}
-Só inclua artigos que realmente existam no blog — nunca invente URLs.`, 600
-            );
+            const rawBlog = await callClaudeSearch(PROMPTS.buscaLinksInternos(tema), 800);
             const jsonBlog = parseJSON(rawBlog);
             if (jsonBlog?.artigos?.length > 0) {
               log_("✓ " + jsonBlog.artigos.length + " artigo(s) do blog encontrado(s)", "ok");
+              log_("Inserindo links internos no artigo... (ChatGPT)");
               await pausa(2, "", log_);
               const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, jsonBlog.artigos), 5000);
               const h1idx = comLinksInt.indexOf("#");
