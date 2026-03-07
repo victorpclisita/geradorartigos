@@ -19,7 +19,7 @@ Use web_search para buscar 1 dado recente (2026) sobre o tema — pode ser uma n
   "dado_recente": { "fato": "dado concreto encontrado (número, percentual, estatística ou notícia recente de 2025/2026)", "fonte": "Nome do portal ou órgão", "url": "https://url-real-encontrada.com.br" },
   "secoes": [
     { "h2": "Título da seção 1", "h3s": ["subtópico a", "subtópico b"], "foco": "o que abordar nesta seção" },
-    { "h2": "Título da seção 2", "h3s": ["subtópico a"], "foco": "o que abordar nesta seção" },
+    { "h2": "Título da seção 2", "h3s": [], "foco": "o que abordar nesta seção" },
     { "h2": "Título da seção 3", "h3s": [], "foco": "o que abordar nesta seção" }
   ],
   "faq_perguntas": ["Pergunta real 1?", "Pergunta real 2?", "Pergunta real 3?", "Pergunta real 4?"],
@@ -30,8 +30,7 @@ Use web_search para buscar 1 dado recente (2026) sobre o tema — pode ser uma n
 }`,
 
   // Parte 1: corpo principal (intro + seções) — ~900 palavras
-  corpo: (tema, p) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
-Escreva como um contador experiente que está do lado do cliente — direto, humano, prático. NUNCA use linguagem de IA.
+  corpo: (tema, p) => `Você é consultor tributário sênior escrevendo para outros contadores e gestores contábeis. O leitor conhece o mercado — não explique o que é DAS, PGDAS, Simples Nacional, MEI ou conceitos básicos de contabilidade. Vá direto às implicações práticas, estratégias e decisões. NUNCA use linguagem de IA.
 
 TEMA: "${tema}"
 KEYWORD PRIMÁRIA: "${p.keyword_primaria}"
@@ -40,61 +39,64 @@ KEYWORDS SECUNDÁRIAS: ${p.keywords_secundarias.join(", ")}
 FONTES PRIMÁRIAS: ${p.fontes_primarias.join("; ")}
 DADO RECENTE PARA USAR NO ARTIGO: "${p.dado_recente?.fato}" — Fonte: ${p.dado_recente?.fonte} — URL: ${p.dado_recente?.url}
 SEÇÕES A ESCREVER:
-${p.secoes.map((s, i) => (i + 1) + ". H2: \"" + s.h2 + "\" — Foco: " + s.foco + (s.h3s.length ? "\n   H3s: " + s.h3s.join(", ") : "")).join("\n")}
+${p.secoes.map((s, i) => (i + 1) + ". H2: \"" + s.h2 + "\" — Foco: " + s.foco + (s.h3s.length ? "\n   H3s sugeridos (use onde fizer sentido): " + s.h3s.join(", ") : "")).join("\n")}
 
 REGRAS OBRIGATÓRIAS:
 - Escreva APENAS: título H1 + introdução + as ${p.secoes.length} seções H2 acima
 - NÃO inclua FAQ, conclusão nem CTA — serão escritos separadamente
+- Meta OBRIGATÓRIA: mínimo 1.100 palavras nesta parte — escreva com profundidade real
 
 INTRODUÇÃO (obrigatório):
-- Vá direto ao problema — fale do impacto real do tema para o empresário ou contador, com dados ou números concretos já na primeira frase
+- Primeira frase: impacto direto do tema com dado concreto ou número real
 - NÃO invente personagens, NÃO conte histórias fictícias, NÃO use "Imagine que..."
-- Modelo do segundo parágrafo: apresente o problema, contextualize com dado real, diga o que está em jogo
-- 3-4 frases curtas. A keyword primária aparece naturalmente.
-- A última frase diz o que o artigo vai mostrar ao leitor
+- 3-4 frases. Keyword primária aparece naturalmente.
+- Última frase: o que o artigo vai mostrar ao leitor
 
 DADO RECENTE (obrigatório):
-- Insira o DADO RECENTE em alguma seção do corpo onde ele se encaixar naturalmente
-- Formato: mencione o fato e faça um hiperlink markdown para a URL: [texto âncora](url)
-- Exemplo: "Segundo levantamento do Sebrae, [mais de 60% das micro empresas têm irregularidades fiscais](https://url)"
+- Insira o DADO RECENTE em uma seção onde se encaixe naturalmente, com hiperlink markdown
+- Formato: [texto âncora descritivo](url)
+- Exemplo: "Segundo o Sebrae, [mais de 60% das microempresas têm irregularidades no PGDAS](https://url)"
 
 CADA SEÇÃO H2:
-- Use os H3s fornecidos quando existirem — insira-os onde enriquecerem naturalmente a seção
-- O artigo deve ter pelo menos 2 H3s no total, distribuídos onde fizerem sentido
+- Parágrafo introdutório logo após o título H2 — antes de qualquer H3
+- Mínimo 4 parágrafos densos por seção (com ou sem H3s)
+- H3s: use apenas quando subdividirem naturalmente o conteúdo — nunca logo após o H2 sem parágrafo introdutório
 - Frases curtas — máximo 2 linhas por frase
-- Ao menos 1 dado numérico por H2 (alíquota, prazo, valor, percentual)
-- Tom de conversa: escreva como se estivesse explicando para um cliente na sua mesa
-- Cite fontes naturalmente: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
+- Foco em estratégia e aplicação prática: o que fazer, como detectar, como orientar o cliente
+- Ao menos 1 dado numérico por seção (alíquota, prazo, valor, percentual, multa)
+- Cite fontes: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
 - NUNCA cite leis sem certeza — use "conforme a legislação tributária vigente" quando em dúvida
 
 PROIBIDO (palavras que denunciam IA):
-"No cenário atual", "É crucial", "Vale ressaltar", "Neste contexto", "Abrangente", "Robusto", "Em suma", "Transformador", "Mergulhe", "Navegar", "Multifacetado", "Dinâmico", "Paradigma", "Holístico", "Sinergias", "Delinear", "Alavancar"
+"No cenário atual", "É crucial", "Vale ressaltar", "Neste contexto", "Abrangente", "Robusto", "Em suma", "Transformador", "Mergulhe", "Navegar", "Multifacetado", "Dinâmico", "Paradigma", "Holístico", "Sinergias", "Delinear", "Alavancar", "Não se trata apenas de", "Mais do que nunca"
 
 REGRA DE VOZ ATIVA (obrigatório):
-- Escreva SEMPRE na voz ativa. Máximo 10% das frases na voz passiva.
+- Máximo 10% das frases na voz passiva
 - ERRADO: "o imposto é calculado pela Receita" | CERTO: "a Receita calcula o imposto"
 
 REGRA DE TRANSIÇÃO (obrigatório):
-- Pelo menos 30% das frases com palavra de transição — variando posição (início, meio ou fim)
+- Pelo menos 30% das frases com palavra de transição — variando posição
 - Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, inclusive, conforme, já que, bem como, contudo, todavia, pois, logo
-
-Meta OBRIGATÓRIA: mínimo 900 palavras nesta parte
 
 FORMATO EXATO:
 # [Título H1 com keyword]
 
-[Introdução: 3-4 frases diretas]
+[Introdução: 3-4 frases diretas com dado concreto]
 
 ## [H2 da seção 1]
 
-### [H3 quando houver]
+[Parágrafo introdutório obrigatório antes de qualquer H3]
+
+### [H3 — só se houver subdivisão natural]
 [parágrafos]
 
 ## [H2 da seção 2]
-[parágrafos — H3 opcional]
+
+[Parágrafos — H3 opcional, nunca sem parágrafo introdutório antes]
 
 ## [H2 da seção 3]
-[parágrafos — H3 opcional]`,
+
+[Parágrafos]`,
 
   // Parte 2: FAQ — ~350 palavras
   faq: (tema, p, corpo) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
@@ -363,6 +365,26 @@ A sua resposta deve começar diretamente com o título # do artigo e terminar na
 ARTIGO:
 ${textoCompleto}`,
 
+  linksInternos: (textoCompleto, artigos) => `Você é especialista em SEO da Sittax.
+
+Insira os links internos abaixo no artigo, nos trechos mais relevantes.
+
+LINKS DISPONÍVEIS:
+${artigos.map((a, i) => (i+1) + ". [" + a.titulo + "](" + a.url + ") — " + a.relevancia).join("\n")}
+
+REGRAS:
+- Máximo 4 links internos no total
+- Formato markdown: [âncora natural](url)
+- O âncora deve ser uma expressão já existente no texto — não adicione texto novo
+- Não altere nenhuma outra parte do texto
+- Preserve todos os links externos já existentes
+- PROIBIDO: texto fora do artigo, explicações, comentários
+
+Retorne APENAS o artigo completo. Comece diretamente com o # do título.
+
+ARTIGO:
+${textoCompleto}`,
+
   buscaLinksInternos: (tema) => `Você é especialista em SEO da Sittax.
 
 Use web_search para encontrar artigos reais do blog da Sittax relacionados ao tema "${tema}".
@@ -608,6 +630,7 @@ const FASES = [
   { id: "auditoria1",     label: "Auditoria 1", icon: "🔎" },
   { id: "revisao1",       label: "Revisão 1",   icon: "🛠️" },
   { id: "fontes",         label: "Fontes",      icon: "🔗" },
+  { id: "links_blog",     label: "Links Blog",  icon: "🏠" },
   { id: "auditoria2",     label: "Auditoria 2", icon: "🔎" },
   { id: "revisao2",       label: "Revisão 2",   icon: "✅" },
   { id: "pronto",         label: "Pronto",      icon: "🎉" },
@@ -863,6 +886,32 @@ export default function App() {
               log_(`✓ ${qtdLinks} link(s) externo(s) de fontes inserido(s)`, "ok");
             } else { log_("⚠ Etapa de fontes não alterou o texto — mantendo versão anterior.", "warn"); }
           } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
+
+          // ── Links internos do blog Sittax (ChatGPT acessa o blog) ──────────
+          setFase("links_blog");
+          log_("Buscando publicações do blog Sittax para inserir links internos... (ChatGPT)");
+          await pausa(2, "", log_);
+          try {
+            const rawBlog = await callGPT(
+              `Acesse https://sittax.com.br/blog/ e encontre até 4 artigos publicados que sejam relevantes para o tema: "${tema}".
+Retorne APENAS um JSON puro, sem texto antes ou depois, sem blocos de código:
+{"artigos":[{"titulo":"Título do artigo","url":"https://sittax.com.br/blog/slug-do-artigo","relevancia":"motivo da relevância"}]}
+Só inclua artigos que realmente existam no blog — nunca invente URLs.`, 600
+            );
+            const jsonBlog = parseJSON(rawBlog);
+            if (jsonBlog?.artigos?.length > 0) {
+              log_(\`✓ \${jsonBlog.artigos.length} artigo(s) do blog encontrado(s)\`, "ok");
+              await pausa(2, "", log_);
+              const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, jsonBlog.artigos), 5000);
+              const h1idx = comLinksInt.indexOf("#");
+              const textoLimpo = h1idx > 0 ? comLinksInt.slice(h1idx).trim() : comLinksInt.trim();
+              if (textoLimpo?.length > 500) {
+                textoFinal = textoLimpo; setArtigo(textoLimpo);
+                const qtdInt = (textoLimpo.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
+                log_(\`✓ \${qtdInt} link(s) interno(s) inserido(s)\`, "ok");
+              } else { log_("⚠ Inserção retornou texto curto — mantendo versão anterior.", "warn"); }
+            } else { log_("⚠ Nenhum artigo do blog encontrado — pulando links internos.", "warn"); }
+          } catch (e) { log_(`⚠ Links do blog falhou (${e.message}). Continuando.`, "warn"); }
 
         }
       }
