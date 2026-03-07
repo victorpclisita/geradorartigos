@@ -712,26 +712,26 @@ export default function App() {
 
       setFase("corpo");
       log_("Escrevendo introdução e seções principais... (ChatGPT)");
-      await pausa(30, "", log_);
+      await pausa(2, "", log_);
       const corpoPart = await callGPT(PROMPTS.corpo(tema, pd), 2500);
       if (corpoPart.length < 400) throw new Error("Corpo do artigo muito curto. Tente um tema mais específico.");
       log_(`✓ Corpo: ~${contarPalavras(corpoPart)} palavras`, "ok");
 
       setFase("faq");
       log_("Escrevendo seção de Perguntas Frequentes... (ChatGPT)");
-      await pausa(35, "", log_);
+      await pausa(2, "", log_);
       const faqPart = await callGPT(PROMPTS.faq(tema, pd, corpoPart), 900);
       if (faqPart.length < 100) throw new Error("FAQ não gerado corretamente.");
       log_(`✓ FAQ: ~${contarPalavras(faqPart)} palavras`, "ok");
 
       setFase("cta");
       log_("Escrevendo conclusão... (ChatGPT)");
-      await pausa(30, "", log_);
+      await pausa(2, "", log_);
       const conclusaoPart = await callGPT(PROMPTS.conclusao(tema, pd), 400);
       log_(`✓ Conclusão: ~${contarPalavras(conclusaoPart)} palavras`, "ok");
 
       log_("Escrevendo CTA... (ChatGPT)");
-      await pausa(30, "", log_);
+      await pausa(2, "", log_);
       const ctaPart = await callGPT(PROMPTS.cta(tema, pd), 300);
       log_(`✓ CTA: ~${contarPalavras(ctaPart)} palavras`, "ok");
 
@@ -745,7 +745,7 @@ export default function App() {
       // ── Expansão automática se abaixo de 1.500 palavras ──────────────────
       if (totalPalavras < 1500) {
         log_(`⚠ Artigo com ${totalPalavras} palavras — abaixo do mínimo de 1.500. Expandindo... (Claude)`, "warn");
-        await pausa(30, "", log_);
+        await pausa(2, "", log_);
         try {
           const expandido = await callGPT(PROMPTS.expansao(textoCompleto, totalPalavras), 6000);
           if (expandido?.length > 500) {
@@ -764,7 +764,7 @@ export default function App() {
 
       setFase("polimento");
       log_("Polindo transição e voz ativa... (ChatGPT)");
-      await pausa(45, "", log_);
+      await pausa(2, "", log_);
       try {
         const polido = await callGPT(PROMPTS.polimento(textoCompleto), 6000);
         if (polido?.length > 500) {
@@ -787,7 +787,7 @@ export default function App() {
 
         setFase(`auditoria${rodada}`);
         log_(`Auditoria ${rodada}/2 — verificando qualidade, Yoast e linguagem... (${auditor})`);
-        await pausa(45, "", log_);
+        await pausa(2, "", log_);
 
         const rawA = await callGPT(PROMPTS.auditoria(textoFinal, rodada), 1500);
 
@@ -812,7 +812,7 @@ export default function App() {
         setFase(`revisao${rodada}`);
         log_(`Revisão ${rodada}/2 — corrigindo ${problemas.length} problema(s)... (Claude)`, "warn");
         problemas.forEach(p => log_(`  → ${p}`, "warn"));
-        await pausa(45, "", log_);
+        await pausa(2, "", log_);
 
         const revisado = await callGPT(PROMPTS.revisar(textoFinal, problemas), 6000);
         if (revisado?.length > 500) {
@@ -826,7 +826,7 @@ export default function App() {
         if (rodada === 1) {
           setFase("fontes");
           log_("Verificando legislação e inserindo links para fontes oficiais... (Claude)");
-          await pausa(45, "", log_);
+          await pausa(2, "", log_);
           try {
             const comLinks = await callClaudeSearch(PROMPTS.linkagem(textoFinal), 4500);
             if (comLinks?.length > 500) {
@@ -842,7 +842,7 @@ export default function App() {
       // ── Polimento Yoast final — garante transição ≥30% e passiva ≤10% ────
       setFase("polimento_final");
       log_("Polimento Yoast final — ajustando transição e voz passiva... (ChatGPT)");
-      await pausa(45, "", log_);
+      await pausa(2, "", log_);
       try {
         const polFinal = await callGPT(PROMPTS.polimento(textoFinal), 6000);
         if (polFinal?.length > 500) {
@@ -872,7 +872,7 @@ export default function App() {
 
       setFase("auditoria1");
       log_("Auditoria de melhoria — identificando problemas... (Claude)");
-      await pausa(45, "", log_);
+      await pausa(2, "", log_);
       const rawA = await callGPT(PROMPTS.auditoria(textoAtual, 1), 1500);
       const ad = parseJSON(rawA);
       if (!ad) { log_("⚠ Auditoria não retornou JSON válido.", "warn"); setMelhorando(false); setFase("pronto"); return; }
@@ -887,13 +887,13 @@ export default function App() {
         setFase("revisao1");
         log_(`Revisão de melhoria — corrigindo ${problemas.length} problema(s)... (Claude)`, "warn");
         problemas.forEach(p => log_(`  → ${p}`, "warn"));
-        await pausa(45, "", log_);
+        await pausa(2, "", log_);
         const revisado = await callGPT(PROMPTS.revisar(textoAtual, problemas), 6000);
         if (revisado?.length > 500) { textoAtual = revisado; setArtigo(revisado); log_(`✓ Revisão aplicada — ${contarPalavras(revisado)} palavras`, "ok"); }
 
         setFase("polimento_final");
         log_("Polimento Yoast final... (Claude)");
-        await pausa(45, "", log_);
+        await pausa(2, "", log_);
         const polFinal = await callGPT(PROMPTS.polimento(textoAtual), 6000);
         if (polFinal?.length > 500) { textoAtual = polFinal; setArtigo(polFinal); log_("✓ Polimento aplicado", "ok"); }
       }
@@ -1007,7 +1007,7 @@ export default function App() {
             </button>
           </div>
           <p style={{ margin: "8px 0 0", fontSize: "12px", color: BRAND.textLight }}>
-            O processo leva ~10 minutos. Inclui pesquisa em portais tributários, auditoria e polimento Yoast.
+            O processo leva ~3 minutos. Inclui pesquisa em portais tributários, auditoria e polimento Yoast.
           </p>
         </div>
 
@@ -1236,8 +1236,8 @@ export default function App() {
 
       {/* Dica inferior */}
       {fase === "idle" && (
-        <div style={{ marginTop: "14px", maxWidth: "760px", width: "100%", padding: "13px 18px", borderRadius: BRAND.radius, background: BRAND.primaryLight, border: `1px solid ${BRAND.primaryBorder}`, fontSize: "13px", color: BRAND.primaryDark, lineHeight: "1.65" }}>
-          <strong>Como usar:</strong> Digite o tema e clique em "Gerar artigo". O processo leva ~10 minutos — inclui polimento Yoast (transição + voz ativa) e <strong>2 rodadas de auditoria/revisão</strong> para score ≥ 90. Depois baixe e converta para PDF com Ctrl+P.
+        <div style={{ marginTop: "14px", maxWidth: "760px", width: "100%", padding: "13px 18px", borderRadius: BRAND.radius, background: "#F5F5F5", border: "1px solid #E4E4E4", fontSize: "13px", color: BRAND.textMuted, lineHeight: "1.65" }}>
+          <strong>Como usar:</strong> Digite o tema e clique em "Gerar artigo". O processo leva ~3 minutos — inclui polimento Yoast (transição + voz ativa) e <strong>2 rodadas de auditoria/revisão</strong> para score ≥ 90. Depois baixe e converta para PDF com Ctrl+P.
         </div>
       )}
 
