@@ -83,9 +83,10 @@ CADA SEÇÃO H2:
 - OBRIGATÓRIO: sempre que houver lista de tópicos, deve haver ao menos um parágrafo de texto antes dela — nunca abra lista direto após título H2
 - FORMATO da lista de tópicos: cada item começa com "- " e tem entre 1 e 2 linhas. Mínimo 3 itens por lista.
 - Frases curtas — máximo 2 linhas por frase
-- TAMANHO DE PARÁGRAFO (obrigatório): cada parágrafo de texto corrido deve ter entre 2 e 4 linhas — nunca um bloco contínuo de 5 linhas ou mais
-- RITMO VISUAL: alterne parágrafos médios (3–4 linhas) com parágrafos curtos (1–2 linhas) — nunca escreva dois parágrafos longos seguidos
-- ATENÇÃO: essa regra vale para texto corrido — não interfere com bullet points, listas de tópicos nem com H3s
+- TAMANHO DE PARÁGRAFO (crítico — será rejeitado se descumprir): cada parágrafo de texto corrido deve ter no MÁXIMO 60 palavras. Conte as palavras antes de fechar o parágrafo.
+- RITMO VISUAL obrigatório: alterne parágrafos de 40–60 palavras com parágrafos curtos de 15–30 palavras — nunca escreva dois parágrafos acima de 40 palavras seguidos sem um parágrafo curto entre eles
+- Se precisar de mais espaço para uma ideia, quebre em dois parágrafos distintos — cada um com seu próprio foco
+- ATENÇÃO: essa regra vale APENAS para texto corrido — não interfere com bullet points, listas de tópicos nem com H3s
 - Foco em estratégia e aplicação prática: o que fazer, como detectar, como orientar o cliente
 - Ao menos 1 dado numérico por seção (alíquota, prazo, valor, percentual, multa)
 - Cite fontes: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
@@ -241,10 +242,10 @@ Identifique frases com construções passivas (ser/estar/foi/são/foram/será/se
 - "as alíquotas foram aprovadas pelo Congresso" → "o Congresso aprovou as alíquotas"
 - "a declaração deve ser entregue" → "o contribuinte deve entregar a declaração"
 
-CRITÉRIO 3 — TAMANHO DE PARÁGRAFO (verifique e corrija se necessário)
-- Parágrafo de texto corrido com 5 linhas ou mais deve ser quebrado em dois
-- Nunca dois parágrafos longos (3–4 linhas) em sequência sem um parágrafo curto (1–2 linhas) entre eles
-- Essa regra não se aplica a bullet points, listas com "-" ou títulos H2/H3
+CRITÉRIO 3 — TAMANHO DE PARÁGRAFO (verifique e corrija)
+- Todo parágrafo de texto corrido com mais de 60 palavras DEVE ser quebrado em dois
+- Nunca dois parágrafos acima de 40 palavras em sequência — insira um parágrafo curto (15–30 palavras) entre eles
+- Essa regra NÃO se aplica a bullet points, listas com "-" ou títulos H2/H3
 
 REGRAS:
 - Mexa APENAS nas frases que precisam de ajuste — não reescreva o que já está correto
@@ -279,7 +280,7 @@ CRITÉRIO A — CONTEÚDO E ESTRUTURA
 7. CTA: deve ter parágrafo final convidando a falar com a Sittax.
 8. TÓPICOS EM LISTA: verifique se há ao menos uma seção H2 com lista de bullet points ("-"). Se não houver nenhuma lista no artigo, marque como problema.
 9. HIPERLINKS: conte os hiperlinks markdown [texto](url) no artigo. O artigo deve ter no mínimo 4. Se tiver menos, marque como problema informando quantos há.
-10. TAMANHO DE PARÁGRAFO: verifique se há parágrafos de texto corrido com 5 linhas ou mais. Se houver, marque como problema. Bullet points e listas com "-" estão isentos dessa regra.
+10. TAMANHO DE PARÁGRAFO: conte as palavras dos parágrafos de texto corrido. Se houver algum parágrafo com mais de 60 palavras, ou dois parágrafos com mais de 40 palavras seguidos, marque como problema. Bullet points e listas com "-" estão isentos.
 
 ═══════════════════════════════════════════
 CRITÉRIO B — PALAVRAS DE TRANSIÇÃO (Yoast)
@@ -391,14 +392,17 @@ LINKS DISPONÍVEIS DO BLOG SITTAX:
 8. [Segregação automática no Simples Nacional](https://sittax.com.br/artigo/segregacao-automatica-simples-nacional/) — automação da segregação fiscal no Simples Nacional
 9. [Regularização no Simples Nacional](https://sittax.com.br/artigo/regularizacao-simples-nacional/) — como regularizar pendências e evitar exclusão do Simples
 
-REGRAS:
-- Insira no máximo 3 links internos
-- Use apenas os links cujo tema for relevante para o conteúdo do artigo
-- O âncora deve ser uma expressão que já existe no texto — não adicione texto novo
+REGRAS — LEIA COM ATENÇÃO:
+- OBRIGATÓRIO: insira exatamente 3 links internos — nem mais, nem menos. Se inserir menos de 3, a tarefa falhou.
+- ESTRATÉGIA: para cada link, procure no artigo uma expressão ou palavra que se relacione com o tema do link — mesmo que a relação seja parcial. Entre os 9 links disponíveis, sempre haverá ao menos 3 com alguma relação com qualquer tema tributário.
+- O âncora deve ser uma expressão que JÁ EXISTE no texto — não adicione palavras novas
+- Se não encontrar uma âncora exata, use a expressão mais próxima do tema do link que apareça no texto
 - Nunca repita o mesmo link
 - Preserve todos os links externos já existentes
 - Não altere nenhuma outra parte do texto
 - PROIBIDO: texto fora do artigo, explicações, comentários
+
+CONFIRMAÇÃO ANTES DE RETORNAR: conte os links do blog sittax.com.br que você inseriu. Se for menos de 3, volte e insira os faltantes.
 
 Retorne APENAS o artigo completo. Comece diretamente com o # do título.
 
@@ -496,8 +500,8 @@ SE HOUVER PROBLEMA DE HIPERLINKS (meta: mínimo 4 no artigo):
 - NUNCA invente URLs — só insira links de fontes que você conhece com certeza
 
 SE HOUVER PROBLEMA DE TAMANHO DE PARÁGRAFO:
-- Quebre todo parágrafo de texto corrido com 5 linhas ou mais em dois parágrafos menores
-- Se houver dois parágrafos longos (3–4 linhas) seguidos, insira um parágrafo curto (1–2 linhas) entre eles
+- Quebre todo parágrafo de texto corrido com mais de 60 palavras em dois parágrafos distintos, cada um com seu próprio foco
+- Se houver dois parágrafos acima de 40 palavras seguidos, insira um parágrafo curto (15–30 palavras) entre eles
 - Bullet points e listas com "-" estão isentos — não quebre listas em partes menores
 
 ARTIGO ORIGINAL:
@@ -614,7 +618,7 @@ function gerarHtml(artigo, pesquisa) {
     h1{font-size:20pt;font-weight:700;color:#111827;line-height:1.25;margin-bottom:18px;padding-bottom:12px;border-bottom:2.5px solid #1d4ed8}
     h2{font-size:13.5pt;font-weight:700;color:#1d4ed8;margin-top:30px;margin-bottom:10px}
     h3{font-size:11pt;font-weight:700;color:#374151;margin-top:16px;margin-bottom:6px}
-    p{margin-bottom:11px;text-align:justify}
+    p{margin-bottom:11px;text-align:left}
     a{color:#1d4ed8;text-decoration:underline}
     a:hover{color:#1e40af}
     ul{margin:8px 0 14px 24px}
@@ -1069,10 +1073,22 @@ export default function App() {
         input::placeholder { color: #BDBDBD; }
         input:focus { outline: none; border-color: ${BRAND.primary} !important; box-shadow: 0 0 0 3px ${BRAND.primaryLight}; }
         button:hover:not(:disabled) { opacity: 0.88; }
+        @media (max-width: 600px) {
+          .sittax-header { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+          .sittax-badge { display: none !important; }
+          .sittax-input-row { flex-direction: column !important; }
+          .sittax-btn { width: 100% !important; text-align: center !important; }
+          .sittax-card-pad { padding: 16px !important; }
+          .sittax-phases { overflow-x: auto !important; padding-bottom: 4px !important; }
+          .sittax-phases::-webkit-scrollbar { height: 3px; }
+          .sittax-phases::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+          .sittax-audit-grid { flex-direction: column !important; }
+          .sittax-log { padding: 10px 14px !important; }
+        }
       `}</style>
 
       {/* ── Header ── */}
-      <div style={{ width: "100%", maxWidth: "760px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="sittax-header" style={{ width: "100%", maxWidth: "760px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           {/* Logo Sittax SVG */}
           <svg style={{ height: "28px", width: "auto", flexShrink: 0 }} viewBox="0 0 3443.74 859.87" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
@@ -1101,7 +1117,7 @@ export default function App() {
             <div style={{ fontSize: "11px", color: BRAND.textMuted, fontWeight: "400" }}>Inteligência Tributária</div>
           </div>
         </div>
-        <div style={{ fontSize: "11px", color: BRAND.textLight, fontWeight: "500", background: "#F0F0F0", padding: "4px 10px", borderRadius: "20px" }}>
+        <div className="sittax-badge" style={{ fontSize: "11px", color: BRAND.textLight, fontWeight: "500", background: "#F0F0F0", padding: "4px 10px", borderRadius: "20px" }}>
           Pesquisa · Corpo · FAQ · Auditoria · PDF
         </div>
       </div>
@@ -1110,13 +1126,13 @@ export default function App() {
       <div style={{ width: "100%", maxWidth: "760px", background: BRAND.card, borderRadius: BRAND.radiusLg, border: `1px solid ${BRAND.border}`, boxShadow: "0 1px 6px rgba(0,0,0,0.07)", overflow: "hidden" }}>
 
         {/* Input */}
-        <div style={{ padding: "24px 28px", borderBottom: `1px solid ${BRAND.border}` }}>
+        <div className="sittax-card-pad" style={{ padding: "24px 28px", borderBottom: `1px solid ${BRAND.border}` }}>
 
           {/* Linha do tema + botão */}
           <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: BRAND.textMuted, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
             Tema do artigo
           </label>
-          <div style={{ display: "flex", gap: "10px" }}>
+          <div className="sittax-input-row" style={{ display: "flex", gap: "10px" }}>
             <input
               value={tema}
               onChange={e => setTema(e.target.value)}
@@ -1134,6 +1150,7 @@ export default function App() {
               }}
             />
             <button
+              className="sittax-btn"
               onClick={gerar}
               disabled={busy || !tema.trim()}
               style={{
@@ -1195,7 +1212,7 @@ export default function App() {
 
         {/* Log */}
         {log.length > 0 && (
-          <div ref={logRef} style={{ padding: "14px 28px", borderBottom: fase === "pronto" || audit ? `1px solid ${BRAND.border}` : undefined, maxHeight: "180px", overflowY: "auto", background: "#FAFAFA" }}>
+          <div ref={logRef} className="sittax-log" style={{ padding: "14px 28px", borderBottom: fase === "pronto" || audit ? `1px solid ${BRAND.border}` : undefined, maxHeight: "180px", overflowY: "auto", background: "#FAFAFA" }}>
             {log.map((l, i) => (
               <div key={i} style={{
                 fontSize: "12.5px", padding: "2px 0", display: "flex", gap: "10px",
