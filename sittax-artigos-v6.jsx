@@ -14,7 +14,7 @@ Busque na internet 1 dado recente (2025 ou 2026) sobre o tema — pode ser uma n
 {
   "keyword_primaria": "keyword estratégica de 1-4 palavras para o tema",
   "keywords_secundarias": ["keyword lsi 1", "keyword lsi 2", "keyword lsi 3", "keyword lsi 4", "keyword lsi 5", "keyword lsi 6"],
-  "intencao_busca": "Informacional",
+  "intencao_busca": "Informacional + Estratégia",
   "angulo_diferenciado": "ângulo específico que diferencia este artigo de concorrentes genéricos",
   "dado_recente": { "fato": "dado concreto encontrado (número, percentual, estatística ou notícia recente de 2025/2026)", "fonte": "Nome do portal ou órgão", "url": "https://url-real-encontrada.com.br" },
   "secoes": [
@@ -46,6 +46,11 @@ REGRAS OBRIGATÓRIAS:
 - NÃO inclua FAQ, conclusão nem CTA — serão escritos separadamente
 - Meta OBRIGATÓRIA: mínimo 1.100 palavras nesta parte — escreva com profundidade real
 
+INTENÇÃO DO ARTIGO: Informacional + Estratégia
+- O artigo deve informar com profundidade E entregar insights práticos para contadores e empresários contábeis
+- Informação é a base — estratégia é o destino. Uma não anula a outra: explique o contexto e mostre o que fazer com ele
+- Em cada seção, além de explicar o tema, aponte ao menos 1 decisão, ação ou oportunidade concreta para o leitor
+
 INTRODUÇÃO (obrigatório):
 - 2 a 3 parágrafos — não mais, não menos
 - Primeiro parágrafo: impacto direto do tema com dado concreto ou número real na primeira frase
@@ -74,6 +79,8 @@ CADA SEÇÃO H2:
 - Mínimo 4 parágrafos densos por seção (com ou sem H3s)
 - H3s: use apenas quando subdividirem naturalmente o conteúdo — nunca logo após o H2 sem parágrafo introdutório
 - OBRIGATÓRIO: ao menos uma seção H2 do artigo deve ter H3s — o artigo não pode ter zero H3s no total
+- OBRIGATÓRIO: ao menos uma seção H2 que NÃO tenha H3s deve usar tópicos em lista (bullet points com "-") para quebrar visualmente o texto — evita parágrafos longos seguidos sem respiro visual
+- OBRIGATÓRIO: sempre que houver tópicos em lista dentro de um H2, deve haver ao menos um parágrafo introdutório antes deles — nunca comece uma lista logo após o título H2
 - Frases curtas — máximo 2 linhas por frase
 - Foco em estratégia e aplicação prática: o que fazer, como detectar, como orientar o cliente
 - Ao menos 1 dado numérico por seção (alíquota, prazo, valor, percentual, multa)
