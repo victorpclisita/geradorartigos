@@ -657,7 +657,6 @@ const FASES = [
   { id: "auditoria1",     label: "Auditoria 1", icon: "🔎" },
   { id: "revisao1",       label: "Revisão 1",   icon: "🛠️" },
   { id: "fontes",         label: "Fontes",      icon: "🔗" },
-  { id: "links_blog",     label: "Links Blog",  icon: "🏠" },
   { id: "auditoria2",     label: "Auditoria 2", icon: "🔎" },
   { id: "revisao2",       label: "Revisão 2",   icon: "✅" },
   { id: "pronto",         label: "Pronto",      icon: "🎉" },
@@ -922,27 +921,6 @@ export default function App() {
         } else { log_("⚠ Nenhuma fonte encontrada — pulando etapa.", "warn"); }
       } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
-      // ── Links internos do blog Sittax: Claude busca, ChatGPT insere ──────────
-      setFase("links_blog");
-      log_("Buscando publicações do blog Sittax... (Claude + web_search)");
-      await pausa(15, "", log_);
-      try {
-        const rawBlog = await callClaudeSearch(PROMPTS.buscaLinksInternos(tema), 800);
-        const jsonBlog = parseJSON(rawBlog);
-        if (jsonBlog?.artigos?.length > 0) {
-          log_("✓ " + jsonBlog.artigos.length + " artigo(s) do blog encontrado(s)", "ok");
-          log_("Inserindo links internos no artigo... (ChatGPT)");
-          await pausa(2, "", log_);
-          const comLinksInt = await callGPT(PROMPTS.linksInternos(textoFinal, jsonBlog.artigos), 5000);
-          const h1idx = comLinksInt.indexOf("#");
-          const textoLimpo = h1idx > 0 ? comLinksInt.slice(h1idx).trim() : comLinksInt.trim();
-          if (textoLimpo?.length > 500) {
-            textoFinal = textoLimpo; setArtigo(textoLimpo);
-            const qtdInt = (textoLimpo.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
-            log_("✓ " + qtdInt + " link(s) interno(s) inserido(s)", "ok");
-          } else { log_("⚠ Inserção retornou texto curto — mantendo versão anterior.", "warn"); }
-        } else { log_("⚠ Nenhum artigo do blog encontrado — pulando links internos.", "warn"); }
-      } catch (e) { log_(`⚠ Links do blog falhou (${e.message}). Continuando.`, "warn"); }
 
       // ── Polimento Yoast final — garante transição ≥30% e passiva ≤10% ────
       setFase("polimento_final");
