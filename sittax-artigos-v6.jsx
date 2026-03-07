@@ -17,7 +17,6 @@ Use web_search para buscar 1 dado recente (2026) sobre o tema — pode ser uma n
   "intencao_busca": "Informacional",
   "angulo_diferenciado": "ângulo específico que diferencia este artigo de concorrentes genéricos",
   "dado_recente": { "fato": "dado concreto encontrado (número, percentual, estatística ou notícia recente de 2025/2026)", "fonte": "Nome do portal ou órgão", "url": "https://url-real-encontrada.com.br" },
-  "cena_abertura": "descreva uma situação concreta do dia a dia de um empresário ou contador que ilustra o problema central do tema — algo que acontece no escritório ou na empresa, com números específicos quando possível",
   "secoes": [
     { "h2": "Título da seção 1", "h3s": ["subtópico a", "subtópico b"], "foco": "o que abordar nesta seção" },
     { "h2": "Título da seção 2", "h3s": [], "foco": "o que abordar nesta seção" },
@@ -39,7 +38,6 @@ KEYWORD PRIMÁRIA: "${p.keyword_primaria}"
 KEYWORDS SECUNDÁRIAS: ${p.keywords_secundarias.join(", ")}
 ÂNGULO: ${p.angulo_diferenciado}
 FONTES PRIMÁRIAS: ${p.fontes_primarias.join("; ")}
-CENA DE ABERTURA: ${p.cena_abertura}
 DADO RECENTE PARA USAR NO ARTIGO: "${p.dado_recente?.fato}" — Fonte: ${p.dado_recente?.fonte} — URL: ${p.dado_recente?.url}
 SEÇÕES A ESCREVER:
 ${p.secoes.map((s, i) => (i + 1) + ". H2: \"" + s.h2 + "\" — Foco: " + s.foco + (s.h3s.length ? "\n   H3s: " + s.h3s.join(", ") : "")).join("\n")}
@@ -49,9 +47,11 @@ REGRAS OBRIGATÓRIAS:
 - NÃO inclua FAQ, conclusão nem CTA — serão escritos separadamente
 
 INTRODUÇÃO (obrigatório):
-- Abra com a CENA DE ABERTURA fornecida acima — descreva a situação concreta, com números reais, como se estivesse contando um caso que você acompanhou
+- Vá direto ao problema — fale do impacto real do tema para o empresário ou contador, com dados ou números concretos já na primeira frase
+- NÃO invente personagens, NÃO conte histórias fictícias, NÃO use "Imagine que..."
+- Modelo do segundo parágrafo: apresente o problema, contextualize com dado real, diga o que está em jogo
 - 3-4 frases curtas. A keyword primária aparece naturalmente.
-- A última frase da introdução deve dizer o que o artigo vai mostrar ao leitor
+- A última frase diz o que o artigo vai mostrar ao leitor
 
 DADO RECENTE (obrigatório):
 - Insira o DADO RECENTE em alguma seção do corpo onde ele se encaixar naturalmente
