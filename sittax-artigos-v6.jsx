@@ -580,7 +580,6 @@ const FASES = [
   { id: "auditoria1",     label: "Auditoria 1", icon: "🔎" },
   { id: "revisao1",       label: "Revisão 1",   icon: "🛠️" },
   { id: "fontes",         label: "Fontes",      icon: "🔗" },
-  { id: "links_internos", label: "Links Int.",  icon: "🏠" },
   { id: "auditoria2",     label: "Auditoria 2", icon: "🔎" },
   { id: "revisao2",       label: "Revisão 2",   icon: "✅" },
   { id: "pronto",         label: "Pronto",      icon: "🎉" },
@@ -837,39 +836,6 @@ export default function App() {
             } else { log_("⚠ Etapa de fontes não alterou o texto — mantendo versão anterior.", "warn"); }
           } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
-          // Etapa dividida: 1) busca leve  2) inserção no texto
-          setFase("links_busca");
-          log_("Buscando artigos do blog Sittax... (Claude + web_search)");
-          await pausa(30, "", log_);
-          let artigosEncontrados = [];
-          try {
-            const rawArtigos = await callClaudeSearch(PROMPTS.buscaLinksInternos(tema), 800);
-            const jsonArtigos = parseJSON(rawArtigos);
-            if (jsonArtigos?.artigos?.length > 0) {
-              artigosEncontrados = jsonArtigos.artigos;
-              log_(`✓ ${artigosEncontrados.length} artigo(s) do blog encontrado(s)`, "ok");
-            } else { log_("⚠ Nenhum artigo encontrado — pulando links internos.", "warn"); }
-          } catch (e) { log_(`⚠ Busca de links falhou (${e.message}). Continuando.`, "warn"); }
-
-          if (artigosEncontrados.length > 0) {
-            setFase("links_internos");
-            log_("Inserindo links internos no artigo... (Claude)");
-            await pausa(35, "", log_);
-            try {
-              let comLinksInt = await callClaude(PROMPTS.inserirLinksInternos(textoFinal, artigosEncontrados), 4500);
-              const primeiroH1 = comLinksInt.indexOf("\n#");
-              if (primeiroH1 > 0) comLinksInt = comLinksInt.slice(primeiroH1).trim();
-              else if (!comLinksInt.startsWith("#")) {
-                const h1direto = comLinksInt.indexOf("#");
-                if (h1direto > 0) comLinksInt = comLinksInt.slice(h1direto).trim();
-              }
-              if (comLinksInt?.length > 500) {
-                textoFinal = comLinksInt; setArtigo(comLinksInt);
-                const qtdInt = (comLinksInt.match(/\[.+?\]\(https?:\/\/sittax\.com\.br\/blog\/.+?\)/g) || []).length;
-                log_(`✓ ${qtdInt} link(s) interno(s) inserido(s)`, "ok");
-              } else { log_("⚠ Inserção retornou texto curto — mantendo versão anterior.", "warn"); }
-            } catch (e) { log_(`⚠ Inserção de links falhou (${e.message}). Continuando.`, "warn"); }
-          }
         }
       }
 
