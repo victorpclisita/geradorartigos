@@ -321,29 +321,44 @@ Responda SOMENTE em JSON válido, sem markdown:
   "resumo": "Veredicto objetivo em 1-2 frases"
 }`,
 
-  // Etapa de linkagem — identifica leis/pesquisas/dados e insere links reais
-  linkagem: (textoCompleto) => `Você é especialista em fontes do direito tributário brasileiro e pesquisas econômicas.
+  // Etapa de busca de fontes — Claude retorna JSON com URLs reais (leve)
+  buscarFontes: (textoCompleto) => `Você é especialista em fontes do direito tributário brasileiro.
 
-Analise o artigo abaixo e faça duas coisas:
+Analise o trecho abaixo e identifique menções a leis, normas e dados com fonte implícita.
+Para cada item encontrado, busque a URL oficial real usando web_search.
 
-1. IDENTIFIQUE todas as menções a:
-   - Leis, Leis Complementares, Instruções Normativas, Resoluções, Decretos
-   - Percentuais, alíquotas, dados numéricos com fonte implícita
-   - Pesquisas, estudos ou estatísticas citadas
+Fontes prioritárias:
+- Leis federais → planalto.gov.br
+- Instruções Normativas RFB → normas.receita.fazenda.gov.br
+- IBGE, Sebrae, IBPT → sites oficiais
 
-2. PARA CADA ITEM, verifique se a lei/fonte realmente existe e encontre a URL oficial:
-   - Leis federais → planalto.gov.br/ccivil_03/leis/ ou lexml.gov.br
-   - Instruções Normativas RFB → normas.receita.fazenda.gov.br
-   - IBGE, Sebrae, IBPT, CNI → sites oficiais dessas entidades
-   - SE NÃO TIVER CERTEZA da existência da lei ou da URL correta, NÃO insira o link — remova a referência ou substitua por "conforme a legislação tributária vigente"
+Retorne APENAS um JSON puro, sem texto antes ou depois:
+{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-encontrada.gov.br"}]}
 
-3. REESCREVA o artigo inserindo os links no formato markdown: [texto âncora](URL)
-   - O texto âncora deve ser a palavra ou expressão mais específica (ex: [Lei Complementar 123/2006](https://...))
-   - Máximo 1 link por lei/fonte — não repetir links da mesma fonte
-   - Links só onde há certeza absoluta da URL
+Máximo 4 fontes. Só inclua URLs que você confirmou via web_search — NUNCA invente.
+Se não encontrar nenhuma, retorne: {"fontes":[]}
 
-Retorne APENAS o artigo completo reescrito com os links inseridos, mantendo todos os marcadores # ## ###.
-Não adicione explicações, cabeçalhos ou texto fora do artigo.
+TRECHO DO ARTIGO (primeiros 800 caracteres):
+${textoCompleto.slice(0, 800)}`,
+
+  // Etapa de inserção de fontes — ChatGPT insere os links no texto
+  inserirFontes: (textoCompleto, fontes) => `Você é editor de conteúdo da Sittax.
+
+Insira os links de fontes abaixo no artigo, nos trechos exatos onde as âncoras aparecem.
+
+FONTES DISPONÍVEIS:
+${fontes.map((f, i) => (i+1) + '. ancora: "' + f.ancora + '" → ' + f.url).join("
+")}
+
+REGRAS:
+- Formato markdown: [âncora](url)
+- Use a âncora exata fornecida para encontrar o ponto de inserção no texto
+- Máximo 1 link por fonte
+- Não altere nenhuma outra parte do texto
+- Preserve todos os links já existentes
+- PROIBIDO: texto fora do artigo, explicações, comentários
+
+Retorne APENAS o artigo completo. Comece diretamente com o # do título.
 
 ARTIGO:
 ${textoCompleto}`,
@@ -887,15 +902,23 @@ export default function App() {
 
       // ── Fontes e links — sempre executados, independente do score ────────────
       setFase("fontes");
-      log_("Verificando legislação e inserindo links para fontes oficiais... (Claude)");
+      log_("Buscando URLs de fontes oficiais... (Claude + web_search)");
       await pausa(2, "", log_);
       try {
-        const comLinks = await callClaudeSearch(PROMPTS.linkagem(textoFinal), 4500);
-        if (comLinks?.length > 500) {
-          textoFinal = comLinks; setArtigo(comLinks);
-          const qtdLinks = (comLinks.match(/\[.+?\]\(https?:\/\/.+?\)/g) || []).length;
-          log_(`✓ ${qtdLinks} link(s) externo(s) de fontes inserido(s)`, "ok");
-        } else { log_("⚠ Etapa de fontes não alterou o texto — mantendo versão anterior.", "warn"); }
+        const rawFontes = await callClaudeSearch(PROMPTS.buscarFontes(textoFinal), 600);
+        const jsonFontes = parseJSON(rawFontes);
+        if (jsonFontes?.fontes?.length > 0) {
+          log_("✓ " + jsonFontes.fontes.length + " fonte(s) encontrada(s) — inserindo no artigo... (ChatGPT)", "ok");
+          await pausa(2, "", log_);
+          const comLinks = await callGPT(PROMPTS.inserirFontes(textoFinal, jsonFontes.fontes), 5000);
+          const h1idx = comLinks.indexOf("#");
+          const textoComFontes = h1idx > 0 ? comLinks.slice(h1idx).trim() : comLinks.trim();
+          if (textoComFontes?.length > 500) {
+            textoFinal = textoComFontes; setArtigo(textoComFontes);
+            const qtdLinks = (textoComFontes.match(/\[.+?\]\(https?:\/\/.+?\)/g) || []).length;
+            log_(`✓ ${qtdLinks} link(s) externo(s) inserido(s)`, "ok");
+          } else { log_("⚠ Inserção de fontes retornou texto curto — mantendo versão anterior.", "warn"); }
+        } else { log_("⚠ Nenhuma fonte encontrada — pulando etapa.", "warn"); }
       } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
       // ── Links internos do blog Sittax: Claude busca, ChatGPT insere ──────────
