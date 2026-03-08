@@ -821,8 +821,7 @@ function parseJSON(text) {
 
 // ── Quebra parágrafos longos automaticamente (sem depender do ChatGPT) ───────
 function quebrarParagrafosLongos(texto, limiteMax = 55, limiteMedio = 40) {
-  const linhas = texto.split("
-");
+  const linhas = texto.split("\n");
   const resultado = [];
 
   for (let i = 0; i < linhas.length; i++) {
@@ -906,8 +905,7 @@ function quebrarParagrafosLongos(texto, limiteMax = 55, limiteMedio = 40) {
     }
   }
 
-  return resultado2.join("
-");
+  return resultado2.join("\n");
 }
 
 function contarPalavras(texto) {
