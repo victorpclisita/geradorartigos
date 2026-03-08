@@ -79,7 +79,8 @@ CADA SEÇÃO H2 — LIMITE DE 300 PALAVRAS (Yoast):
 - Conte as palavras à medida que escreve. Se ultrapassar 300 palavras antes de fechar o conteúdo da seção, crie um H3 ou um novo H2 para continuar — NUNCA corte o texto
 - Exemplo: se uma seção H2 chegou a 280 palavras e ainda há mais a dizer, abra "### [subtítulo relevante]" e continue
 - Parágrafo introdutório logo após o título H2 — antes de qualquer H3
-- H3s: use quando subdividirem naturalmente o conteúdo, ou quando a seção ultrapassar 250 palavras e precisar de mais conteúdo — nunca logo após o H2 sem parágrafo introdutório
+- H3s: use quando subdividirem naturalmente o conteúdo, ou quando a seção ultrapassar 250 palavras e precisar de mais conteúdo
+- PROIBIDO ABSOLUTO: H3 logo após H2 sem parágrafo de texto entre eles. Sempre que abrir um H3, deve haver ao menos 1 parágrafo de texto corrido antes dele dentro do mesmo H2. Isso vale inclusive quando o limite de 300 palavras forçar a criação de um H3 — insira o parágrafo introdutório antes do H3
 - OBRIGATÓRIO: ao menos uma seção H2 do artigo deve ter H3s — o artigo não pode ter zero H3s no total
 - OBRIGATÓRIO: ao menos uma seção H2 que NÃO tenha H3s deve usar uma lista de tópicos com bullet points ("-") — sem isso o artigo será rejeitado
 - OBRIGATÓRIO: sempre que houver lista de tópicos, deve haver ao menos um parágrafo de texto antes dela — nunca abra lista direto após título H2
@@ -243,20 +244,25 @@ Identifique frases com construções passivas (ser/estar/foi/são/foram/será/se
 - "o imposto é calculado pela Receita" → "a Receita calcula o imposto"
 - "as alíquotas foram aprovadas pelo Congresso" → "o Congresso aprovou as alíquotas"
 - "a declaração deve ser entregue" → "o contribuinte deve entregar a declaração"
+ATENÇÃO: a voz ativa tende a usar menos palavras que a passiva. Para cada frase convertida que fique visivelmente mais curta, expanda a ideia com um detalhe concreto — um prazo, um percentual, um exemplo prático — de modo que a frase final tenha tamanho similar à original. Nunca invente dados; use apenas informações já presentes no artigo.
 
 CRITÉRIO 3 — TAMANHO DE PARÁGRAFO (verifique e corrija)
 - Todo parágrafo de texto corrido com mais de 60 palavras DEVE ser quebrado em dois
 - Nunca dois parágrafos acima de 40 palavras em sequência — insira um parágrafo curto (15–30 palavras) entre eles
 - Essa regra NÃO se aplica a bullet points, listas com "-" ou títulos H2/H3
 
-REGRAS:
-- Mexa APENAS nas frases que precisam de ajuste — não reescreva o que já está correto
-- Preserve todo o conteúdo, dados, links e estrutura de títulos (# ## ###)
-- Preserve todos os links markdown [texto](url) exatamente como estão
-- Não corte nenhuma seção, parágrafo ou frase — APENAS adicione conectivos, ajuste a voz ou quebre parágrafos longos
+CRITÉRIO 4 — ESTRUTURA DE HEADINGS (verifique e corrija sem alterar conteúdo)
+- NUNCA deve haver um H3 (###) logo após um H2 (##) sem ao menos um parágrafo de texto entre eles
+- Se encontrar "## Título
+
+### Subtítulo" sem parágrafo intermediário, insira um parágrafo introdutório de 1–2 frases que apresente o conteúdo do H3
+- Essa regra não conflita com o limite de 300 palavras por seção — o parágrafo introdutório faz parte da contagem da seção H2
+
+REGRAS ABSOLUTAS — nenhuma das correções acima pode violar estas:
+- Preserve TODO o conteúdo, dados, links e estrutura de títulos (# ## ###) — nunca remova seções, parágrafos ou frases
+- Preserve todos os links markdown [texto](url) exatamente como estão — não remova nem altere URLs
 - Não altere fatos, números, leis ou nomes
-- Não adicione nem remova seções
-- O artigo de saída deve ter o mesmo número de palavras (±5%) que o artigo de entrada
+- O artigo de saída deve ter o mesmo número de palavras (±3%) que o artigo de entrada — se as correções encurtarem o texto, compense expandindo ideias já presentes com detalhes concretos do próprio artigo
 - As mudanças devem soar naturais — nunca mecânicas ou forçadas
 
 Retorne APENAS o artigo completo, com todos os marcadores # ## ###.
@@ -788,10 +794,11 @@ const FASES = [
   { id: "fontes",         label: "Fontes",      icon: "🔗" },
   { id: "links_blog",     label: "Links Blog",  icon: "🏠" },
   { id: "auditoria2",     label: "Auditoria 2", icon: "🔎" },
-  { id: "revisao2",       label: "Revisão 2",   icon: "✅" },
-  { id: "auditoria_yoast", label: "Yoast",      icon: "📊" },
-  { id: "revisao_yoast",   label: "Rev. Yoast", icon: "🔤" },
-  { id: "pronto",          label: "Pronto",     icon: "🎉" },
+  { id: "revisao2",        label: "Revisão 2",   icon: "✅" },
+  { id: "polimento_final", label: "Pol. Final",  icon: "🪄" },
+  { id: "auditoria_yoast", label: "Yoast",       icon: "📊" },
+  { id: "revisao_yoast",   label: "Rev. Yoast",  icon: "🔤" },
+  { id: "pronto",          label: "Pronto",      icon: "🎉" },
 ];
 
 export default function App() {
