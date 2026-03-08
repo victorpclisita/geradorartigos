@@ -4,466 +4,625 @@ import { useState, useRef, useEffect } from "react";
 
 const PROMPTS = {
 
-  pesquisa: (tema) => `Você é especialista em SEO e conteúdo tributário/fiscal brasileiro.
+  // ─── PESQUISA ─────────────────────────────────────────────────────────────────
+  // Retorna JSON com estrutura do artigo, keywords, dado recente e FAQ
+  pesquisa: (tema) => `Você é especialista em SEO e conteúdo tributário fiscal brasileiro.
+
 TEMA: "${tema}"
 
-IMPORTANTE: Responda SOMENTE com o JSON abaixo preenchido. Nenhum texto antes ou depois. Nenhum bloco de código. Apenas o JSON puro.
+Sua tarefa: planejar a estrutura de um artigo de blog sobre esse tema.
 
-Busque na internet 1 dado recente (2025 ou 2026) sobre o tema — pode ser uma notícia, dado do IBGE, Sebrae, Receita Federal, IBPT ou portal tributário. Inclua o dado e a URL real encontrada no campo "dado_recente".
+PASSO 1 — Busque na internet 1 dado concreto de 2025 ou 2026 sobre o tema (estatística, notícia, decreto, dado de órgão oficial). Use web_search. Anote o fato exato e a URL real encontrada.
+
+PASSO 2 — Preencha o JSON abaixo com as informações do planejamento.
+
+REGRAS DO JSON:
+- "intencao_busca": sempre "Informacional + Estratégia"
+- "secoes": entre 3 e 5 seções H2. Pelo menos 1 deve ter H3s sugeridos; pelo menos 1 deve ficar sem H3 (para receber lista de bullet points)
+- "faq_perguntas": exatamente 4 perguntas reais que um contador ou empresário faria
+- "fontes_primarias": leis ou normas reais relacionadas ao tema (ex: "LC 123/2006")
+- "dado_recente.url": URL real encontrada no PASSO 1 — NUNCA invente
+
+Responda SOMENTE com o JSON abaixo. Nenhum texto antes ou depois. Nenhum bloco de código.
 
 {
-  "keyword_primaria": "keyword estratégica de 1-4 palavras para o tema",
-  "keywords_secundarias": ["keyword lsi 1", "keyword lsi 2", "keyword lsi 3", "keyword lsi 4", "keyword lsi 5", "keyword lsi 6"],
+  "keyword_primaria": "keyword estratégica de 1-4 palavras",
+  "keywords_secundarias": ["lsi 1", "lsi 2", "lsi 3", "lsi 4", "lsi 5", "lsi 6"],
   "intencao_busca": "Informacional + Estratégia",
-  "angulo_diferenciado": "ângulo específico que diferencia este artigo de concorrentes genéricos",
-  "dado_recente": { "fato": "dado concreto encontrado (número, percentual, estatística ou notícia recente de 2025/2026)", "fonte": "Nome do portal ou órgão", "url": "https://url-real-encontrada.com.br" },
+  "angulo_diferenciado": "ângulo que diferencia este artigo de resultados genéricos do Google",
+  "dado_recente": {
+    "fato": "dado concreto de 2025/2026 encontrado na busca",
+    "fonte": "Nome do órgão ou portal",
+    "url": "https://url-real-encontrada.com.br"
+  },
   "secoes": [
     { "h2": "Título da seção 1", "h3s": ["subtópico a", "subtópico b"], "foco": "o que abordar nesta seção" },
-    { "h2": "Título da seção 2", "h3s": [], "foco": "o que abordar nesta seção" },
+    { "h2": "Título da seção 2", "h3s": [], "foco": "seção sem H3 — receberá lista de bullet points" },
     { "h2": "Título da seção 3", "h3s": [], "foco": "o que abordar nesta seção" }
   ],
-  "faq_perguntas": ["Pergunta real 1?", "Pergunta real 2?", "Pergunta real 3?", "Pergunta real 4?"],
+  "faq_perguntas": ["Pergunta 1?", "Pergunta 2?", "Pergunta 3?", "Pergunta 4?"],
   "meta_title": "title tag até 60 caracteres com keyword",
-  "meta_description": "meta description até 155 caracteres respondendo a intenção de busca diretamente",
-  "slug": "slug-com-keyword",
-  "fontes_primarias": ["Lei ou norma 1", "Lei ou norma 2"]
+  "meta_description": "meta description até 155 caracteres respondendo a intenção de busca",
+  "slug": "slug-com-keyword-principal",
+  "fontes_primarias": ["Lei ou norma real 1", "Lei ou norma real 2"]
 }`,
 
-  // Parte 1: corpo principal (intro + seções) — ~900 palavras
-  corpo: (tema, p) => `Você é consultor tributário sênior escrevendo para outros contadores e gestores contábeis. O leitor conhece o mercado — não explique o que é DAS, PGDAS, Simples Nacional, MEI ou conceitos básicos de contabilidade. Vá direto às implicações práticas, estratégias e decisões. NUNCA use linguagem de IA.
+  // ─── CORPO ────────────────────────────────────────────────────────────────────
+  // Parte 1 do artigo: título H1 + introdução + seções H2/H3
+  // NÃO inclui FAQ, conclusão nem CTA — gerados separadamente
+  corpo: (tema, p) => `Você é consultor tributário sênior escrevendo um artigo de blog para outros contadores e gestores contábeis.
+
+O leitor É profissional do setor. Não explique o que é Simples Nacional, DAS, PGDAS, MEI, CNPJ ou qualquer conceito básico de contabilidade. Vá direto às implicações práticas.
 
 TEMA: "${tema}"
 KEYWORD PRIMÁRIA: "${p.keyword_primaria}"
 KEYWORDS SECUNDÁRIAS: ${p.keywords_secundarias.join(", ")}
-ÂNGULO: ${p.angulo_diferenciado}
-FONTES PRIMÁRIAS: ${p.fontes_primarias.join("; ")}
-DADO RECENTE PARA USAR NO ARTIGO: "${p.dado_recente?.fato}" — Fonte: ${p.dado_recente?.fonte} — URL: ${p.dado_recente?.url}
+ÂNGULO DO ARTIGO: ${p.angulo_diferenciado}
+DADO RECENTE PARA INSERIR: "${p.dado_recente?.fato}" — Fonte: ${p.dado_recente?.fonte} — URL: ${p.dado_recente?.url}
+
 SEÇÕES A ESCREVER:
-${p.secoes.map((s, i) => (i + 1) + ". H2: \"" + s.h2 + "\" — Foco: " + s.foco + (s.h3s.length ? "\n   H3s sugeridos (use onde fizer sentido): " + s.h3s.join(", ") : "")).join("\n")}
+${p.secoes.map((s, i) => (i + 1) + ". H2: \"" + s.h2 + "\"\n   Foco: " + s.foco + (s.h3s.length ? "\n   H3s sugeridos: " + s.h3s.join(", ") : "\n   → Esta seção NÃO tem H3. Use lista de bullet points (\"-\") aqui.")).join("\n")}
 
-REGRAS OBRIGATÓRIAS:
-- Escreva APENAS: título H1 + introdução + as ${p.secoes.length} seções H2 acima
-- NÃO inclua FAQ, conclusão nem CTA — serão escritos separadamente
-- Meta OBRIGATÓRIA: mínimo 1.100 palavras nesta parte — escreva com profundidade real
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+O QUE ESCREVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Escreva: título H1 + introdução + as seções H2 listadas acima.
+NÃO escreva: FAQ, Conclusão ou CTA — esses serão gerados separadamente.
+Mínimo obrigatório: 1.100 palavras nesta parte.
 
-INTENÇÃO DO ARTIGO: Informacional + Estratégia
-- O artigo deve informar com profundidade E entregar insights práticos para contadores e empresários contábeis
-- Informação é a base — estratégia é o destino. Uma não anula a outra: explique o contexto e mostre o que fazer com ele
-- Em cada seção, além de explicar o tema, aponte ao menos 1 decisão, ação ou oportunidade concreta para o leitor
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INTRODUÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- 2 a 3 parágrafos (não mais, não menos)
+- 1º parágrafo: começa com dado concreto ou número real + impacto prático direto
+- 2º parágrafo: contexto — o que está mudando, o que está em jogo
+- 3º parágrafo (opcional): o que o leitor vai encontrar no artigo
+- A keyword primária aparece no 1º ou 2º parágrafo, de forma natural
+- PROIBIDO: histórias fictícias, personagens inventados, "Imagine que...", "Você sabia que..."
 
-INTRODUÇÃO (obrigatório):
-- 2 a 3 parágrafos — não mais, não menos
-- Primeiro parágrafo: impacto direto do tema com dado concreto ou número real na primeira frase
-- Segundo parágrafo: aprofunda o contexto — o que está em jogo, o que mudou ou está mudando
-- Terceiro parágrafo (opcional): o que o artigo vai mostrar ao leitor
-- NÃO invente personagens, NÃO conte histórias fictícias, NÃO use "Imagine que..."
-- Keyword primária aparece naturalmente no primeiro ou segundo parágrafo
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ESTRUTURA DE CADA SEÇÃO H2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRA 1 — PARÁGRAFO ANTES DE H3 (obrigatório):
+Sempre que uma seção H2 tiver H3s, deve haver ao menos 1 parágrafo de texto corrido ANTES do primeiro H3.
+Estrutura correta:
+  ## Título H2
+  [parágrafo introdutório]
+  ### Subtítulo H3
+  [conteúdo]
+Estrutura PROIBIDA:
+  ## Título H2
+  ### Subtítulo H3  ← ERRO: H3 logo após H2 sem parágrafo
 
-DADO RECENTE (obrigatório):
-- Insira o DADO RECENTE em uma seção onde se encaixe naturalmente, com hiperlink markdown
-- Formato: [texto âncora descritivo](url)
-- Exemplo: "Segundo o Sebrae, [mais de 60% das microempresas têm irregularidades no PGDAS](https://url)"
+REGRA 2 — LISTA DE BULLET POINTS (obrigatório em ao menos 1 seção):
+Nas seções marcadas como "sem H3", use lista de bullet points com "-".
+Estrutura correta:
+  ## Título H2
+  [parágrafo introdutório]
+  - Item 1: ação ou informação concreta
+  - Item 2: ação ou informação concreta
+  - Item 3: ação ou informação concreta
+  [parágrafo após a lista, opcional]
+Regras da lista: mínimo 3 itens; cada item com 1 a 2 linhas; começa com "- ".
+PROIBIDO: abrir lista logo após o título H2 sem parágrafo antes.
 
-REGRA DE FONTES (obrigatório):
-- Toda afirmação atribuída a um órgão, governo, lei ou pesquisa DEVE ter hiperlink para a fonte
-- PROIBIDO citar "segundo a Receita Federal", "o governo anunciou", "conforme o IBGE" etc. sem linkar a fonte
-- Se não tiver a URL real, reescreva a frase sem atribuir a fonte — use "conforme a legislação vigente" ou retire a atribuição
+REGRA 3 — LIMITE DE 300 PALAVRAS POR SEÇÃO H2:
+Conte as palavras do texto corrido entre dois headings consecutivos (exclua o texto do título H2).
+Se a seção atingir 270 palavras e ainda houver conteúdo, abra um H3 ou um novo H2 e continue lá.
+NUNCA corte conteúdo — apenas redistribua em subdivisões.
 
-DADOS NUMÉRICOS (obrigatório):
-- Preserve e utilize TODOS os dados numéricos fornecidos pela pesquisa (alíquotas, percentuais, prazos, valores)
-- Verifique se são aplicáveis a 2026 — se sim, insira no contexto mais relevante do artigo
-- NUNCA remova dados numéricos já presentes no rascunho — apenas reposicione se necessário
+REGRA 4 — PELO MENOS 1 SEÇÃO COM H3s:
+O artigo inteiro deve ter ao menos 1 seção H2 com H3s. Não pode ter zero H3s no total.
 
-CADA SEÇÃO H2 — LIMITE DE 300 PALAVRAS (Yoast):
-- Cada seção H2 deve ter no MÁXIMO 300 palavras de texto corrido (excluindo o título do H2)
-- Conte as palavras à medida que escreve. Se ultrapassar 300 palavras antes de fechar o conteúdo da seção, crie um H3 ou um novo H2 para continuar — NUNCA corte o texto
-- Exemplo: se uma seção H2 chegou a 280 palavras e ainda há mais a dizer, abra "### [subtítulo relevante]" e continue
-- Parágrafo introdutório logo após o título H2 — antes de qualquer H3
-- H3s: use quando subdividirem naturalmente o conteúdo, ou quando a seção ultrapassar 250 palavras e precisar de mais conteúdo
-- PROIBIDO ABSOLUTO: H3 logo após H2 sem parágrafo de texto entre eles. Sempre que abrir um H3, deve haver ao menos 1 parágrafo de texto corrido antes dele dentro do mesmo H2. Isso vale inclusive quando o limite de 300 palavras forçar a criação de um H3 — insira o parágrafo introdutório antes do H3
-- OBRIGATÓRIO: ao menos uma seção H2 do artigo deve ter H3s — o artigo não pode ter zero H3s no total
-- OBRIGATÓRIO: ao menos uma seção H2 que NÃO tenha H3s deve usar uma lista de tópicos com bullet points ("-") — sem isso o artigo será rejeitado
-- OBRIGATÓRIO: sempre que houver lista de tópicos, deve haver ao menos um parágrafo de texto antes dela — nunca abra lista direto após título H2
-- FORMATO da lista de tópicos: cada item começa com "- " e tem entre 1 e 2 linhas. Mínimo 3 itens por lista.
-- Frases curtas — máximo 2 linhas por frase
-- TAMANHO DE PARÁGRAFO (crítico — será rejeitado se descumprir): cada parágrafo de texto corrido deve ter no MÁXIMO 60 palavras. Conte as palavras antes de fechar o parágrafo.
-- RITMO VISUAL obrigatório: alterne parágrafos de 40–60 palavras com parágrafos curtos de 15–30 palavras — nunca escreva dois parágrafos acima de 40 palavras seguidos sem um parágrafo curto entre eles
-- Se precisar de mais espaço para uma ideia, quebre em dois parágrafos distintos — cada um com seu próprio foco
-- ATENÇÃO: essa regra vale APENAS para texto corrido — não interfere com bullet points, listas de tópicos nem com H3s
-- Foco em estratégia e aplicação prática: o que fazer, como detectar, como orientar o cliente
-- Ao menos 1 dado numérico por seção (alíquota, prazo, valor, percentual, multa)
-- Cite fontes: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
-- NUNCA cite leis sem certeza — use "conforme a legislação tributária vigente" quando em dúvida
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TAMANHO DOS PARÁGRAFOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Cada parágrafo de texto corrido deve ter entre 20 e 55 palavras.
+Antes de fechar cada parágrafo, conte as palavras. Se passar de 55, quebre em dois.
+Nunca escreva dois parágrafos acima de 40 palavras em sequência — intercale com um parágrafo curto (15 a 25 palavras).
+Esta regra se aplica APENAS ao texto corrido. Bullet points e títulos estão isentos.
 
-PROIBIDO (palavras que denunciam IA):
-"No cenário atual", "É crucial", "Vale ressaltar", "Neste contexto", "Abrangente", "Robusto", "Em suma", "Transformador", "Mergulhe", "Navegar", "Multifacetado", "Dinâmico", "Paradigma", "Holístico", "Sinergias", "Delinear", "Alavancar", "Não se trata apenas de", "Mais do que nunca"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HIPERLINKS E FONTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- O DADO RECENTE deve aparecer no artigo com hiperlink markdown: [texto âncora](url)
+- Toda citação a um órgão, lei ou pesquisa com URL disponível DEVE ter link. Exemplo: [Receita Federal](https://gov.br/receitafederal)
+- Se não tiver a URL real, reescreva sem atribuição: use "conforme a legislação vigente" em vez de "segundo a Receita Federal"
+- PROIBIDO citar órgão ou lei sem link quando você não tem a URL real
 
-REGRA DE VOZ ATIVA (obrigatório):
-- Máximo 10% das frases na voz passiva
-- ERRADO: "o imposto é calculado pela Receita" | CERTO: "a Receita calcula o imposto"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LEGISLAÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Cite número de lei SOMENTE se tiver certeza absoluta de que ela existe.
+Leis seguras para citar com número: LC 123/2006, LC 116/2003, CTN, CF/1988.
+Para qualquer outra lei, omita o número e use: "conforme a legislação tributária vigente".
+PROIBIDO ABSOLUTO: inventar número de lei, instrução normativa ou resolução.
 
-REGRA DE TRANSIÇÃO (obrigatório):
-- Pelo menos 30% das frases com palavra de transição — variando posição
-- Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, inclusive, conforme, já que, bem como, contudo, todavia, pois, logo
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PALAVRAS PROIBIDAS (linguagem de IA)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+O artigo será reprovado se qualquer uma dessas aparecer:
+Adjetivos vagos: robusto, abrangente, transformador, dinâmico, holístico, multifacetado, inovador, disruptivo
+Expressões de enrolação: "No cenário atual", "É crucial", "Vale ressaltar", "Vale destacar", "Neste contexto", "Em suma", "Mais do que nunca", "É importante destacar", "É fundamental", "Cabe destacar", "Diante disso", "Não se trata apenas de"
+Verbos corporativos: alavancar, delinear, impulsionar, potencializar, mergulhar (metafórico), navegar (metafórico)
+Outros: Sinergias, Paradigma, Ecossistema (fora de contexto técnico real)
+Teste: se a frase parece de relatório corporativo genérico, reescreva como um contador falaria para um cliente.
 
-FORMATO EXATO:
-# [Título H1 com keyword]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VOZ ATIVA E TRANSIÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Máximo 10% das frases na voz passiva. Prefira sempre o sujeito ativo.
+  ERRADO: "o imposto é calculado pela Receita" | CERTO: "a Receita calcula o imposto"
+- Pelo menos 30% das frases devem ter uma palavra de transição, em posição variada (início, meio ou fim).
+  Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, inclusive, conforme, já que, bem como, contudo, todavia, pois, logo, de fato, em razão disso, nesse sentido
 
-[Parágrafo 1: dado concreto + impacto direto]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMATO DE SAÍDA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# [Título H1 com keyword primária]
 
-[Parágrafo 2: contexto e o que está em jogo]
+[Parágrafo 1 da introdução]
 
-[Parágrafo 3 opcional: o que o artigo vai mostrar]
+[Parágrafo 2 da introdução]
 
-## [H2 da seção 1]
+## [Seção H2 — com H3s]
 
-[Parágrafo introdutório obrigatório antes de qualquer H3]
+[Parágrafo introdutório obrigatório]
 
-### [H3 — só se houver subdivisão natural]
-[parágrafos]
+### [H3]
 
-## [H2 da seção 2 — esta seção DEVE ter lista de tópicos]
+[conteúdo]
 
-[Parágrafo introdutório obrigatório antes da lista]
+## [Seção H2 — com bullet points]
 
-- [Item 1: informação ou ação concreta]
-- [Item 2: informação ou ação concreta]
-- [Item 3: informação ou ação concreta]
+[Parágrafo introdutório obrigatório]
 
-[Parágrafo continuando após a lista]
+- Item 1
+- Item 2
+- Item 3
 
-## [H2 da seção 3]
+## [Seção H2 — livre]
 
-[Parágrafos]`,
+[conteúdo]`,
 
-  // Parte 2: FAQ — ~350 palavras
-  faq: (tema, p, corpo) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
+  // ─── FAQ ──────────────────────────────────────────────────────────────────────
+  // Parte 2: exatamente 4 perguntas e respostas
+  faq: (tema, p, corpo) => `Você é especialista tributário da Sittax, consultoria contábil brasileira.
 
-CONTEXTO: Artigo sobre "${tema}" (keyword: "${p.keyword_primaria}")
-Início do artigo: ${corpo.slice(0, 250)}...
+CONTEXTO: artigo sobre "${tema}" (keyword: "${p.keyword_primaria}")
+Início do artigo já escrito: ${corpo.slice(0, 300)}...
+
+Escreva SOMENTE a seção de FAQ com as 4 perguntas abaixo. Nada antes ou depois.
 
 PERGUNTAS:
 ${p.faq_perguntas.map((q, i) => (i + 1) + ". " + q).join("\n")}
 
-Escreva SOMENTE a seção FAQ com estas 4 perguntas.
-
 REGRAS:
-- Cada resposta começa com a resposta direta à pergunta — sem preamble
-- 3-4 frases por resposta, curtas e objetivas
-- Tom de contador que está respondendo um cliente pessoalmente: direto, sem enrolação
-- Dados concretos quando aplicável (prazos, valores, percentuais)
-- NUNCA cite leis sem certeza — use "conforme a legislação vigente" se em dúvida
-- PROIBIDO: "É importante ressaltar", "Vale destacar", "É fundamental", "Neste contexto"
-- Meta OBRIGATÓRIA: mínimo 350 palavras no total desta seção
+- Cada resposta começa diretamente com a resposta — sem introdução, sem "Boa pergunta"
+- 3 a 4 frases por resposta, diretas e objetivas
+- Tom: contador respondendo pessoalmente a um cliente — sem enrolação
+- Use dados concretos quando aplicável (prazos, alíquotas, valores)
+- NUNCA cite número de lei sem certeza — use "conforme a legislação vigente"
+- PROIBIDO: "É importante ressaltar", "Vale destacar", "É fundamental", "Neste contexto", "Cabe destacar"
+- Mínimo 350 palavras no total da seção
 
-FORMATO EXATO:
+FORMATO DE SAÍDA:
 ## Perguntas Frequentes
 
-### [Pergunta 1]
+### [Pergunta 1 exata]
 
 [Resposta direta, 3-4 frases]
 
-### [Pergunta 2]
+### [Pergunta 2 exata]
 
 [Resposta direta, 3-4 frases]
 
-### [Pergunta 3]
+### [Pergunta 3 exata]
 
 [Resposta direta, 3-4 frases]
 
-### [Pergunta 4]
+### [Pergunta 4 exata]
 
 [Resposta direta, 3-4 frases]`,
 
-  // Parte 3: Conclusão — ~150 palavras
-  conclusao: (tema, p) => `Escreva SOMENTE a seção de conclusão para um artigo da Sittax sobre "${tema}".
+  // ─── CONCLUSÃO ────────────────────────────────────────────────────────────────
+  conclusao: (tema, p) => `Você é especialista tributário da Sittax.
 
-Regras:
-- Título H2: "Conclusão"
-- 2-3 parágrafos curtos
-- Primeiro parágrafo: o que o leitor aprendeu — em termos práticos, não acadêmicos
-- Segundo parágrafo: o que muda na prática para o empresário ou contador a partir de agora
-- Tom de conversa: como se você estivesse encerrando uma reunião de consultoria
-- Frases curtas. Sem enrolação.
-- PROIBIDO: "Em suma", "Por fim", "Concluindo", "Em conclusão", "É crucial", "Vale ressaltar", "Neste contexto"
-- Meta OBRIGATÓRIA: mínimo 150 palavras
+Escreva SOMENTE a seção de conclusão de um artigo sobre "${tema}". Nada antes ou depois.
 
-FORMATO EXATO:
+ESTRUTURA OBRIGATÓRIA:
+- Título: ## Conclusão
+- 2 a 3 parágrafos curtos (20 a 50 palavras cada)
+- 1º parágrafo: o que o leitor aprendeu — em termos práticos, sem academicismo
+- 2º parágrafo: o que muda na prática para o empresário ou contador a partir de agora
+- 3º parágrafo (opcional): passo concreto que o leitor pode dar hoje
+
+TOM: como encerrar uma reunião de consultoria — direto, útil, sem discurso.
+
+PROIBIDO: "Em suma", "Por fim", "Concluindo", "Em conclusão", "É crucial", "Vale ressaltar", "Neste contexto", "Transforme"
+
+Mínimo 150 palavras.
+
+FORMATO DE SAÍDA:
 ## Conclusão
 
-[Parágrafo 1: o que o leitor aprendeu, em termos práticos]
+[Parágrafo 1]
 
-[Parágrafo 2: o que fazer agora — passo concreto]`,
+[Parágrafo 2]`,
 
-  // Parte 4: CTA — ~80 palavras
-  cta: (tema, p) => `Escreva SOMENTE um parágrafo de CTA para um artigo da Sittax sobre "${tema}".
+  // ─── CTA ──────────────────────────────────────────────────────────────────────
+  cta: (tema, p) => `Você é especialista tributário da Sittax.
 
-Regras:
-- 2-3 frases, tom consultivo e direto
-- Convide o leitor a falar com a Sittax para analisar o caso específico
-- Mencione que cada empresa tem uma situação única
-- PROIBIDO: "Em suma", "Por fim", "Concluindo", "Portanto", "Transforme"
-- Comece com uma frase sobre o impacto prático do tema
+Escreva SOMENTE um parágrafo de CTA para um artigo sobre "${tema}". Nada antes ou depois. Sem título.
 
-Retorne apenas o parágrafo, sem título, sem marcadores.`,
+REGRAS:
+- 2 a 3 frases
+- Começa com uma frase sobre o impacto prático do tema para o leitor
+- Convida o leitor a falar com a Sittax para analisar o caso específico da empresa dele
+- Tom consultivo e direto — não promocional
+- PROIBIDO: "Em suma", "Por fim", "Concluindo", "Portanto", "Transforme", "É crucial"`,
 
-  // Expansão automática — acionada se artigo < 1.500 palavras após montagem
-  expansao: (textoCompleto, palavrasAtuais) => `Você é redator especialista da Sittax, consultoria tributária brasileira.
+  // ─── EXPANSÃO ─────────────────────────────────────────────────────────────────
+  // Acionada apenas quando o artigo tem menos de 1.500 palavras após montagem
+  expansao: (textoCompleto, palavrasAtuais) => `Você é redator especialista da Sittax.
 
-O artigo abaixo está com ${palavrasAtuais} palavras. Precisa ter no mínimo 1.500 palavras.
+O artigo abaixo tem ${palavrasAtuais} palavras. O mínimo obrigatório é 1.500 palavras.
 Faltam aproximadamente ${1500 - palavrasAtuais} palavras.
 
-SUA TAREFA: Expandir o artigo até atingir pelo menos 1.500 palavras, sem perder qualidade.
+SUA TAREFA: expandir o artigo até atingir pelo menos 1.500 palavras.
 
-COMO EXPANDIR:
-- Aprofunde as seções H2 existentes com mais detalhes práticos, exemplos concretos ou casos de uso
-- Adicione dados numéricos relevantes (alíquotas, prazos, valores) onde faltarem
-- Expanda as respostas do FAQ com mais contexto e orientações práticas
-- NÃO crie novas seções H2 — expanda o que já existe
-- NÃO repita informações já presentes
-- Mantenha o tom de contador experiente, sem linguagem de IA
-- Preserve toda a estrutura de títulos (# ## ###) e links existentes
-- PROIBIDO: "No cenário atual", "É crucial", "Vale ressaltar", "Robusto", "Abrangente"
+COMO EXPANDIR (escolha o que fizer mais sentido):
+- Aprofunde seções H2 existentes com mais detalhes práticos, exemplos reais ou dados numéricos
+- Expanda respostas do FAQ com mais contexto e orientações práticas
+- Adicione alíquotas, prazos ou valores onde faltarem
 
-Retorne o artigo completo expandido, com todos os marcadores # ## ###.
+PROIBIDO:
+- Criar novas seções H2 fora da estrutura atual
+- Repetir informações já presentes
+- Usar linguagem de IA: "robusto", "é crucial", "vale ressaltar", "abrangente", "alavancar"
+- Alterar ou remover links markdown existentes
+- Inventar dados, leis ou URLs
+
+Retorne o artigo completo expandido, com todos os títulos # ## ###.
 
 ARTIGO ATUAL:
 ${textoCompleto}`,
 
-  // Etapa de polimento Yoast — corrige transição e voz passiva antes da auditoria
+  // ─── POLIMENTO ────────────────────────────────────────────────────────────────
+  // Corrige transição, voz passiva, tamanho de parágrafo e estrutura H2→H3
+  // Executado ANTES das auditorias
   polimento: (textoCompleto) => `Você é revisor especialista em legibilidade de textos em português brasileiro.
 
-Sua única tarefa é reescrever o artigo abaixo para atingir dois critérios obrigatórios:
+Revise o artigo abaixo aplicando as 4 correções abaixo. Não altere mais nada além do que cada correção pede.
 
-CRITÉRIO 1 — PALAVRAS DE TRANSIÇÃO (meta: ≥ 30% das frases)
-Percorra cada frase do artigo. Se menos de 30% delas contiver uma palavra/expressão de transição, adicione conectivos naturais nas frases que estiverem "soltas". IMPORTANTE: insira as transições em posições variadas — início, meio ou fim da frase — para soar natural. Não coloque transição sempre no começo da frase.
-Palavras válidas (use com naturalidade): portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo, apesar disso, de fato, ao mesmo tempo, mesmo que, anteriormente, posteriormente, igualmente, salvo, sobretudo, certamente, então, entretanto, ademais, aliás, afinal, principalmente
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CORREÇÃO 1 — PALAVRAS DE TRANSIÇÃO (meta: ≥ 30% das frases)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Separe todas as frases do artigo (por "." "!" "?"). Ignore títulos H1/H2/H3, itens de lista e URLs.
+2. Conte quantas frases têm pelo menos uma palavra de transição da lista abaixo.
+3. Se o percentual for menor que 30%, insira transições nas frases que estiverem mais "soltas".
+4. Varie a posição: início ("Além disso, a empresa..."), meio ("A empresa, portanto, deve..."), fim ("...o que reduz a multa, inclusive.")
+5. A inserção deve soar natural — nunca mecânica ou forçada.
 
-CRITÉRIO 2 — VOZ ATIVA (meta: ≤ 10% das frases em voz passiva)
-Identifique frases com construções passivas (ser/estar/foi/são/foram/será/serão + particípio) e reescreva-as na voz ativa.
-- "o imposto é calculado pela Receita" → "a Receita calcula o imposto"
-- "as alíquotas foram aprovadas pelo Congresso" → "o Congresso aprovou as alíquotas"
-- "a declaração deve ser entregue" → "o contribuinte deve entregar a declaração"
-ATENÇÃO: a voz ativa tende a usar menos palavras que a passiva. Para cada frase convertida que fique visivelmente mais curta, expanda a ideia com um detalhe concreto — um prazo, um percentual, um exemplo prático — de modo que a frase final tenha tamanho similar à original. Nunca invente dados; use apenas informações já presentes no artigo.
+Palavras válidas: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo, apesar disso, de fato, ao mesmo tempo, anteriormente, posteriormente, sobretudo, certamente, então, entretanto, aliás, afinal, principalmente, em razão disso, nesse sentido
 
-CRITÉRIO 3 — TAMANHO DE PARÁGRAFO (verifique e corrija)
-- Todo parágrafo de texto corrido com mais de 60 palavras DEVE ser quebrado em dois
-- Nunca dois parágrafos acima de 40 palavras em sequência — insira um parágrafo curto (15–30 palavras) entre eles
-- Essa regra NÃO se aplica a bullet points, listas com "-" ou títulos H2/H3
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CORREÇÃO 2 — VOZ PASSIVA (meta: ≤ 10% das frases)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Identifique frases com voz passiva: construções com ser/estar/foi/são/foram/será/serão + particípio.
+Reescreva-as na voz ativa colocando o agente como sujeito.
+Exemplos:
+  "o imposto é calculado pela Receita" → "a Receita calcula o imposto"
+  "as alíquotas foram aprovadas pelo Congresso" → "o Congresso aprovou as alíquotas"
+  "a declaração deve ser entregue" → "o contribuinte deve entregar a declaração"
+Se a conversão deixar a frase visivelmente mais curta, expanda com um detalhe já presente no artigo (prazo, percentual, exemplo). Nunca invente dados.
 
-CRITÉRIO 4 — ESTRUTURA DE HEADINGS (verifique e corrija sem alterar conteúdo)
-- NUNCA deve haver um H3 (###) logo após um H2 (##) sem ao menos um parágrafo de texto entre eles
-- Se encontrar "## Título
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CORREÇÃO 3 — TAMANHO DE PARÁGRAFO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Regra 1: todo parágrafo de texto corrido com mais de 55 palavras deve ser quebrado em dois, cada um com seu próprio foco.
+Regra 2: nunca dois parágrafos acima de 40 palavras em sequência. Se houver, insira um parágrafo curto (15 a 25 palavras) entre eles.
+Esta correção NÃO se aplica a bullet points, listas com "-" ou títulos H2/H3.
 
-### Subtítulo" sem parágrafo intermediário, insira um parágrafo introdutório de 1–2 frases que apresente o conteúdo do H3
-- Essa regra não conflita com o limite de 300 palavras por seção — o parágrafo introdutório faz parte da contagem da seção H2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CORREÇÃO 4 — H3 LOGO APÓS H2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Procure por padrões onde um H3 (###) aparece logo após um H2 (##) sem parágrafo de texto entre eles.
+Se encontrar, insira 1 parágrafo introdutório de 1 a 2 frases apresentando o conteúdo da seção, antes do H3.
+O parágrafo inserido conta nas 300 palavras da seção H2.
 
-REGRAS ABSOLUTAS — nenhuma das correções acima pode violar estas:
-- Preserve TODO o conteúdo, dados, links e estrutura de títulos (# ## ###) — nunca remova seções, parágrafos ou frases
-- Preserve todos os links markdown [texto](url) exatamente como estão — não remova nem altere URLs
-- Não altere fatos, números, leis ou nomes
-- O artigo de saída deve ter o mesmo número de palavras (±3%) que o artigo de entrada — se as correções encurtarem o texto, compense expandindo ideias já presentes com detalhes concretos do próprio artigo
-- As mudanças devem soar naturais — nunca mecânicas ou forçadas
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRAS ABSOLUTAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Preserve TODO o conteúdo: fatos, dados, leis, nomes, argumentos — não remova nada
+- Preserve TODOS os links markdown [texto](url) exatamente como estão
+- Preserve a estrutura de títulos # ## ### sem alteração
+- O artigo de saída deve ter o mesmo número de palavras (tolerância ±5%) — se encurtar, compense expandindo ideias já presentes
+- Não altere fatos, números ou nomes
 
-Retorne APENAS o artigo completo, com todos os marcadores # ## ###.
-Sem explicações, sem comentários fora do artigo.
+Retorne APENAS o artigo completo. Sem explicações ou comentários.
 
 ARTIGO:
 ${textoCompleto}`,
 
-  auditoria: (textoCompleto, rodada) => `Você é editor-chefe de conteúdo tributário brasileiro. Audite este artigo com rigor — rodada ${rodada} de revisão.
+  // ─── AUDITORIA ────────────────────────────────────────────────────────────────
+  // Checklist binário — ChatGPT responde true/false por critério
+  // Score é calculado pelo JavaScript com base no checklist
+  auditoria: (textoCompleto, rodada) => `Você é editor-chefe de conteúdo tributário. Leia o artigo abaixo e responda cada critério com true (ok) ou false (problema).
 
-ARTIGO COMPLETO:
+Seja rigoroso. Em caso de dúvida, responda false.
+
+ARTIGO:
 ${textoCompleto}
 
-═══════════════════════════════════════════
-CRITÉRIO A — CONTEÚDO E ESTRUTURA
-═══════════════════════════════════════════
-1. LEGISLAÇÃO: cite apenas leis com certeza absoluta. Se não tiver certeza, marque como problema.
-2. COMPLETUDE: todas as seções H2 devem ter conteúdo completo, sem corte no meio.
-3. LINGUAGEM IA: frases que soam como IA ("no cenário atual", "é crucial", "vale ressaltar", "robusto", "abrangente", "transformador", linguagem corporativa vaga) são problemas.
-4. DADOS: números e percentuais sem fonte identificável são problema.
-5. FAQ: deve ter exatamente 4 perguntas com respostas completas.
-6. CONCLUSÃO: deve ter seção H2 "Conclusão" com 2 parágrafos.
-7. CTA: deve ter parágrafo final convidando a falar com a Sittax.
-8. TÓPICOS EM LISTA: verifique se há ao menos uma seção H2 com lista de bullet points ("-"). Se não houver nenhuma lista no artigo, marque como problema.
-9. HIPERLINKS: conte os hiperlinks markdown [texto](url) no artigo. O artigo deve ter no mínimo 4. Se tiver menos, marque como problema informando quantos há.
-10. TAMANHO DE PARÁGRAFO: conte as palavras dos parágrafos de texto corrido. Se houver algum parágrafo com mais de 60 palavras, ou dois parágrafos com mais de 40 palavras seguidos, marque como problema. Bullet points e listas com "-" estão isentos.
-11. SEÇÃO H2 LONGA: verifique se há alguma seção H2 com mais de 300 palavras de texto corrido entre dois headings consecutivos. Se houver, marque como problema indicando qual seção está longa. A solução não é cortar texto, mas subdividir com H3 ou novo H2.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITÉRIOS — responda true ou false para cada um
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-═══════════════════════════════════════════
-CRITÉRIO B — PALAVRAS DE TRANSIÇÃO (Yoast)
-═══════════════════════════════════════════
-META: mínimo 30% das frases devem conter pelo menos uma palavra de transição.
-- Verde (ok): ≥ 30% das frases
-- Laranja (atenção): entre 20% e 30%
-- Vermelho (problema): < 20% das frases
+A1_legislacao_verificavel
+Definição: todas as leis citadas com número são reais e verificáveis.
+False se: o artigo citar qualquer lei com número duvidoso, incorreto ou inventado.
+Leis seguras (podem ter número): LC 123/2006, LC 116/2003, CTN, CF/1988. Qualquer outra deve aparecer sem número.
 
-LISTA COMPLETA DE PALAVRAS DE TRANSIÇÃO VÁLIDAS:
-Palavras simples: ademais, afinal, aliás, analogamente, anteriormente, assim, atualmente, certamente, conforme, conquanto, contudo, decerto, embora, enfim, enquanto, então, entretanto, eventualmente, igualmente, inegavelmente, inesperadamente, mas, ocasionalmente, outrossim, pois, porquanto, porque, portanto, posteriormente, precipuamente, primeiramente, primordialmente, principalmente, salvo, semelhantemente, similarmente, sobretudo, surpreendentemente, todavia, logo, inclusive
+A2_secoes_completas
+Definição: todas as seções H2 têm conteúdo completo.
+False se: qualquer seção H2 terminar abruptamente, sem encerrar o raciocínio.
 
-Expressões compostas: a fim de, a fim de que, a menos que, a princípio, a saber, acima de tudo, ainda assim, ainda mais, ainda que, além disso, antes de mais nada, antes de tudo, antes que, ao mesmo tempo, ao passo que, ao propósito, apesar de, apesar disso, às vezes, assim como, assim que, assim sendo, assim também, bem como, com a finalidade de, com efeito, com o fim de, com o intuito de, com o propósito de, com toda a certeza, como resultado, como se, da mesma forma, de acordo com, de conformidade com, de fato, de maneira idêntica, de tal forma que, de tal sorte que, depois que, desde que, dessa forma, dessa maneira, desse modo, do mesmo modo, é provável, em conclusão, em contrapartida, em contraste com, em outras palavras, em primeiro lugar, em princípio, em resumo, em seguida, em segundo lugar, em síntese, em suma, em terceiro lugar, em virtude de, finalmente, isto é, já que, juntamente com, logo após, logo depois, logo que, mesmo que, não apenas, nesse hiato, nesse ínterim, nesse meio tempo, nesse sentido, no entanto, no momento em que, ou por outra, ou seja, para que, pelo contrário, por analogia, por causa de, por certo, por conseguinte, por consequência, porém, por exemplo, por fim, por isso, por mais que, por menos que, por outro lado, por vezes, posto que, se acaso, se bem que, seja como for, sem dúvida, sempre que, só que, sob o mesmo ponto de vista, tanto quanto, todas as vezes que, uma vez que, visto que, de repente, não obstante, de qualquer forma, em geral, geralmente, devido a, em razão de, de forma que, de modo que
+A3_sem_linguagem_ia
+Definição: o artigo está livre de linguagem de IA.
+False se: qualquer uma dessas expressões aparecer: "no cenário atual", "é crucial", "vale ressaltar", "vale destacar", "neste contexto", "em suma", "mais do que nunca", "é importante destacar", "é fundamental", "cabe destacar", "diante disso", "robusto", "abrangente", "transformador", "dinâmico", "holístico", "alavancar", "impulsionar", "potencializar", "sinergias", "paradigma".
 
-COMO CALCULAR:
-1. Conte o total de frases do artigo (separe por "." "!" "?")
-2. Para cada frase, verifique se contém alguma das palavras/expressões acima
-3. Calcule: (frases com transição / total de frases) × 100
-4. Reporte o percentual e a classificação (verde/laranja/vermelho)
-5. Se laranja ou vermelho, liste exemplos de frases sem transição que poderiam receber uma
+A4_faq_4_perguntas
+Definição: o artigo tem exatamente 4 perguntas no FAQ, cada uma com resposta completa.
+False se: houver menos de 4 perguntas, ou se alguma resposta estiver incompleta.
 
-═══════════════════════════════════════════
-CRITÉRIO C — VOZ PASSIVA (Yoast)
-═══════════════════════════════════════════
-META: máximo 10% das frases podem estar na voz passiva.
-- Verde (ok): ≤ 10% das frases em voz passiva
-- Vermelho (problema): > 10% das frases em voz passiva
+A5_conclusao_presente
+Definição: há uma seção ## Conclusão com ao menos 2 parágrafos de texto.
+False se: a conclusão estiver ausente, ou tiver apenas 1 parágrafo.
 
-Voz passiva em português: construções com "ser/estar/foi/são/foram/será/serão + particípio" (ex: "é definido", "foram aprovadas", "será regulamentado").
+A6_cta_presente
+Definição: há um parágrafo final convidando o leitor a falar com a Sittax.
+False se: o CTA estiver ausente.
 
-COMO CALCULAR:
-1. Identifique frases com construções passivas
-2. Calcule: (frases passivas / total de frases) × 100
-3. Reporte o percentual e a classificação
-4. Se vermelho, liste as frases passivas que devem ser reescritas na voz ativa
+A7_lista_topicos
+Definição: o artigo tem ao menos uma lista de bullet points com "-" em uma seção H2.
+False se: não houver nenhuma lista com "-" no artigo inteiro.
 
-═══════════════════════════════════════════
-ATENÇÃO FINAL
-═══════════════════════════════════════════
-- "aprovado" só pode ser true se score_geral >= 90
-- Score abaixo de 90 significa que há pelo menos um problema crítico nos critérios A, B ou C
+A8_minimo_4_hiperlinks
+Definição: o artigo tem 4 ou mais hiperlinks no formato [texto](url).
+False se: o total de hiperlinks for menor que 4. Informe quantos há no campo "problemas".
 
-Responda SOMENTE em JSON válido, sem markdown:
+A9_paragrafos_curtos
+Definição: todos os parágrafos de texto corrido têm 55 palavras ou menos, e nunca há dois parágrafos acima de 40 palavras em sequência.
+False se: qualquer parágrafo ultrapassar 55 palavras, OU se dois parágrafos acima de 40 palavras estiverem seguidos.
+Bullet points e listas com "-" estão isentos desta regra.
+
+A10_secoes_h2_ate_300
+Definição: nenhuma seção H2 tem mais de 300 palavras de texto corrido entre dois headings consecutivos.
+False se: qualquer seção ultrapassar 300 palavras. Informe qual seção é a problemática.
+
+A11_h3_com_paragrafo
+Definição: todo H3 tem ao menos um parágrafo de texto antes dele, dentro do mesmo bloco H2.
+False se: qualquer H3 aparecer diretamente após um H2 sem parágrafo intermediário.
+
+B1_transicao_verde
+Definição: pelo menos 30% das frases do artigo contêm uma palavra de transição.
+Como avaliar: estime contando frases e verificando se têm palavras como: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, conforme, já que, bem como, contudo, todavia, pois, logo, inclusive, de fato, em razão disso, nesse sentido, por exemplo, apesar disso.
+False se: o percentual estimado for menor que 30%.
+
+B2_passiva_verde
+Definição: menos de 10% das frases estão na voz passiva.
+Voz passiva: construções com ser/estar/foi/são/foram/será/serão + particípio (ex: "é definido", "foram aprovadas").
+False se: o percentual estimado for maior que 10%.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEMAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Para cada critério marcado como false, escreva uma descrição concreta no array "problemas".
+Exemplos de descrições boas:
+- "A3: encontrado 'vale ressaltar' no 3º parágrafo da seção Substituição Tributária"
+- "A9: parágrafo de 68 palavras na seção Obrigações Acessórias — deve ser quebrado"
+- "A8: apenas 3 hiperlinks encontrados — falta 1"
+- "B1: estimativa de 22% de frases com transição — abaixo do mínimo de 30%"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMATO DE RESPOSTA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Responda SOMENTE em JSON válido. Nenhum texto antes ou depois. Nenhum bloco de código.
+
 {
-  "score_geral": 87,
-  "aprovado": false,
-  "problemas": [
-    "Problemas concretos. Ex: 'LC 214/2025 não existe', 'Conclusão ausente', 'Apenas 18% das frases têm transição — abaixo do mínimo de 30%', 'Voz passiva em 15% das frases — acima do limite de 10%: [lista as frases]'. Array vazio [] se não houver."
-  ],
   "checklist": {
-    "h1_com_keyword": true,
-    "introducao_direta": true,
-    "dados_numericos": true,
-    "legislacao_verificavel": true,
-    "faq_completo_4_perguntas": true,
-    "conclusao_presente": true,
-    "cta_presente": true,
-    "sem_linguagem_ia": true,
-    "todas_secoes_completas": true,
-    "transicao_yoast_verde": true,
-    "voz_passiva_yoast_verde": true,
-    "lista_topicos_presente": true
+    "A1_legislacao_verificavel": true,
+    "A2_secoes_completas": true,
+    "A3_sem_linguagem_ia": true,
+    "A4_faq_4_perguntas": true,
+    "A5_conclusao_presente": true,
+    "A6_cta_presente": true,
+    "A7_lista_topicos": true,
+    "A8_minimo_4_hiperlinks": true,
+    "A9_paragrafos_curtos": true,
+    "A10_secoes_h2_ate_300": true,
+    "A11_h3_com_paragrafo": true,
+    "B1_transicao_verde": true,
+    "B2_passiva_verde": true
   },
+  "problemas": [],
   "yoast": {
-    "total_frases": 45,
-    "frases_com_transicao": 15,
     "percentual_transicao": 33,
     "status_transicao": "verde",
-    "frases_passivas": 3,
     "percentual_passiva": 7,
     "status_passiva": "verde"
   },
-  "resumo": "Veredicto objetivo em 1-2 frases"
+  "resumo": "Veredicto em 1-2 frases"
 }`,
 
-  // Etapa de busca de fontes — Claude retorna JSON com URLs reais (leve)
+  // ─── BUSCAR FONTES ────────────────────────────────────────────────────────────
+  // ChatGPT usa web_search para encontrar URLs reais de leis e dados citados
   buscarFontes: (textoCompleto) => `Você é especialista em fontes do direito tributário brasileiro.
 
-Analise o trecho abaixo e identifique menções a leis, normas e dados com fonte implícita.
-Para cada item encontrado, busque a URL oficial real na internet.
+Analise o trecho abaixo e identifique menções a leis, normas e dados que deveriam ter uma URL de fonte.
+Para cada item identificado, use web_search para encontrar a URL oficial real.
 
 Fontes prioritárias:
 - Leis federais → planalto.gov.br
 - Instruções Normativas RFB → normas.receita.fazenda.gov.br
-- IBGE, Sebrae, IBPT → sites oficiais
-
-Retorne APENAS um JSON puro, sem texto antes ou depois:
-{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-encontrada.gov.br"}]}
-
-Máximo 4 fontes. Só inclua URLs que você confirmou via web_search — NUNCA invente.
-Se não encontrar nenhuma, retorne: {"fontes":[]}
-
-TRECHO DO ARTIGO (primeiros 800 caracteres):
-${textoCompleto.slice(0, 800)}`,
-
-  // Links internos do blog Sittax — ChatGPT insere links pré-definidos
-  linksInternos: (textoCompleto) => `Você é especialista em SEO da Sittax.
-
-Insira links internos do blog da Sittax no artigo abaixo, nos trechos onde as palavras-âncora aparecerem naturalmente.
-
-LINKS DISPONÍVEIS DO BLOG SITTAX:
-1. [Contador 2026: tendências e oportunidades](https://sittax.com.br/blog/sittax-cast/contador-2026/) — sobre o futuro do contador, oportunidades e desafios para 2026
-2. [Gestão de equipes e inteligência de dados na contabilidade digital](https://sittax.com.br/blog/sittax-cast/gestao-equipes-inteligencia-dados-contabilidade-digital/) — gestão de escritórios contábeis com dados e tecnologia
-3. [Malha fina, IR e desenquadramento do Simples Nacional](https://sittax.com.br/blog/sittax-cast/malha-fina-imposto-desenquadramento-simples-nacional/) — fiscalização digital, malha fina e riscos de desenquadramento
-4. [Tributação como ativo estratégico](https://sittax.com.br/blog/sittax-cast/sittaxcast-14-tributacao-como-ativo-transforme-o-fiscal-em-motor-de-crescimento/) — como usar o fiscal como motor de crescimento empresarial
-5. [O contador do futuro: tecnologia e Reforma Tributária](https://sittax.com.br/blog/sittax-cast/sittaxcast-13-o-contador-do-futuro-tecnologia-reforma-tributaria-e-reinvencao/) — impacto da Reforma Tributária e IA no setor contábil
-6. [Segurança da informação na contabilidade](https://sittax.com.br/blog/sittax-cast/sittaxcast-10-seguranca-da-informacao-na-contabilidade-seus-dados-estao-protegidos/) — proteção de dados e segurança digital para escritórios
-7. [Reforma Tributária: split payment, precificação e fluxo de caixa](https://sittax.com.br/artigo/reforma-tributaria-split-payment-precificacao-fluxo-caixa/) — impacto do split payment no B2B e gestão financeira
-8. [Segregação automática no Simples Nacional](https://sittax.com.br/artigo/segregacao-automatica-simples-nacional/) — automação da segregação fiscal no Simples Nacional
-9. [Regularização no Simples Nacional](https://sittax.com.br/artigo/regularizacao-simples-nacional/) — como regularizar pendências e evitar exclusão do Simples
-
-REGRAS — LEIA COM ATENÇÃO:
-- OBRIGATÓRIO: insira exatamente 3 links internos — nem mais, nem menos. Se inserir menos de 3, a tarefa falhou.
-- ESTRATÉGIA: para cada link, procure no artigo uma expressão ou palavra que se relacione com o tema do link — mesmo que a relação seja parcial. Entre os 9 links disponíveis, sempre haverá ao menos 3 com alguma relação com qualquer tema tributário.
-- O âncora deve ser uma expressão que JÁ EXISTE no texto — não adicione palavras novas
-- Se não encontrar uma âncora exata, use a expressão mais próxima do tema do link que apareça no texto
-- Nunca repita o mesmo link
-- Preserve todos os links externos já existentes
-- Não altere nenhuma outra parte do texto
-- PROIBIDO: texto fora do artigo, explicações, comentários
-
-CONFIRMAÇÃO ANTES DE RETORNAR: conte os links do blog sittax.com.br que você inseriu. Se for menos de 3, volte e insira os faltantes.
-
-Retorne APENAS o artigo completo. Comece diretamente com o # do título.
-
-ARTIGO:
-${textoCompleto}`,
-
-  // Etapa de inserção de fontes — ChatGPT insere os links no texto
-  inserirFontes: (textoCompleto, fontes) => `Você é editor de conteúdo da Sittax.
-
-Insira os links de fontes abaixo no artigo, nos trechos exatos onde as âncoras aparecem.
-
-FONTES DISPONÍVEIS:
-${fontes.map((f, i) => (i+1) + '. ancora: "' + f.ancora + '" → ' + f.url).join('\n')}
+- IBGE, Sebrae, IBPT → sites oficiais de cada órgão
 
 REGRAS:
-- Formato markdown: [âncora](url)
-- Use a âncora exata fornecida para encontrar o ponto de inserção no texto
-- Máximo 1 link por fonte
+- Inclua no JSON APENAS URLs que você encontrou na busca — NUNCA invente
+- Se não encontrar URL real para um item, não o inclua
+- Máximo 4 fontes
+- Se não encontrar nenhuma, retorne {"fontes":[]}
+
+Responda SOMENTE com o JSON abaixo. Nenhum texto antes ou depois.
+{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-encontrada.gov.br"}]}
+
+TRECHO DO ARTIGO:
+${textoCompleto.slice(0, 800)}`,
+
+  // ─── INSERIR FONTES ───────────────────────────────────────────────────────────
+  inserirFontes: (textoCompleto, fontes) => `Você é editor de conteúdo da Sittax.
+
+Insira os links de fontes abaixo no artigo, nos trechos onde as âncoras aparecem.
+
+FONTES A INSERIR:
+${fontes.map((f, i) => (i+1) + '. Âncora: "' + f.ancora + '" → URL: ' + f.url).join('\n')}
+
+REGRAS:
+- Formato markdown: [âncora exata](url)
+- Insira o link na primeira ocorrência da âncora no texto
+- Máximo 1 link por âncora
 - Não altere nenhuma outra parte do texto
 - Preserve todos os links já existentes
-- PROIBIDO: texto fora do artigo, explicações, comentários
 
-Retorne APENAS o artigo completo. Comece diretamente com o # do título.
+Retorne APENAS o artigo completo. Comece com o # do título. Sem comentários.
 
 ARTIGO:
 ${textoCompleto}`,
 
+  // ─── LINKS INTERNOS ───────────────────────────────────────────────────────────
+  // ChatGPT insere exatamente 3 links internos do blog Sittax
+  linksInternos: (textoCompleto) => `Você é especialista em SEO da Sittax.
 
-  // Auditoria Yoast dedicada — apenas transição e voz passiva
-  auditoriaYoast: (textoCompleto) => `Você é revisor especialista em legibilidade. Analise o artigo abaixo e calcule dois indicadores.
+Insira exatamente 3 links internos do blog Sittax no artigo abaixo.
+
+LINKS DISPONÍVEIS (escolha os 3 mais relevantes para o tema do artigo):
+1. [Contador 2026: tendências e oportunidades](https://sittax.com.br/blog/sittax-cast/contador-2026/) — futuro do contador, oportunidades e desafios para 2026
+2. [Gestão de equipes e inteligência de dados na contabilidade digital](https://sittax.com.br/blog/sittax-cast/gestao-equipes-inteligencia-dados-contabilidade-digital/) — gestão de escritórios com dados e tecnologia
+3. [Malha fina, IR e desenquadramento do Simples Nacional](https://sittax.com.br/blog/sittax-cast/malha-fina-imposto-desenquadramento-simples-nacional/) — fiscalização digital e riscos de desenquadramento
+4. [Tributação como ativo estratégico](https://sittax.com.br/blog/sittax-cast/sittaxcast-14-tributacao-como-ativo-transforme-o-fiscal-em-motor-de-crescimento/) — como usar o fiscal como motor de crescimento
+5. [O contador do futuro: tecnologia e Reforma Tributária](https://sittax.com.br/blog/sittax-cast/sittaxcast-13-o-contador-do-futuro-tecnologia-reforma-tributaria-e-reinvencao/) — impacto da Reforma Tributária e IA no setor contábil
+6. [Segurança da informação na contabilidade](https://sittax.com.br/blog/sittax-cast/sittaxcast-10-seguranca-da-informacao-na-contabilidade-seus-dados-estao-protegidos/) — proteção de dados para escritórios
+7. [Reforma Tributária: split payment, precificação e fluxo de caixa](https://sittax.com.br/artigo/reforma-tributaria-split-payment-precificacao-fluxo-caixa/) — impacto do split payment no B2B
+8. [Segregação automática no Simples Nacional](https://sittax.com.br/artigo/segregacao-automatica-simples-nacional/) — automação da segregação fiscal
+9. [Regularização no Simples Nacional](https://sittax.com.br/artigo/regularizacao-simples-nacional/) — como regularizar pendências e evitar exclusão
+
+REGRAS:
+- Insira EXATAMENTE 3 links — nem mais, nem menos
+- O âncora de cada link deve ser uma expressão JÁ EXISTENTE no texto — não adicione palavras novas
+- Se a expressão exata não existir, use a expressão mais próxima que apareça no texto
+- Nunca repita o mesmo link duas vezes
+- Preserve todos os links externos já existentes no artigo
+- Não altere nenhuma outra parte do texto
+
+VERIFICAÇÃO OBRIGATÓRIA antes de retornar: conte os links sittax.com.br que você inseriu. Se for diferente de 3, corrija antes de retornar.
+
+Retorne APENAS o artigo completo. Comece com o # do título. Sem comentários.
+
+ARTIGO:
+${textoCompleto}`,
+
+  // ─── REVISÃO ──────────────────────────────────────────────────────────────────
+  // Corrige os problemas identificados pela auditoria
+  revisar: (textoCompleto, problemas) => `Você é redator especialista da Sittax.
+
+Reescreva o artigo abaixo corrigindo TODOS os problemas listados. Não altere nada além do necessário para corrigir cada problema.
+
+PROBLEMAS A CORRIGIR:
+${problemas.map((p, i) => `${i + 1}. ${p}`).join("\n")}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMO CORRIGIR CADA TIPO DE PROBLEMA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SE A1 (legislação): substitua qualquer lei com número duvidoso por "conforme a legislação tributária vigente". Mantenha apenas LC 123/2006, LC 116/2003, CTN e CF/1988 se já estiverem corretos.
+
+SE A3 (linguagem de IA): substitua as expressões proibidas por linguagem direta de contador.
+Proibidas: "robusto", "abrangente", "alavancar", "transformador", "dinâmico", "holístico", "é crucial", "vale ressaltar", "neste contexto", "em suma", "mais do que nunca", "cabe destacar", "diante disso", "impulsionar", "potencializar".
+Substitua por linguagem direta: em vez de "é crucial entender", escreva "o contador precisa entender"; em vez de "alavancar resultados", escreva "melhorar os resultados".
+
+SE A4 (FAQ incompleto): adicione as perguntas faltantes seguindo o formato ### [pergunta] / [resposta de 3-4 frases].
+
+SE A5 (conclusão): adicione ou expanda a seção ## Conclusão com ao menos 2 parágrafos de 20 a 50 palavras cada.
+
+SE A6 (CTA ausente): adicione um parágrafo final convidando o leitor a falar com a Sittax sobre o caso específico da empresa.
+
+SE A7 (sem lista de bullet points): escolha a seção H2 mais adequada sem H3s, adicione um parágrafo introdutório e uma lista com mínimo 3 itens no formato "- texto".
+
+SE A8 (hiperlinks insuficientes): adicione hiperlinks reais nos trechos que citam leis, órgãos, dados ou fontes.
+Formato: [âncora natural](url). Use URLs de: planalto.gov.br, gov.br/receitafederal, sebrae.com.br, ibge.gov.br, contabeis.com.br, cfc.org.br.
+NUNCA invente URLs — só insira links de fontes que você conhece com certeza.
+
+SE A9 (parágrafos longos): quebre todo parágrafo acima de 55 palavras em dois. Se houver dois parágrafos acima de 40 palavras seguidos, insira um parágrafo curto (15 a 25 palavras) entre eles. Bullet points estão isentos.
+
+SE A10 (seção H2 > 300 palavras): não corte conteúdo. Localize o ponto natural de divisão e insira um ### com subtítulo descritivo. Se não couber H3, crie um novo ## e continue o conteúdo lá.
+
+SE A11 (H3 sem parágrafo antes): insira 1 parágrafo de 1 a 2 frases antes do H3, apresentando o conteúdo da seção.
+
+SE B1 (transição < 30%): insira palavras de transição nas frases mais "soltas", variando posição (início, meio ou fim).
+Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, bem como, contudo, todavia, inclusive, pois, logo, de fato, nesse sentido, em razão disso.
+
+SE B2 (voz passiva > 10%): reescreva as frases passivas na voz ativa.
+Passiva: "o imposto é calculado pela Receita" → Ativa: "a Receita calcula o imposto"
+Passiva: "as alíquotas foram definidas pela lei" → Ativa: "a lei definiu as alíquotas"
+Se não houver agente claro: "deve ser entregue" → "o contribuinte deve entregar"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRAS ABSOLUTAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Preserve TODO o conteúdo: fatos, dados, números, leis, nomes — não remova nada
+- Preserve TODOS os links markdown [texto](url) exatamente como estão
+- Preserve a estrutura de títulos # ## ### sem alteração
+- Mantenha FAQ com 4 perguntas, Conclusão e CTA
+- Não invente dados, leis ou URLs
+
+Retorne o artigo completo corrigido, com todos os títulos # ## ###. Sem comentários.
+
+ARTIGO:
+${textoCompleto}`,
+
+  // ─── AUDITORIA YOAST ──────────────────────────────────────────────────────────
+  // Calcula transição e voz passiva com precisão — etapa dedicada após os links
+  auditoriaYoast: (textoCompleto) => `Você é revisor especialista em legibilidade de textos em português brasileiro.
+
+Analise o artigo abaixo e calcule dois indicadores de legibilidade.
 
 ARTIGO:
 ${textoCompleto}
 
-═══════════════════════════════
-CÁLCULO 1 — PALAVRAS DE TRANSIÇÃO
-═══════════════════════════════
-1. Separe todas as frases do artigo (por "." "!" "?"). Ignore títulos H1/H2/H3, itens de lista e URLs.
-2. Para cada frase, verifique se contém pelo menos uma palavra/expressão de transição da lista abaixo.
-3. Calcule: (frases com transição / total de frases) × 100
-4. Se o percentual for menor que 30%, liste até 8 frases que NÃO têm transição e que seriam boas candidatas para receber uma.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CÁLCULO 1 — PALAVRAS DE TRANSIÇÃO (meta: ≥ 30%)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Separe todas as frases do artigo (delimite por "." "!" "?"). Ignore: títulos H1/H2/H3, itens de lista iniciados com "-", URLs.
+2. Para cada frase, verifique se contém ao menos uma palavra/expressão de transição da lista abaixo.
+3. Calcule: (frases com transição ÷ total de frases) × 100. Arredonde para inteiro.
+4. Se o percentual for menor que 30%, liste até 8 frases que NÃO têm transição e que são boas candidatas para receber uma.
 
 Lista de transições válidas: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo, apesar disso, de fato, ao mesmo tempo, anteriormente, posteriormente, sobretudo, certamente, então, entretanto, aliás, afinal, principalmente, em razão disso, nesse sentido, por consequência, dessa maneira
 
-═══════════════════════════════
-CÁLCULO 2 — VOZ PASSIVA
-═══════════════════════════════
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CÁLCULO 2 — VOZ PASSIVA (meta: ≤ 10%)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. Identifique todas as frases com voz passiva: construções com ser/estar/foi/são/foram/será/serão + particípio.
-2. Calcule: (frases passivas / total de frases) × 100
+   Exemplos: "é calculado", "foram aprovadas", "será regulamentado", "são consideradas".
+2. Calcule: (frases passivas ÷ total de frases) × 100. Arredonde para inteiro.
 3. Se o percentual for maior que 10%, liste TODAS as frases passivas encontradas.
 
-Responda SOMENTE em JSON válido, sem markdown:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMATO DE RESPOSTA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Responda SOMENTE em JSON válido. Nenhum texto antes ou depois. Nenhum bloco de código.
+
 {
   "total_frases": 80,
   "transicao": {
@@ -482,132 +641,77 @@ Responda SOMENTE em JSON válido, sem markdown:
 }
 
 Regras do JSON:
-- "status" deve ser "verde" (ok) ou "vermelho" (problema)
-- "aprovado" é true apenas se transição ≥ 30% E passiva ≤ 10%
-- "frases_sem_transicao": lista de frases candidatas (só preencher se status for "vermelho")
-- "frases_encontradas": lista de frases passivas (só preencher se status for "vermelho")`,
+- "status": "verde" se ok, "vermelho" se problema
+- "aprovado": true apenas se transição ≥ 30% E passiva ≤ 10%
+- "frases_sem_transicao": preencha apenas se status da transição for "vermelho"
+- "frases_encontradas": preencha apenas se status da passiva for "vermelho"`,
 
-  // Revisão Yoast dedicada — cirúrgica, sem mexer em links ou estrutura
+  // ─── REVISÃO YOAST ────────────────────────────────────────────────────────────
+  // Correção cirúrgica de transição e voz passiva — não altera mais nada
   revisaoYoast: (textoCompleto, dadosAuditoria) => `Você é revisor especialista em legibilidade de textos em português brasileiro.
 
-Sua única tarefa é corrigir os dois problemas de legibilidade listados abaixo. Não altere mais nada.
+Corrija APENAS os problemas de legibilidade listados abaixo. Não altere mais nada.
 
 PROBLEMAS A CORRIGIR:
 ${dadosAuditoria}
 
-═══════════════════════════════
-REGRAS ABSOLUTAS — LEIA COM ATENÇÃO
-═══════════════════════════════
-- Preserve TODO o conteúdo: fatos, dados, números, leis, nomes, argumentos
-- Preserve TODOS os links markdown [texto](url) exatamente como estão — não remova nem altere nenhum link
-- Preserve a estrutura de títulos (# ## ###) sem nenhuma alteração
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRAS ABSOLUTAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Preserve TODO o conteúdo, dados, leis e nomes
+- Preserve TODOS os links markdown [texto](url) exatamente como estão
+- Preserve a estrutura de títulos # ## ### sem nenhuma alteração
 - Preserve bullet points e listas com "-" exatamente como estão
-- NÃO remova conteúdo — se uma seção estiver longa, subdivida com H3 ou novo H2 em vez de cortar texto
-- NÃO altere frases que já estão corretas — mexa apenas nas frases problemáticas listadas acima
+- NÃO remova seções, parágrafos ou frases
 
 SE HOUVER PROBLEMA DE TRANSIÇÃO (percentual < 30%):
-- Nas frases listadas como candidatas, insira uma palavra de transição — variando a posição (início, meio ou fim)
-- Prefira inserir no meio da frase: "O contribuinte, portanto, deve..." ou "A multa, inclusive, pode..."
-- Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, bem como, contudo, todavia, inclusive, pois, logo, de fato, nesse sentido, em razão disso
-- A inserção deve soar natural — nunca mecânica
+Insira palavras de transição nas frases listadas como candidatas. Varie a posição: início, meio ou fim.
+Exemplos: "A empresa, portanto, deve..." / "Além disso, o prazo..." / "...o que inclui, inclusive, os optantes do Simples."
+Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, bem como, contudo, todavia, inclusive, pois, logo, de fato, nesse sentido, em razão disso
 
 SE HOUVER PROBLEMA DE VOZ PASSIVA (percentual > 10%):
-- Reescreva APENAS as frases passivas listadas, convertendo para voz ativa
-- Coloque o agente como sujeito: "a Receita calcula" em vez de "é calculado pela Receita"
-- "as alíquotas foram definidas pela lei" → "a lei definiu as alíquotas"
-- "o prazo será divulgado pelo Fisco" → "o Fisco divulgará o prazo"
-- Se não houver agente claro, reformule para voz ativa com sujeito genérico: "o contribuinte deve entregar" em vez de "deve ser entregue"
+Reescreva APENAS as frases listadas, convertendo para voz ativa.
+Coloque o agente como sujeito: "a Receita calcula" em vez de "é calculado pela Receita".
+Se não houver agente claro, use sujeito genérico: "o contribuinte deve entregar" em vez de "deve ser entregue".
 
-Retorne APENAS o artigo completo corrigido, com todos os marcadores # ## ###.
-Sem explicações, sem comentários fora do artigo.
+Retorne APENAS o artigo completo corrigido, com todos os títulos # ## ###. Sem comentários.
 
 ARTIGO:
 ${textoCompleto}`,
 
+  // ─── BUSCA DE LINKS INTERNOS (fallback) ───────────────────────────────────────
   buscaLinksInternos: (tema) => `Você é especialista em SEO da Sittax.
 
 Use web_search para encontrar artigos reais do blog da Sittax relacionados ao tema "${tema}".
-Faça 3-4 buscas variadas como: site:sittax.com.br/blog [keyword do tema]
+Faça 3 a 4 buscas variadas: site:sittax.com.br/blog [keyword do tema]
 
-Retorne APENAS um JSON com os artigos encontrados, sem texto antes ou depois:
+Retorne SOMENTE o JSON abaixo. Nenhum texto antes ou depois.
 {
   "artigos": [
-    { "titulo": "Título do artigo", "url": "https://sittax.com.br/blog/slug-do-artigo", "relevancia": "por que é relevante para o tema" },
-    { "titulo": "Título do artigo 2", "url": "https://sittax.com.br/blog/slug-2", "relevancia": "motivo" }
+    { "titulo": "Título do artigo", "url": "https://sittax.com.br/blog/slug", "relevancia": "por que é relevante para o tema" }
   ]
 }
 Máximo 4 artigos. Só inclua URLs que você realmente encontrou — NUNCA invente.`,
 
+  // ─── INSERIR LINKS INTERNOS (fallback) ────────────────────────────────────────
   inserirLinksInternos: (textoCompleto, artigos) => `Você é especialista em SEO da Sittax.
 
 Insira os links internos abaixo no artigo, nos trechos mais relevantes.
 
-LINKS DISPONÍVEIS:
+LINKS A INSERIR:
 ${artigos.map((a, i) => (i+1) + ". [" + a.titulo + "](" + a.url + ") — " + a.relevancia).join("\n")}
 
 REGRAS:
 - Máximo 4 links internos no total
-- Formato markdown: [âncora natural](url)
-- O âncora deve ser uma expressão já existente no texto — não adicione texto novo
+- O âncora deve ser uma expressão JÁ EXISTENTE no texto — não adicione palavras novas
 - Não altere nenhuma outra parte do texto
 - Preserve todos os links externos já existentes
-- PROIBIDO: texto fora do artigo, explicações, comentários
 
-Retorne APENAS o artigo completo. Comece diretamente com o # do título.
+Retorne APENAS o artigo completo. Comece com o # do título. Sem comentários.
 
 ARTIGO:
 ${textoCompleto}`,
 
-  revisar: (textoCompleto, problemas) => `Você é redator especialista da Sittax. Reescreva o artigo abaixo corrigindo TODOS os problemas listados.
-
-PROBLEMAS A CORRIGIR:
-${problemas.map((p, i) => `${i + 1}. ${p}`).join("\n")}
-
-REGRAS DA REESCRITA:
-- Corrija cada problema listado acima
-- NUNCA invente ou cite leis que você não tem certeza que existem. Use "conforme a legislação tributária vigente" quando em dúvida
-- Mantenha toda a estrutura de títulos (# ## ###) e o tamanho aproximado
-- Não corte nenhuma seção — todas devem ter conteúdo completo
-- Mantenha FAQ com 4 perguntas, Conclusão e CTA no final
-- Linguagem de contador experiente, direta, sem marcadores de IA
-
-SE HOUVER PROBLEMA DE PALAVRAS DE TRANSIÇÃO (meta: ≥ 30% das frases):
-- Adicione conectivos naturais em posições variadas — início, meio ou fim das frases isoladas. Não coloque transição sempre no início: prefira inserir no meio da frase quando possível (ex: "A empresa, portanto, deve..." ou "Esse prazo vale inclusive para...")
-- Use palavras da lista: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo
-- Não force — insira apenas onde a transição for natural e melhore a leitura
-
-SE HOUVER PROBLEMA DE VOZ PASSIVA (meta: ≤ 10% das frases):
-- Reescreva as frases passivas identificadas na voz ativa
-- Ex: "o imposto é calculado pela Receita" → "a Receita calcula o imposto"
-- Ex: "as alíquotas foram definidas pela lei" → "a lei definiu as alíquotas"
-
-SE HOUVER PROBLEMA DE TÓPICOS EM LISTA (ao menos 1 seção H2 deve ter bullet points):
-- Escolha a seção H2 mais adequada que não tenha H3s
-- Adicione um parágrafo introdutório e em seguida uma lista com mínimo 3 itens no formato "- texto"
-- Cada item deve ter 1-2 linhas com informação ou ação concreta
-
-SE HOUVER PROBLEMA DE HIPERLINKS (meta: mínimo 4 no artigo):
-- Adicione hiperlinks reais nos trechos que citam leis, órgãos, dados ou fontes
-- Formato markdown: [âncora natural](url)
-- Use URLs reais de: planalto.gov.br, gov.br/receitafederal, contabeis.com.br, sebrae.com.br, ibge.gov.br, cfc.org.br, fenacon.org.br, g1.globo.com, valor.globo.com
-- NUNCA invente URLs — só insira links de fontes que você conhece com certeza
-
-SE HOUVER PROBLEMA DE TAMANHO DE PARÁGRAFO:
-- Quebre todo parágrafo de texto corrido com mais de 60 palavras em dois parágrafos distintos, cada um com seu próprio foco
-- Se houver dois parágrafos acima de 40 palavras seguidos, insira um parágrafo curto (15–30 palavras) entre eles
-- Bullet points e listas com "-" estão isentos — não quebre listas em partes menores
-
-SE HOUVER SEÇÃO H2 COM MAIS DE 300 PALAVRAS:
-- Não remova nem corte nenhum conteúdo — o texto total deve ser preservado
-- Localize o ponto natural de divisão dentro da seção (mudança de subtema, exemplo, nova instrução)
-- Insira um "### [subtítulo descritivo]" nesse ponto para subdividir a seção em H3
-- Se não houver H3 adequado, crie um novo "## [título complementar]" logo após os primeiros 250–280 palavras da seção e continue o conteúdo restante sob esse novo H2
-- O objetivo é que nenhuma seção entre dois headings tenha mais de 300 palavras de texto corrido
-
-ARTIGO ORIGINAL:
-${textoCompleto}
-
-Retorne o artigo completo corrigido, com todos os marcadores de formatação (# ## ###).`,
 };
 
 // ─── API (chama o backend via URL relativa — funciona local e no Vercel) ─────
@@ -646,6 +750,31 @@ const pausa = (seg, motivo, logFn) => new Promise(resolve => {
   if (logFn) logFn(`⏳ Aguardando ${seg}s (limite de tokens)...`, "info");
   setTimeout(resolve, seg * 1000);
 });
+
+// ── Calcula score a partir do checklist binário ──────────────────────────────
+function calcularScore(checklist) {
+  if (!checklist) return { score: 0 };
+  const pesos = {
+    A1_legislacao_verificavel: 10,
+    A2_secoes_completas:        8,
+    A3_sem_linguagem_ia:        8,
+    A4_faq_4_perguntas:         7,
+    A5_conclusao_presente:      7,
+    A6_cta_presente:            5,
+    A7_lista_topicos:           5,
+    A8_minimo_4_hiperlinks:     7,
+    A9_paragrafos_curtos:       6,
+    A10_secoes_h2_ate_300:      5,
+    A11_h3_com_paragrafo:       7,
+    B1_transicao_verde:        10,
+    B2_passiva_verde:          10,
+  };
+  let score = 100;
+  for (const [key, ok] of Object.entries(checklist)) {
+    if (!ok && pesos[key]) score -= pesos[key];
+  }
+  return { score: Math.max(0, score) };
+}
 
 function parseJSON(text) {
   if (!text) return null;
@@ -1001,11 +1130,13 @@ export default function App() {
       const rawA1 = await callGPT(PROMPTS.auditoria(textoFinal, 1), 1500);
       const ad1 = parseJSON(rawA1);
       if (ad1) {
+        const { score: score1Calc } = calcularScore(ad1.checklist);
+        ad1.score_geral = score1Calc;
         auditFinal = ad1;
         const yoast1Ok = !ad1.yoast || (ad1.yoast.status_transicao === "verde" && ad1.yoast.status_passiva === "verde");
-        const score1Ok = ad1.score_geral >= 90 && yoast1Ok;
+        const score1Ok = score1Calc >= 90 && yoast1Ok;
         log_(
-          `✓ Score rodada 1: ${ad1.score_geral}/100` +
+          `✓ Score rodada 1: ${score1Calc}/100` +
           (ad1.yoast ? ` | Transição: ${ad1.yoast.percentual_transicao}% (${ad1.yoast.status_transicao}) | Passiva: ${ad1.yoast.percentual_passiva}% (${ad1.yoast.status_passiva})` : "") +
           (score1Ok ? " — aprovado ✓" : " — revisando..."),
           score1Ok ? "ok" : "warn"
@@ -1068,11 +1199,13 @@ export default function App() {
       const rawA2 = await callGPT(PROMPTS.auditoria(textoFinal, 2), 1500);
       const ad2 = parseJSON(rawA2);
       if (ad2) {
+        const { score: score2Calc } = calcularScore(ad2.checklist);
+        ad2.score_geral = score2Calc;
         auditFinal = ad2;
         const yoast2Ok = !ad2.yoast || (ad2.yoast.status_transicao === "verde" && ad2.yoast.status_passiva === "verde");
-        const score2Ok = ad2.score_geral >= 90 && yoast2Ok;
+        const score2Ok = score2Calc >= 90 && yoast2Ok;
         log_(
-          `✓ Score rodada 2: ${ad2.score_geral}/100` +
+          `✓ Score rodada 2: ${score2Calc}/100` +
           (ad2.yoast ? ` | Transição: ${ad2.yoast.percentual_transicao}% (${ad2.yoast.status_transicao}) | Passiva: ${ad2.yoast.percentual_passiva}% (${ad2.yoast.status_passiva})` : "") +
           (score2Ok ? " — aprovado ✓" : " — entregando melhor versão"),
           score2Ok ? "ok" : "warn"
