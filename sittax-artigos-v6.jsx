@@ -74,10 +74,12 @@ DADOS NUMÉRICOS (obrigatório):
 - Verifique se são aplicáveis a 2026 — se sim, insira no contexto mais relevante do artigo
 - NUNCA remova dados numéricos já presentes no rascunho — apenas reposicione se necessário
 
-CADA SEÇÃO H2:
+CADA SEÇÃO H2 — LIMITE DE 300 PALAVRAS (Yoast):
+- Cada seção H2 deve ter no MÁXIMO 300 palavras de texto corrido (excluindo o título do H2)
+- Conte as palavras à medida que escreve. Se ultrapassar 300 palavras antes de fechar o conteúdo da seção, crie um H3 ou um novo H2 para continuar — NUNCA corte o texto
+- Exemplo: se uma seção H2 chegou a 280 palavras e ainda há mais a dizer, abra "### [subtítulo relevante]" e continue
 - Parágrafo introdutório logo após o título H2 — antes de qualquer H3
-- Mínimo 4 parágrafos densos por seção (com ou sem H3s)
-- H3s: use apenas quando subdividirem naturalmente o conteúdo — nunca logo após o H2 sem parágrafo introdutório
+- H3s: use quando subdividirem naturalmente o conteúdo, ou quando a seção ultrapassar 250 palavras e precisar de mais conteúdo — nunca logo após o H2 sem parágrafo introdutório
 - OBRIGATÓRIO: ao menos uma seção H2 do artigo deve ter H3s — o artigo não pode ter zero H3s no total
 - OBRIGATÓRIO: ao menos uma seção H2 que NÃO tenha H3s deve usar uma lista de tópicos com bullet points ("-") — sem isso o artigo será rejeitado
 - OBRIGATÓRIO: sempre que houver lista de tópicos, deve haver ao menos um parágrafo de texto antes dela — nunca abra lista direto após título H2
@@ -281,6 +283,7 @@ CRITÉRIO A — CONTEÚDO E ESTRUTURA
 8. TÓPICOS EM LISTA: verifique se há ao menos uma seção H2 com lista de bullet points ("-"). Se não houver nenhuma lista no artigo, marque como problema.
 9. HIPERLINKS: conte os hiperlinks markdown [texto](url) no artigo. O artigo deve ter no mínimo 4. Se tiver menos, marque como problema informando quantos há.
 10. TAMANHO DE PARÁGRAFO: conte as palavras dos parágrafos de texto corrido. Se houver algum parágrafo com mais de 60 palavras, ou dois parágrafos com mais de 40 palavras seguidos, marque como problema. Bullet points e listas com "-" estão isentos.
+11. SEÇÃO H2 LONGA: verifique se há alguma seção H2 com mais de 300 palavras de texto corrido entre dois headings consecutivos. Se houver, marque como problema indicando qual seção está longa. A solução não é cortar texto, mas subdividir com H3 ou novo H2.
 
 ═══════════════════════════════════════════
 CRITÉRIO B — PALAVRAS DE TRANSIÇÃO (Yoast)
@@ -493,7 +496,7 @@ REGRAS ABSOLUTAS — LEIA COM ATENÇÃO
 - Preserve TODOS os links markdown [texto](url) exatamente como estão — não remova nem altere nenhum link
 - Preserve a estrutura de títulos (# ## ###) sem nenhuma alteração
 - Preserve bullet points e listas com "-" exatamente como estão
-- NÃO adicione nem remova seções, parágrafos ou tópicos
+- NÃO remova conteúdo — se uma seção estiver longa, subdivida com H3 ou novo H2 em vez de cortar texto
 - NÃO altere frases que já estão corretas — mexa apenas nas frases problemáticas listadas acima
 
 SE HOUVER PROBLEMA DE TRANSIÇÃO (percentual < 30%):
@@ -587,6 +590,13 @@ SE HOUVER PROBLEMA DE TAMANHO DE PARÁGRAFO:
 - Quebre todo parágrafo de texto corrido com mais de 60 palavras em dois parágrafos distintos, cada um com seu próprio foco
 - Se houver dois parágrafos acima de 40 palavras seguidos, insira um parágrafo curto (15–30 palavras) entre eles
 - Bullet points e listas com "-" estão isentos — não quebre listas em partes menores
+
+SE HOUVER SEÇÃO H2 COM MAIS DE 300 PALAVRAS:
+- Não remova nem corte nenhum conteúdo — o texto total deve ser preservado
+- Localize o ponto natural de divisão dentro da seção (mudança de subtema, exemplo, nova instrução)
+- Insira um "### [subtítulo descritivo]" nesse ponto para subdividir a seção em H3
+- Se não houver H3 adequado, crie um novo "## [título complementar]" logo após os primeiros 250–280 palavras da seção e continue o conteúdo restante sob esse novo H2
+- O objetivo é que nenhuma seção entre dois headings tenha mais de 300 palavras de texto corrido
 
 ARTIGO ORIGINAL:
 ${textoCompleto}
