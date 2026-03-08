@@ -86,10 +86,11 @@ CADA SEÇÃO H2 — LIMITE DE 300 PALAVRAS (Yoast):
 - OBRIGATÓRIO: sempre que houver lista de tópicos, deve haver ao menos um parágrafo de texto antes dela — nunca abra lista direto após título H2
 - FORMATO da lista de tópicos: cada item começa com "- " e tem entre 1 e 2 linhas. Mínimo 3 itens por lista.
 - Frases curtas — máximo 2 linhas por frase
-- TAMANHO DE PARÁGRAFO (crítico — será rejeitado se descumprir): cada parágrafo de texto corrido deve ter no MÁXIMO 60 palavras. Conte as palavras antes de fechar o parágrafo.
-- RITMO VISUAL obrigatório: alterne parágrafos de 40–60 palavras com parágrafos curtos de 15–30 palavras — nunca escreva dois parágrafos acima de 40 palavras seguidos sem um parágrafo curto entre eles
-- Se precisar de mais espaço para uma ideia, quebre em dois parágrafos distintos — cada um com seu próprio foco
-- ATENÇÃO: essa regra vale APENAS para texto corrido — não interfere com bullet points, listas de tópicos nem com H3s
+- TAMANHO DE PARÁGRAFO — regra mais importante do artigo: cada parágrafo de texto corrido deve ter no MÁXIMO 60 palavras. Conte as palavras mentalmente antes de fechar cada parágrafo.
+- PARÁGRAFO IDEAL: 30 a 50 palavras. Esse é o tamanho que o Yoast considera ótimo para leitura em tela.
+- RITMO VISUAL obrigatório: alterne parágrafos médios (30–50 palavras) com parágrafos curtos (10–25 palavras) — nunca escreva dois parágrafos acima de 40 palavras seguidos. Um parágrafo curto entre eles quebra o ritmo e melhora a leitura.
+- Se uma ideia precisar de mais espaço, quebre em dois parágrafos distintos com focos separados — nunca empilhe tudo em um bloco só.
+- ATENÇÃO: essa regra vale APENAS para texto corrido — bullet points, listas com "-" e títulos H2/H3 estão completamente isentos.
 - Foco em estratégia e aplicação prática: o que fazer, como detectar, como orientar o cliente
 - Ao menos 1 dado numérico por seção (alíquota, prazo, valor, percentual, multa)
 - Cite fontes: "conforme a Lei Complementar 123/2006", "segundo a Receita Federal"
@@ -271,94 +272,53 @@ Sem explicações, sem comentários fora do artigo.
 ARTIGO:
 ${textoCompleto}`,
 
-  auditoria: (textoCompleto, rodada) => `Você é editor-chefe de conteúdo tributário brasileiro. Audite este artigo com rigor — rodada ${rodada} de revisão.
+  auditoria: (textoCompleto, rodada) => `Você é editor-chefe de conteúdo tributário. Leia o artigo abaixo e responda cada item com true (ok) ou false (problema). Seja rigoroso — em caso de dúvida, responda false.
 
-ARTIGO COMPLETO:
+ARTIGO:
 ${textoCompleto}
 
-═══════════════════════════════════════════
-CRITÉRIO A — CONTEÚDO E ESTRUTURA
-═══════════════════════════════════════════
-1. LEGISLAÇÃO: cite apenas leis com certeza absoluta. Se não tiver certeza, marque como problema.
-2. COMPLETUDE: todas as seções H2 devem ter conteúdo completo, sem corte no meio.
-3. LINGUAGEM IA: frases que soam como IA ("no cenário atual", "é crucial", "vale ressaltar", "robusto", "abrangente", "transformador", linguagem corporativa vaga) são problemas.
-4. DADOS: números e percentuais sem fonte identificável são problema.
-5. FAQ: deve ter exatamente 4 perguntas com respostas completas.
-6. CONCLUSÃO: deve ter seção H2 "Conclusão" com 2 parágrafos.
-7. CTA: deve ter parágrafo final convidando a falar com a Sittax.
-8. TÓPICOS EM LISTA: verifique se há ao menos uma seção H2 com lista de bullet points ("-"). Se não houver nenhuma lista no artigo, marque como problema.
-9. HIPERLINKS: conte os hiperlinks markdown [texto](url) no artigo. O artigo deve ter no mínimo 4. Se tiver menos, marque como problema informando quantos há.
-10. TAMANHO DE PARÁGRAFO: conte as palavras dos parágrafos de texto corrido. Se houver algum parágrafo com mais de 60 palavras, ou dois parágrafos com mais de 40 palavras seguidos, marque como problema. Bullet points e listas com "-" estão isentos.
-11. SEÇÃO H2 LONGA: verifique se há alguma seção H2 com mais de 300 palavras de texto corrido entre dois headings consecutivos. Se houver, marque como problema indicando qual seção está longa. A solução não é cortar texto, mas subdividir com H3 ou novo H2.
+INSTRUÇÕES — responda cada item com true ou false:
 
-═══════════════════════════════════════════
-CRITÉRIO B — PALAVRAS DE TRANSIÇÃO (Yoast)
-═══════════════════════════════════════════
-META: mínimo 30% das frases devem conter pelo menos uma palavra de transição.
-- Verde (ok): ≥ 30% das frases
-- Laranja (atenção): entre 20% e 30%
-- Vermelho (problema): < 20% das frases
+A1_legislacao_verificavel: As leis citadas são reais e verificáveis? (false se citar lei duvidosa ou inventada)
+A2_secoes_completas: Todas as seções H2 têm conteúdo completo, sem corte no meio?
+A3_sem_linguagem_ia: O artigo está livre de linguagem de IA? ("no cenário atual", "é crucial", "vale ressaltar", "robusto", "abrangente", "transformador", "holístico", "alavancar", "dinâmico") — false se encontrar qualquer uma
+A4_faq_4_perguntas: Há exatamente 4 perguntas no FAQ com respostas completas?
+A5_conclusao_presente: Há seção H2 "Conclusão" com ao menos 2 parágrafos?
+A6_cta_presente: Há parágrafo final convidando a falar com a Sittax?
+A7_lista_topicos: Há ao menos uma seção H2 com lista de bullet points ("-")?
+A8_minimo_4_hiperlinks: O artigo tem 4 ou mais hiperlinks markdown [texto](url)?
+A9_paragrafos_curtos: Todos os parágrafos de texto corrido têm menos de 60 palavras? E nunca há dois parágrafos acima de 40 palavras seguidos? (false se qualquer um violar — bullet points estão isentos)
+A10_secoes_h2_ate_300: Nenhuma seção H2 tem mais de 300 palavras de texto corrido entre dois headings consecutivos?
+A11_h3_com_paragrafo: Todo H3 tem ao menos um parágrafo de texto antes dele dentro do mesmo H2? (false se H3 aparecer logo após H2 sem parágrafo intermediário)
 
-LISTA COMPLETA DE PALAVRAS DE TRANSIÇÃO VÁLIDAS:
-Palavras simples: ademais, afinal, aliás, analogamente, anteriormente, assim, atualmente, certamente, conforme, conquanto, contudo, decerto, embora, enfim, enquanto, então, entretanto, eventualmente, igualmente, inegavelmente, inesperadamente, mas, ocasionalmente, outrossim, pois, porquanto, porque, portanto, posteriormente, precipuamente, primeiramente, primordialmente, principalmente, salvo, semelhantemente, similarmente, sobretudo, surpreendentemente, todavia, logo, inclusive
+B1_transicao_verde: Pelo menos 30% das frases contêm palavras de transição? (portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, conforme, contudo, todavia, pois, logo, inclusive, já que, bem como, de fato, afinal, então, entretanto...)
+B2_passiva_verde: Menos de 10% das frases estão na voz passiva? (construções com ser/estar/foi/são/foram/será/serão + particípio)
 
-Expressões compostas: a fim de, a fim de que, a menos que, a princípio, a saber, acima de tudo, ainda assim, ainda mais, ainda que, além disso, antes de mais nada, antes de tudo, antes que, ao mesmo tempo, ao passo que, ao propósito, apesar de, apesar disso, às vezes, assim como, assim que, assim sendo, assim também, bem como, com a finalidade de, com efeito, com o fim de, com o intuito de, com o propósito de, com toda a certeza, como resultado, como se, da mesma forma, de acordo com, de conformidade com, de fato, de maneira idêntica, de tal forma que, de tal sorte que, depois que, desde que, dessa forma, dessa maneira, desse modo, do mesmo modo, é provável, em conclusão, em contrapartida, em contraste com, em outras palavras, em primeiro lugar, em princípio, em resumo, em seguida, em segundo lugar, em síntese, em suma, em terceiro lugar, em virtude de, finalmente, isto é, já que, juntamente com, logo após, logo depois, logo que, mesmo que, não apenas, nesse hiato, nesse ínterim, nesse meio tempo, nesse sentido, no entanto, no momento em que, ou por outra, ou seja, para que, pelo contrário, por analogia, por causa de, por certo, por conseguinte, por consequência, porém, por exemplo, por fim, por isso, por mais que, por menos que, por outro lado, por vezes, posto que, se acaso, se bem que, seja como for, sem dúvida, sempre que, só que, sob o mesmo ponto de vista, tanto quanto, todas as vezes que, uma vez que, visto que, de repente, não obstante, de qualquer forma, em geral, geralmente, devido a, em razão de, de forma que, de modo que
-
-COMO CALCULAR:
-1. Conte o total de frases do artigo (separe por "." "!" "?")
-2. Para cada frase, verifique se contém alguma das palavras/expressões acima
-3. Calcule: (frases com transição / total de frases) × 100
-4. Reporte o percentual e a classificação (verde/laranja/vermelho)
-5. Se laranja ou vermelho, liste exemplos de frases sem transição que poderiam receber uma
-
-═══════════════════════════════════════════
-CRITÉRIO C — VOZ PASSIVA (Yoast)
-═══════════════════════════════════════════
-META: máximo 10% das frases podem estar na voz passiva.
-- Verde (ok): ≤ 10% das frases em voz passiva
-- Vermelho (problema): > 10% das frases em voz passiva
-
-Voz passiva em português: construções com "ser/estar/foi/são/foram/será/serão + particípio" (ex: "é definido", "foram aprovadas", "será regulamentado").
-
-COMO CALCULAR:
-1. Identifique frases com construções passivas
-2. Calcule: (frases passivas / total de frases) × 100
-3. Reporte o percentual e a classificação
-4. Se vermelho, liste as frases passivas que devem ser reescritas na voz ativa
-
-═══════════════════════════════════════════
-ATENÇÃO FINAL
-═══════════════════════════════════════════
-- "aprovado" só pode ser true se score_geral >= 90
-- Score abaixo de 90 significa que há pelo menos um problema crítico nos critérios A, B ou C
+Para cada item false, descreva o problema encontrado com detalhe suficiente para corrigi-lo.
 
 Responda SOMENTE em JSON válido, sem markdown:
 {
-  "score_geral": 87,
-  "aprovado": false,
-  "problemas": [
-    "Problemas concretos. Ex: 'LC 214/2025 não existe', 'Conclusão ausente', 'Apenas 18% das frases têm transição — abaixo do mínimo de 30%', 'Voz passiva em 15% das frases — acima do limite de 10%: [lista as frases]'. Array vazio [] se não houver."
-  ],
   "checklist": {
-    "h1_com_keyword": true,
-    "introducao_direta": true,
-    "dados_numericos": true,
-    "legislacao_verificavel": true,
-    "faq_completo_4_perguntas": true,
-    "conclusao_presente": true,
-    "cta_presente": true,
-    "sem_linguagem_ia": true,
-    "todas_secoes_completas": true,
-    "transicao_yoast_verde": true,
-    "voz_passiva_yoast_verde": true,
-    "lista_topicos_presente": true
+    "A1_legislacao_verificavel": true,
+    "A2_secoes_completas": true,
+    "A3_sem_linguagem_ia": true,
+    "A4_faq_4_perguntas": true,
+    "A5_conclusao_presente": true,
+    "A6_cta_presente": true,
+    "A7_lista_topicos": true,
+    "A8_minimo_4_hiperlinks": true,
+    "A9_paragrafos_curtos": true,
+    "A10_secoes_h2_ate_300": true,
+    "A11_h3_com_paragrafo": true,
+    "B1_transicao_verde": true,
+    "B2_passiva_verde": true
   },
+  "problemas": [
+    "Descrição detalhada de cada item false. Ex: 'A3: encontrado "vale ressaltar" no 2º parágrafo da seção Substituição Tributária', 'A9: parágrafo de 74 palavras na seção Obrigações Acessórias', 'B1: estimativa de 22% de frases com transição — abaixo de 30%'"
+  ],
   "yoast": {
-    "total_frases": 45,
-    "frases_com_transicao": 15,
     "percentual_transicao": 33,
     "status_transicao": "verde",
-    "frases_passivas": 3,
     "percentual_passiva": 7,
     "status_passiva": "verde"
   },
@@ -646,6 +606,35 @@ const pausa = (seg, motivo, logFn) => new Promise(resolve => {
   if (logFn) logFn(`⏳ Aguardando ${seg}s (limite de tokens)...`, "info");
   setTimeout(resolve, seg * 1000);
 });
+
+// ── Calcula score a partir do checklist binário ──────────────────────────────
+function calcularScore(checklist) {
+  if (!checklist) return { score: 0, problemasCriticos: [] };
+  const pesos = {
+    A1_legislacao_verificavel: 10,
+    A2_secoes_completas:       8,
+    A3_sem_linguagem_ia:       8,
+    A4_faq_4_perguntas:        7,
+    A5_conclusao_presente:     7,
+    A6_cta_presente:           5,
+    A7_lista_topicos:          5,
+    A8_minimo_4_hiperlinks:    7,
+    A9_paragrafos_curtos:      6,
+    A10_secoes_h2_ate_300:     5,
+    A11_h3_com_paragrafo:      7,
+    B1_transicao_verde:        10,
+    B2_passiva_verde:          10,
+  };
+  let score = 100;
+  const problemasCriticos = [];
+  for (const [key, ok] of Object.entries(checklist)) {
+    if (!ok && pesos[key]) {
+      score -= pesos[key];
+      problemasCriticos.push(key);
+    }
+  }
+  return { score: Math.max(0, score), problemasCriticos };
+}
 
 function parseJSON(text) {
   if (!text) return null;
@@ -1001,11 +990,13 @@ export default function App() {
       const rawA1 = await callGPT(PROMPTS.auditoria(textoFinal, 1), 1500);
       const ad1 = parseJSON(rawA1);
       if (ad1) {
+        const { score: score1Calc } = calcularScore(ad1.checklist);
+        ad1.score_geral = score1Calc;
         auditFinal = ad1;
         const yoast1Ok = !ad1.yoast || (ad1.yoast.status_transicao === "verde" && ad1.yoast.status_passiva === "verde");
-        const score1Ok = ad1.score_geral >= 90 && yoast1Ok;
+        const score1Ok = score1Calc >= 90 && yoast1Ok;
         log_(
-          `✓ Score rodada 1: ${ad1.score_geral}/100` +
+          `✓ Score rodada 1: ${score1Calc}/100` +
           (ad1.yoast ? ` | Transição: ${ad1.yoast.percentual_transicao}% (${ad1.yoast.status_transicao}) | Passiva: ${ad1.yoast.percentual_passiva}% (${ad1.yoast.status_passiva})` : "") +
           (score1Ok ? " — aprovado ✓" : " — revisando..."),
           score1Ok ? "ok" : "warn"
@@ -1068,11 +1059,13 @@ export default function App() {
       const rawA2 = await callGPT(PROMPTS.auditoria(textoFinal, 2), 1500);
       const ad2 = parseJSON(rawA2);
       if (ad2) {
+        const { score: score2Calc } = calcularScore(ad2.checklist);
+        ad2.score_geral = score2Calc;
         auditFinal = ad2;
         const yoast2Ok = !ad2.yoast || (ad2.yoast.status_transicao === "verde" && ad2.yoast.status_passiva === "verde");
-        const score2Ok = ad2.score_geral >= 90 && yoast2Ok;
+        const score2Ok = score2Calc >= 90 && yoast2Ok;
         log_(
-          `✓ Score rodada 2: ${ad2.score_geral}/100` +
+          `✓ Score rodada 2: ${score2Calc}/100` +
           (ad2.yoast ? ` | Transição: ${ad2.yoast.percentual_transicao}% (${ad2.yoast.status_transicao}) | Passiva: ${ad2.yoast.percentual_passiva}% (${ad2.yoast.status_passiva})` : "") +
           (score2Ok ? " — aprovado ✓" : " — entregando melhor versão"),
           score2Ok ? "ok" : "warn"
