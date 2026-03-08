@@ -12,16 +12,14 @@ TEMA: "${tema}"
 
 Sua tarefa: planejar a estrutura de um artigo de blog sobre esse tema.
 
-PASSO 1 — Busque na internet 1 dado concreto de 2025 ou 2026 sobre o tema (estatística, notícia, decreto, dado de órgão oficial). Use web_search. Anote o fato exato e a URL real encontrada.
-
-PASSO 2 — Preencha o JSON abaixo com as informações do planejamento.
+Preencha o JSON abaixo com o planejamento do artigo.
 
 REGRAS DO JSON:
 - "intencao_busca": sempre "Informacional + Estratégia"
 - "secoes": entre 3 e 5 seções H2. Pelo menos 1 deve ter H3s sugeridos; pelo menos 1 deve ficar sem H3 (para receber lista de bullet points)
 - "faq_perguntas": exatamente 4 perguntas reais que um contador ou empresário faria
 - "fontes_primarias": leis ou normas reais relacionadas ao tema (ex: "LC 123/2006")
-- "dado_recente.url": URL real encontrada no PASSO 1 — NUNCA invente
+- "dado_recente": use um dado real do seu conhecimento sobre o tema (estatística, percentual, prazo, dado de órgão oficial). Pode ser de 2024 ou 2025. Inclua uma URL real e verificável do órgão — use apenas URLs que você tem certeza que existem (ex: gov.br, ibge.gov.br, receita.fazenda.gov.br, sebrae.com.br). NUNCA invente URL.
 
 Responda SOMENTE com o JSON abaixo. Nenhum texto antes ou depois. Nenhum bloco de código.
 
@@ -457,25 +455,27 @@ Responda SOMENTE em JSON válido. Nenhum texto antes ou depois. Nenhum bloco de 
 }`,
 
   // ─── BUSCAR FONTES ────────────────────────────────────────────────────────────
-  // ChatGPT usa web_search para encontrar URLs reais de leis e dados citados
+  // ChatGPT identifica leis e dados citados e retorna URLs reais do seu conhecimento
   buscarFontes: (textoCompleto) => `Você é especialista em fontes do direito tributário brasileiro.
 
 Analise o trecho abaixo e identifique menções a leis, normas e dados que deveriam ter uma URL de fonte.
-Para cada item identificado, use web_search para encontrar a URL oficial real.
+Para cada item identificado, forneça a URL oficial real com base no seu conhecimento.
 
-Fontes prioritárias:
-- Leis federais → planalto.gov.br
-- Instruções Normativas RFB → normas.receita.fazenda.gov.br
-- IBGE, Sebrae, IBPT → sites oficiais de cada órgão
+Fontes prioritárias (use apenas URLs que você conhece com certeza):
+- Leis federais → planalto.gov.br (ex: https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp123.htm)
+- Receita Federal → gov.br/receitafederal ou normas.receita.fazenda.gov.br
+- IBGE → ibge.gov.br
+- Sebrae → sebrae.com.br
+- CFC → cfc.org.br
 
 REGRAS:
-- Inclua no JSON APENAS URLs que você encontrou na busca — NUNCA invente
-- Se não encontrar URL real para um item, não o inclua
+- Inclua no JSON APENAS URLs reais que você conhece com certeza — NUNCA invente ou deduza URLs
+- Se não tiver certeza da URL exata de um item, não o inclua
 - Máximo 4 fontes
-- Se não encontrar nenhuma, retorne {"fontes":[]}
+- Se não encontrar nenhuma com certeza, retorne {"fontes":[]}
 
 Responda SOMENTE com o JSON abaixo. Nenhum texto antes ou depois.
-{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-encontrada.gov.br"}]}
+{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-conhecida.gov.br"}]}
 
 TRECHO DO ARTIGO:
 ${textoCompleto.slice(0, 800)}`,
