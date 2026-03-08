@@ -504,28 +504,55 @@ ${textoCompleto}`,
   // ChatGPT insere exatamente 3 links internos do blog Sittax
   linksInternos: (textoCompleto) => `Você é especialista em SEO da Sittax.
 
-Insira exatamente 3 links internos do blog Sittax no artigo abaixo.
+Sua tarefa: inserir exatamente 3 links internos do blog Sittax no artigo abaixo.
 
-LINKS DISPONÍVEIS (escolha os 3 mais relevantes para o tema do artigo):
-1. [Contador 2026: tendências e oportunidades](https://sittax.com.br/blog/sittax-cast/contador-2026/) — futuro do contador, oportunidades e desafios para 2026
-2. [Gestão de equipes e inteligência de dados na contabilidade digital](https://sittax.com.br/blog/sittax-cast/gestao-equipes-inteligencia-dados-contabilidade-digital/) — gestão de escritórios com dados e tecnologia
-3. [Malha fina, IR e desenquadramento do Simples Nacional](https://sittax.com.br/blog/sittax-cast/malha-fina-imposto-desenquadramento-simples-nacional/) — fiscalização digital e riscos de desenquadramento
-4. [Tributação como ativo estratégico](https://sittax.com.br/blog/sittax-cast/sittaxcast-14-tributacao-como-ativo-transforme-o-fiscal-em-motor-de-crescimento/) — como usar o fiscal como motor de crescimento
-5. [O contador do futuro: tecnologia e Reforma Tributária](https://sittax.com.br/blog/sittax-cast/sittaxcast-13-o-contador-do-futuro-tecnologia-reforma-tributaria-e-reinvencao/) — impacto da Reforma Tributária e IA no setor contábil
-6. [Segurança da informação na contabilidade](https://sittax.com.br/blog/sittax-cast/sittaxcast-10-seguranca-da-informacao-na-contabilidade-seus-dados-estao-protegidos/) — proteção de dados para escritórios
-7. [Reforma Tributária: split payment, precificação e fluxo de caixa](https://sittax.com.br/artigo/reforma-tributaria-split-payment-precificacao-fluxo-caixa/) — impacto do split payment no B2B
-8. [Segregação automática no Simples Nacional](https://sittax.com.br/artigo/segregacao-automatica-simples-nacional/) — automação da segregação fiscal
-9. [Regularização no Simples Nacional](https://sittax.com.br/artigo/regularizacao-simples-nacional/) — como regularizar pendências e evitar exclusão
+LINKS DISPONÍVEIS:
+1. URL: https://sittax.com.br/blog/sittax-cast/contador-2026/
+   Tema: futuro do contador, oportunidades e desafios para 2026
+
+2. URL: https://sittax.com.br/blog/sittax-cast/gestao-equipes-inteligencia-dados-contabilidade-digital/
+   Tema: gestão de escritórios contábeis com dados e tecnologia
+
+3. URL: https://sittax.com.br/blog/sittax-cast/malha-fina-imposto-desenquadramento-simples-nacional/
+   Tema: fiscalização digital, malha fina e riscos de desenquadramento
+
+4. URL: https://sittax.com.br/blog/sittax-cast/sittaxcast-14-tributacao-como-ativo-transforme-o-fiscal-em-motor-de-crescimento/
+   Tema: tributação estratégica como motor de crescimento empresarial
+
+5. URL: https://sittax.com.br/blog/sittax-cast/sittaxcast-13-o-contador-do-futuro-tecnologia-reforma-tributaria-e-reinvencao/
+   Tema: impacto da Reforma Tributária e tecnologia no setor contábil
+
+6. URL: https://sittax.com.br/blog/sittax-cast/sittaxcast-10-seguranca-da-informacao-na-contabilidade-seus-dados-estao-protegidos/
+   Tema: proteção de dados e segurança digital para escritórios contábeis
+
+7. URL: https://sittax.com.br/artigo/reforma-tributaria-split-payment-precificacao-fluxo-caixa/
+   Tema: Reforma Tributária, split payment e impacto no fluxo de caixa
+
+8. URL: https://sittax.com.br/artigo/segregacao-automatica-simples-nacional/
+   Tema: segregação automática de receitas no Simples Nacional
+
+9. URL: https://sittax.com.br/artigo/regularizacao-simples-nacional/
+   Tema: regularização de pendências e como evitar exclusão do Simples Nacional
+
+COMO INSERIR:
+Escolha os 3 links cujos temas têm mais relação com o conteúdo do artigo.
+Para cada link escolhido:
+- Procure no texto uma frase ou trecho que trate do mesmo tema do link
+- Transforme uma expressão natural desse trecho em âncora do link
+- Se não houver expressão exata, adicione uma frase curta e natural no fim do parágrafo mais próximo do tema, e use essa frase como âncora
+- Formato: [texto âncora](url)
+
+EXEMPLO de inserção com frase nova:
+Parágrafo original: "O contador precisa monitorar o faturamento mensal para evitar o desenquadramento."
+Após inserção: "O contador precisa monitorar o faturamento mensal para evitar o desenquadramento. Entenda também [como a malha fina digital aumenta o risco de exclusão do Simples](https://sittax.com.br/blog/sittax-cast/malha-fina-imposto-desenquadramento-simples-nacional/)."
 
 REGRAS:
 - Insira EXATAMENTE 3 links — nem mais, nem menos
-- O âncora de cada link deve ser uma expressão JÁ EXISTENTE no texto — não adicione palavras novas
-- Se a expressão exata não existir, use a expressão mais próxima que apareça no texto
-- Nunca repita o mesmo link duas vezes
-- Preserve todos os links externos já existentes no artigo
-- Não altere nenhuma outra parte do texto
+- Nunca repita o mesmo link
+- Preserve todos os links externos já existentes
+- Não altere nenhuma outra parte do texto além das inserções
 
-VERIFICAÇÃO OBRIGATÓRIA antes de retornar: conte os links sittax.com.br que você inseriu. Se for diferente de 3, corrija antes de retornar.
+VERIFICAÇÃO antes de retornar: conte os links sittax.com.br inseridos. Se não forem 3, insira os faltantes antes de retornar.
 
 Retorne APENAS o artigo completo. Comece com o # do título. Sem comentários.
 
@@ -790,6 +817,97 @@ function parseJSON(text) {
   // 4. Falhou — retornar null com log
   console.error("parseJSON falhou. Texto recebido:", text.slice(0, 500));
   return null;
+}
+
+// ── Quebra parágrafos longos automaticamente (sem depender do ChatGPT) ───────
+function quebrarParagrafosLongos(texto, limiteMax = 55, limiteMedio = 40) {
+  const linhas = texto.split("
+");
+  const resultado = [];
+
+  for (let i = 0; i < linhas.length; i++) {
+    const linha = linhas[i];
+
+    // Pula linhas que são: títulos, bullet points, links puros, vazias
+    const eTitulo = /^#{1,4}\s/.test(linha);
+    const eBullet = /^[-*]\s/.test(linha);
+    const eVazia  = linha.trim() === "";
+
+    if (eTitulo || eBullet || eVazia) {
+      resultado.push(linha);
+      continue;
+    }
+
+    // Conta palavras
+    const palavras = linha.trim().split(/\s+/).filter(Boolean);
+    if (palavras.length <= limiteMax) {
+      resultado.push(linha);
+      continue;
+    }
+
+    // Precisa quebrar — divide ao redor da metade, na fronteira de frase
+    const meio = Math.floor(palavras.length / 2);
+    // Procura ponto mais próximo do meio (entre 40% e 70% do parágrafo)
+    const min = Math.floor(palavras.length * 0.4);
+    const max = Math.floor(palavras.length * 0.7);
+    let quebraIdx = meio; // fallback: corta na metade
+
+    // Reconstrói texto até max para achar ponto/vírgula
+    const texto1 = palavras.join(" ");
+    let acumulado = 0;
+    let melhorCorte = -1;
+    for (let j = 0; j < palavras.length; j++) {
+      acumulado += palavras[j].length + 1;
+      if (j >= min && j <= max) {
+        // Última palavra do grupo termina com pontuação?
+        if (/[.!?;]$/.test(palavras[j])) {
+          melhorCorte = j;
+          break;
+        }
+        // Ou vírgula seguida de conectivo?
+        if (/,$/.test(palavras[j]) && j + 1 < palavras.length) {
+          melhorCorte = j;
+        }
+      }
+    }
+    if (melhorCorte > 0) quebraIdx = melhorCorte;
+
+    const parte1 = palavras.slice(0, quebraIdx + 1).join(" ");
+    const parte2 = palavras.slice(quebraIdx + 1).join(" ");
+
+    resultado.push(parte1);
+    resultado.push(""); // linha vazia entre parágrafos
+    resultado.push(parte2);
+  }
+
+  // Segunda passagem: nunca dois parágrafos > limiteMedio palavras seguidos
+  const resultado2 = [];
+  for (let i = 0; i < resultado.length; i++) {
+    resultado2.push(resultado[i]);
+    if (
+      resultado[i].trim() !== "" &&
+      !resultado[i].startsWith("#") &&
+      !resultado[i].startsWith("-") &&
+      resultado[i].split(/\s+/).length > limiteMedio
+    ) {
+      // Próximo parágrafo não-vazio também grande?
+      let prox = i + 1;
+      while (prox < resultado.length && resultado[prox].trim() === "") prox++;
+      if (
+        prox < resultado.length &&
+        !resultado[prox].startsWith("#") &&
+        !resultado[prox].startsWith("-") &&
+        resultado[prox].split(/\s+/).length > limiteMedio
+      ) {
+        // Insere parágrafo de respiro vazio (o ChatGPT não gerou, mas o JS garante a quebra visual)
+        // Na prática a quebra já foi feita — apenas garante linha vazia entre eles
+        resultado2.push("");
+      }
+    }
+  }
+
+  return resultado2.join("
+");
 }
 
 function contarPalavras(texto) {
@@ -1080,7 +1198,8 @@ export default function App() {
       const ctaPart = await callGPT(PROMPTS.cta(tema, pd), 300);
       log_(`✓ CTA: ~${contarPalavras(ctaPart)} palavras`, "ok");
 
-      const textoCompleto = `${corpoPart}\n\n${faqPart}\n\n${conclusaoPart}\n\n${ctaPart}`;
+      const textoCompletoRaw = `${corpoPart}\n\n${faqPart}\n\n${conclusaoPart}\n\n${ctaPart}`;
+      const textoCompleto = quebrarParagrafosLongos(textoCompletoRaw);
       setArtigo(textoCompleto);
       const totalPalavras = contarPalavras(textoCompleto);
       log_(`✓ Total montado: ${totalPalavras} palavras`, totalPalavras >= 1500 ? "ok" : "warn");
@@ -1113,8 +1232,9 @@ export default function App() {
       try {
         const polido = await callGPT(PROMPTS.polimento(textoCompleto), 6000);
         if (polido?.length > 500) {
-          textoFinal = polido; setArtigo(polido);
-          log_(`✓ Polimento aplicado — ${contarPalavras(polido)} palavras`, "ok");
+          const polidoQ = quebrarParagrafosLongos(polido);
+          textoFinal = polidoQ; setArtigo(polidoQ);
+          log_(`✓ Polimento aplicado — ${contarPalavras(polidoQ)} palavras`, "ok");
         } else {
           log_("⚠ Polimento retornou texto muito curto, mantendo original.", "warn");
         }
@@ -1150,8 +1270,9 @@ export default function App() {
           await pausa(2, "", log_);
           const revisado1 = await callGPT(PROMPTS.revisar(textoFinal, problemas1), 6000);
           if (revisado1?.length > 500) {
-            textoFinal = revisado1; setArtigo(revisado1);
-            log_(`✓ Revisão 1 aplicada — ${contarPalavras(revisado1)} palavras`, "ok");
+            const rev1Q = quebrarParagrafosLongos(revisado1);
+            textoFinal = rev1Q; setArtigo(rev1Q);
+            log_(`✓ Revisão 1 aplicada — ${contarPalavras(rev1Q)} palavras`, "ok");
           } else { log_("⚠ Revisão 1 retornou texto curto, mantendo versão anterior.", "warn"); }
         } else { log_(`✓ Artigo aprovado na rodada 1 (score ${ad1.score_geral}/100)`, "ok"); }
       } else { log_("⚠ Auditoria 1 não retornou JSON válido, pulando.", "warn"); }
@@ -1219,8 +1340,9 @@ export default function App() {
           await pausa(2, "", log_);
           const revisado2 = await callGPT(PROMPTS.revisar(textoFinal, problemas2), 6000);
           if (revisado2?.length > 500) {
-            textoFinal = revisado2; setArtigo(revisado2);
-            log_(`✓ Revisão 2 aplicada — ${contarPalavras(revisado2)} palavras`, "ok");
+            const rev2Q = quebrarParagrafosLongos(revisado2);
+            textoFinal = rev2Q; setArtigo(rev2Q);
+            log_(`✓ Revisão 2 aplicada — ${contarPalavras(rev2Q)} palavras`, "ok");
           } else { log_("⚠ Revisão 2 retornou texto curto, mantendo versão anterior.", "warn"); }
         } else { log_(`✓ Artigo aprovado na rodada 2 (score ${ad2.score_geral}/100)`, "ok"); }
       } else { log_("⚠ Auditoria 2 não retornou JSON válido, pulando.", "warn"); }
