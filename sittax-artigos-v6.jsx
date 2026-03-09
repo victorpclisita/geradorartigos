@@ -361,6 +361,15 @@ Se encontrar, insira 1 parágrafo introdutório de 1 a 2 frases apresentando o c
 O parágrafo inserido conta nas 300 palavras da seção H2.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ESTILO AO INSERIR TRANSIÇÕES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Ao inserir palavras de transição, preserve o tom direto e assertivo do texto original.
+- Prefira transições no meio ou fim da frase, não sempre no início.
+- Evite iniciar todos os parágrafos com "Além disso," ou "Dessa forma," — isso cria ritmo artificial.
+- Varie: "A empresa, portanto, deve..." / "...o que inclui, inclusive, os optantes do Simples." / "Por isso, o prazo é..."
+- Se uma frase já tiver ritmo forte e direto, prefira não inserir transição — mantenha a naturalidade.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 REGRAS ABSOLUTAS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Preserve TODO o conteúdo: fatos, dados, leis, nomes, argumentos — não remova nada
@@ -477,13 +486,15 @@ Responda SOMENTE em JSON válido. Nenhum texto antes ou depois. Nenhum bloco de 
   },
   "problemas": [],
   "yoast": {
-    "percentual_transicao": 33,
-    "status_transicao": "verde",
-    "percentual_passiva": 7,
-    "status_passiva": "verde"
+    "percentual_transicao": CALCULE_VOCE_MESMO,
+    "status_transicao": "verde_ou_vermelho",
+    "percentual_passiva": CALCULE_VOCE_MESMO,
+    "status_passiva": "verde_ou_vermelho"
   },
   "resumo": "Veredicto em 1-2 frases"
-}`,
+}
+
+ATENÇÃO: os campos "percentual_transicao" e "percentual_passiva" devem ser calculados por você com base na leitura real do artigo. NÃO use valores padrão ou de memória. Cada artigo terá percentuais diferentes.`,
 
   // ─── BUSCAR FONTES ────────────────────────────────────────────────────────────
   // ChatGPT identifica leis e dados citados e retorna URLs reais do seu conhecimento
@@ -643,6 +654,8 @@ REGRAS ABSOLUTAS
 - Preserve a estrutura de títulos # ## ### sem alteração
 - Mantenha FAQ com 4 perguntas, Conclusão e CTA
 - Não invente dados, leis ou URLs
+- IMPORTANTE: preserve as palavras de transição já presentes no texto (portanto, assim, além disso, no entanto, por isso, etc.) — não as remova ao reescrever frases
+- Ao corrigir um problema, reescreva o mínimo necessário — não reescreva parágrafos inteiros sem necessidade
 
 Retorne o artigo completo corrigido, com todos os títulos # ## ###. Sem comentários.
 
@@ -682,21 +695,23 @@ FORMATO DE RESPOSTA
 Responda SOMENTE em JSON válido. Nenhum texto antes ou depois. Nenhum bloco de código.
 
 {
-  "total_frases": 80,
+  "total_frases": CONTE_AS_FRASES_DO_ARTIGO,
   "transicao": {
-    "frases_com_transicao": 28,
-    "percentual": 35,
-    "status": "verde",
+    "frases_com_transicao": CONTE_AS_FRASES_COM_TRANSICAO,
+    "percentual": CALCULE_A_PORCENTAGEM,
+    "status": "verde_se_maior_30_vermelho_se_menor",
     "frases_sem_transicao": []
   },
   "passiva": {
-    "frases_passivas": 6,
-    "percentual": 7,
-    "status": "verde",
+    "frases_passivas": CONTE_AS_FRASES_PASSIVAS,
+    "percentual": CALCULE_A_PORCENTAGEM,
+    "status": "verde_se_menor_10_vermelho_se_maior",
     "frases_encontradas": []
   },
-  "aprovado": true
+  "aprovado": true_ou_false
 }
+
+ATENÇÃO: todos os valores numéricos devem ser calculados por você lendo o artigo acima. Não use valores padrão — cada artigo é diferente. Conte frase a frase.
 
 Regras do JSON:
 - "status": "verde" se ok, "vermelho" se problema
@@ -1392,7 +1407,12 @@ export default function App() {
 
       setAudit(auditFinal);
 
-      // ── Auditoria Yoast dedicada ─────────────────────────────────────────
+      // ── Auditoria Yoast dedicada — só roda se B1 ou B2 reprovaram ────────
+      const precisaYoast = !auditFinal?.checklist?.B1_transicao_verde || !auditFinal?.checklist?.B2_passiva_verde;
+      if (!precisaYoast) {
+        log_("✓ Yoast — transição e voz passiva já aprovados na auditoria. Pulando etapa.", "ok");
+        setFase("auditoria_yoast");
+      } else {
       setFase("auditoria_yoast");
       log_("Auditoria Yoast — verificando transição e voz passiva... (ChatGPT)");
       await pausa(2, "", log_);
@@ -1429,6 +1449,7 @@ export default function App() {
           }
         } else { log_("⚠ Auditoria Yoast não retornou JSON válido, pulando.", "warn"); }
       } catch (e) { log_(`⚠ Auditoria Yoast falhou (${e.message}). Continuando.`, "warn"); }
+      } // fecha if precisaYoast
 
       setFase("pronto");
 
