@@ -1735,26 +1735,6 @@ export default function App() {
               >
                 ⬇ Baixar arquivo para PDF
               </button>
-              {audit && audit.score_geral < 90 && !melhorando && (
-                <button
-                  onClick={melhorar}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: "8px",
-                    padding: "12px 24px", borderRadius: BRAND.radius, border: "none",
-                    background: "#F59E0B", color: "#fff",
-                    fontSize: "14px", fontWeight: "600", cursor: "pointer",
-                    boxShadow: "0 2px 10px rgba(245,158,11,0.35)",
-                    fontFamily: BRAND.font,
-                  }}
-                >
-                  ⚡ Melhorar para 90+
-                </button>
-              )}
-              {melhorando && (
-                <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 20px", background: "#FEF3C7", borderRadius: BRAND.radius, fontSize: "13px", color: "#92400E", fontWeight: "500" }}>
-                  ⏳ Melhorando artigo...
-                </div>
-              )}
               {/* Botão WordPress */}
               {wpStatus === "idle" && (
                 <button
@@ -1762,9 +1742,9 @@ export default function App() {
                   style={{
                     display: "inline-flex", alignItems: "center", gap: "8px",
                     padding: "12px 24px", borderRadius: BRAND.radius, border: "none",
-                    background: "#3858E9", color: "#fff",
+                    background: "#16A34A", color: "#fff",
                     fontSize: "14px", fontWeight: "600", cursor: "pointer",
-                    boxShadow: "0 2px 10px rgba(56,88,233,0.30)",
+                    boxShadow: "0 2px 10px rgba(22,163,74,0.30)",
                     fontFamily: BRAND.font,
                   }}
                 >
@@ -1772,7 +1752,7 @@ export default function App() {
                 </button>
               )}
               {wpStatus === "enviando" && (
-                <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 20px", background: "#EEF2FF", borderRadius: BRAND.radius, fontSize: "13px", color: "#3858E9", fontWeight: "500" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 20px", background: "#DCFCE7", borderRadius: BRAND.radius, fontSize: "13px", color: "#15803D", fontWeight: "500" }}>
                   ⏳ Enviando para WordPress...
                 </div>
               )}
