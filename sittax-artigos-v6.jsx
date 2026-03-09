@@ -220,16 +220,18 @@ EXEMPLOS DE VOZ PASSIVA → ATIVA:
 ❌ "os dados serão processados pelo sistema" → ✅ "o sistema processa os dados"
 ❌ "a multa é aplicada automaticamente" → ✅ "a Receita aplica a multa automaticamente"
 
-REGRA DE TRANSIÇÃO: pelo menos 3 em cada 10 frases devem ter uma palavra de transição — isso equivale a 30% do texto.
-Estratégia prática: a cada parágrafo que você escreve, verifique se ao menos 1 frase tem transição. Se não tiver, adicione antes de passar para o próximo.
+REGRA DE TRANSIÇÃO — meta por parágrafo (não por artigo):
+Cada parágrafo de texto corrido DEVE ter ao menos 1 frase com palavra de transição.
+Fluxo obrigatório: escreva o parágrafo → releia → se nenhuma frase tem transição → adicione uma antes de continuar.
+Isso é inegociável: zero transição num parágrafo = parágrafo inválido.
 Posição variada: início ("Além disso, a empresa..."), meio ("A empresa, portanto, deve..."), fim ("...reduz a multa, inclusive.")
-Diversifique — não repita a mesma transição em parágrafos consecutivos.
+Diversifique — não repita a mesma palavra de transição em parágrafos consecutivos.
 Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, inclusive, conforme, já que, bem como, contudo, todavia, pois, logo, de fato, em razão disso, nesse sentido, ainda assim, por exemplo, por outro lado, uma vez que, em seguida
 
-AUTO-CHECAGEM OBRIGATÓRIA: antes de entregar o texto, releia e verifique:
+AUTO-CHECAGEM OBRIGATÓRIA: antes de entregar o texto, percorra parágrafo por parágrafo e verifique:
 1. Há alguma expressão da lista de proibidas? → substitua
 2. Há mais de 1 frase passiva a cada 10? → converta para ativa
-3. Há menos de 3 frases com transição a cada 10? → insira transições
+3. Algum parágrafo ficou sem nenhuma transição? → adicione uma
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORMATO DE SAÍDA
@@ -401,11 +403,11 @@ ${textoCompleto}`,
 Revise o artigo abaixo aplicando as 4 correções abaixo. Não altere mais nada além do que cada correção pede.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CORREÇÃO 1 — PALAVRAS DE TRANSIÇÃO (meta: ≥ 30% das frases)
+CORREÇÃO 1 — PALAVRAS DE TRANSIÇÃO (meta: ao menos 1 por parágrafo)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO A: separe todas as frases do artigo (delimite por "." "!" "?"). Ignore: títulos H1/H2/H3, itens de lista com "-" e URLs.
-PASSO B: para cada frase, verifique se contém pelo menos uma das palavras de transição abaixo. Calcule o percentual: (frases com transição ÷ total) × 100.
-PASSO C: se o resultado for menor que 30%, identifique as frases SEM transição que ficam mais "soltas" — sem conexão lógica com a anterior ou a posterior. Insira transições nessas frases.
+PASSO A: percorra o artigo parágrafo a parágrafo. Ignore: títulos H1/H2/H3, itens de lista com "-" e URLs.
+PASSO B: para cada parágrafo, verifique se há ao menos 1 frase com palavra de transição. Se não houver → adicione 1 antes de continuar.
+PASSO C: após corrigir todos os parágrafos, estime o percentual total. Se ainda estiver abaixo de 30%, adicione transições nos parágrafos com mais frases "soltas" (sem conexão lógica com a anterior).
 
 Palavras válidas: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo, apesar disso, de fato, ao mesmo tempo, anteriormente, posteriormente, sobretudo, certamente, então, entretanto, aliás, afinal, principalmente, em razão disso, nesse sentido
 
@@ -624,6 +626,26 @@ Retorne APENAS o artigo completo. Comece com o # do título. Sem comentários.
 ARTIGO:
 ${textoCompleto}`,
 
+  // ─── REFORÇAR LINKS — roda só se total < 4 antes da auditoria ──────────────
+  // Instrução focada: adicionar 1 link externo real sem alterar o restante
+  reforcarLinks: (textoCompleto, qtdAtual) => `Você é editor de conteúdo tributário.
+
+O artigo abaixo tem ${qtdAtual} hiperlink(s) no formato markdown [texto](url). O mínimo exigido é 4.
+Sua tarefa: inserir exatamente ${4 - qtdAtual} hiperlink(s) externo(s) real(is) que ainda estejam faltando.
+
+REGRAS:
+- Use APENAS URLs reais e verificáveis de fontes oficiais brasileiras (planalto.gov.br, gov.br/receitafederal, ibge.gov.br, sebrae.com.br, cfc.org.br)
+- Insira o link no trecho mais relevante do texto — onde o órgão, lei ou dado é citado
+- Formato: [texto âncora](url)
+- NÃO altere nenhuma outra parte do texto
+- Preserve todos os links já existentes
+- NÃO insira links do sittax.com.br
+
+Retorne APENAS o artigo completo. Comece com o # do título. Sem comentários.
+
+ARTIGO:
+\${textoCompleto}`,
+
   // ─── LINKS INTERNOS ───────────────────────────────────────────────────────────
   // ChatGPT insere exatamente 3 links internos do blog Sittax
   linksInternos: (textoCompleto) => `Você é especialista em SEO da Sittax.
@@ -739,9 +761,9 @@ SE A10 (seção H2 > 300 palavras): não corte conteúdo. Localize o ponto natur
 
 SE A11 (H3 sem parágrafo antes): insira 1 parágrafo de 1 a 2 frases antes do H3, apresentando o conteúdo da seção.
 
-SE B1 (transição < 30%): o artigo precisa ter pelo menos 1 transição a cada 3 frases.
+SE B1 (transição < 30%): o critério é 1 transição por parágrafo — corrija os que estão zerados primeiro.
   PASSO 1 — leia parágrafo a parágrafo. Para cada parágrafo sem nenhuma transição: adicione 1.
-  PASSO 2 — priorize parágrafos com 3+ frases seguidas sem transição — são os que mais puxam o percentual para baixo.
+  PASSO 2 — priorize parágrafos com mais frases "soltas" (sem conexão lógica com a anterior ou posterior).
   PASSO 3 — diversifique: não repita a mesma palavra de transição em parágrafos adjacentes.
 Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, bem como, contudo, todavia, inclusive, pois, logo, de fato, nesse sentido, em razão disso, por exemplo, uma vez que, em seguida.
 
@@ -1452,6 +1474,25 @@ export default function App() {
         }
       } catch (e) {
         log_(`⚠ Polimento falhou (${e.message}). Continuando.`, "warn");
+      }
+
+      // ── Verificação JS de hiperlinks — antes da auditoria ───────────────
+      const linksNoTexto = (textoFinal.match(/\[.+?\]\(https?:\/\/.+?\)/g) || []).length;
+      const linksExternos = (textoFinal.match(/\[.+?\]\(https?:\/\/(?!sittax\.com\.br).+?\)/g) || []).length;
+      log_(`✓ Links no artigo: ${linksNoTexto} total (${linksExternos} externos)`, linksExternos >= 4 ? "ok" : "warn");
+      if (linksExternos < 4) {
+        log_(`⚠ Apenas ${linksExternos} link(s) externo(s) — mínimo é 4. Inserindo link(s) faltante(s)...`, "warn");
+        await pausa(2, "", log_);
+        try {
+          const reforçado = await callGPT(PROMPTS.reforcarLinks(textoFinal, linksExternos), 5000);
+          const h1idxR = reforçado.indexOf("#");
+          const textoReforçado = h1idxR >= 0 ? reforçado.slice(h1idxR).trim() : reforçado.trim();
+          if (textoReforçado?.length > 500) {
+            const linksDepois = (textoReforçado.match(/\[.+?\]\(https?:\/\/(?!sittax\.com\.br).+?\)/g) || []).length;
+            textoFinal = textoReforçado; setArtigo(textoReforçado);
+            log_(`✓ Links externos agora: ${linksDepois}`, linksDepois >= 4 ? "ok" : "warn");
+          } else { log_("⚠ Reforço de links retornou texto curto — mantendo versão anterior.", "warn"); }
+        } catch (e) { log_(`⚠ Reforço de links falhou (${e.message}). Continuando.`, "warn"); }
       }
 
       // ── Auditoria única — pós-links e pós-polimento ───────────────────────
