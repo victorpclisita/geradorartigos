@@ -1254,18 +1254,19 @@ export default function App() {
   }
 
   // Chama o backend Vercel → Anthropic com web_search e retry automático
+  // Busca web via gpt-4o-search-preview (dados atuais, incluindo 2026)
   async function callClaudeSearch(prompt, maxTokens, tentativa = 1) {
-    const res = await fetch("/api/pesquisar", {
+    const res = await fetch("/api/buscar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, maxTokens, apiKey: keyAnthropic }),
+      body: JSON.stringify({ prompt, maxTokens }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      const msg = err?.error || `Erro no servidor (${res.status})`;
+      const msg = err?.error || `Erro OpenAI Search (${res.status})`;
       if (isRateLimit(msg) && tentativa <= 3) {
         const espera = 60 * tentativa;
-        log_(`⏳ Limite de tokens atingido — aguardando ${espera}s e tentando novamente (${tentativa}/3)...`, "warn");
+        log_(`⏳ Limite de tokens — aguardando ${espera}s e tentando novamente (${tentativa}/3)...`, "warn");
         await pausa(espera, "", null);
         return callClaudeSearch(prompt, maxTokens, tentativa + 1);
       }
@@ -1303,7 +1304,7 @@ export default function App() {
     try {
       setFase("pesquisa");
       // ── Busca inicial — Claude com web_search (tokens mínimos) ──────────────
-      log_("Buscando dado atualizado na web... (Claude)");
+      log_("Buscando dado atualizado na web... (ChatGPT)");
       let dadoClaude = null;
       try {
         const rawClaude = await callClaudeSearch(PROMPTS.buscaInicial(tema), 300);
@@ -1311,11 +1312,11 @@ export default function App() {
         if (dadoClaude?.fato) {
           log_(`✓ Dado verificado: "${dadoClaude.fato.slice(0, 80)}..."`, "ok");
         } else {
-          log_("⚠ Claude não encontrou dado recente — GPT usará conhecimento próprio.", "warn");
+          log_("⚠ Nenhum dado recente encontrado — GPT usará conhecimento próprio.", "warn");
           dadoClaude = null;
         }
       } catch (e) {
-        log_(`⚠ Busca Claude falhou (${e.message}) — continuando sem dado externo.`, "warn");
+        log_(`⚠ Busca web falhou (${e.message}) — continuando sem dado externo.`, "warn");
       }
       // ── Planejamento estrutural — GPT ────────────────────────────────────────
       log_("Definindo estratégia de keywords e estrutura... (ChatGPT)");
@@ -1950,7 +1951,7 @@ export default function App() {
       {/* Dica inferior */}
       {fase === "idle" && (
         <div style={{ marginTop: "14px", maxWidth: "760px", width: "100%", padding: "13px 18px", borderRadius: BRAND.radius, background: "#F5F5F5", border: "1px solid #E4E4E4", fontSize: "13px", color: BRAND.textMuted, lineHeight: "1.65" }}>
-          <strong>Como usar:</strong> Digite o tema e clique em "Gerar artigo". O processo leva ~3 minutos — inclui busca de dados reais na web (Claude), redação e polimento Yoast (transição + voz ativa) e auditoria com revisão automática para score ≥ 90. Depois baixe e converta para PDF com Ctrl+P.
+          <strong>Como usar:</strong> Digite o tema e clique em "Gerar artigo". O processo leva ~3 minutos — inclui busca de dados reais na web, redação e polimento Yoast (transição + voz ativa) e auditoria com revisão automática para score ≥ 90. Depois baixe e converta para PDF com Ctrl+P.
         </div>
       )}
 
