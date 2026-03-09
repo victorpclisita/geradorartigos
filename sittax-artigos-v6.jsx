@@ -4,11 +4,22 @@ import { useState, useRef, useEffect } from "react";
 
 const PROMPTS = {
 
-  // ─── PESQUISA ─────────────────────────────────────────────────────────────────
-  // Retorna JSON com estrutura do artigo, keywords, dado recente e FAQ
-  pesquisa: (tema) => `Você é especialista em SEO e conteúdo tributário fiscal brasileiro.
+  // ─── BUSCA INICIAL (Claude + web_search) ─────────────────────────────────────
+  // Objetivo único: trazer 1 dado real e atualizado sobre o tema.
+  // Prompt mínimo para economizar tokens — Claude só retorna JSON pequeno.
+  buscaInicial: (tema) => `Busque na web 1 dado real e recente (2024 ou 2025) sobre: "${tema}" no contexto tributário/fiscal brasileiro.
+
+Retorne SOMENTE este JSON, sem texto adicional:
+{"fato":"dado concreto em 1 frase","fonte":"nome do órgão","url":"url exata encontrada","data":"mês/ano"}
+
+Se não encontrar dado confiável: {"fato":"","fonte":"","url":"","data":""}`,
+
+  // ─── PESQUISA (GPT) ───────────────────────────────────────────────────────────
+  // Recebe o briefing do Claude e planeja a estrutura completa do artigo
+  pesquisa: (tema, dadoClaude) => `Você é especialista em SEO e conteúdo tributário fiscal brasileiro.
 
 TEMA: "${tema}"
+${dadoClaude?.fato ? `DADO RECENTE VERIFICADO (use exatamente este no campo dado_recente): fato="${dadoClaude.fato}" | fonte="${dadoClaude.fonte}" | url="${dadoClaude.url}"` : ""}
 
 Sua tarefa: planejar a estrutura de um artigo de blog sobre esse tema.
 
@@ -19,7 +30,7 @@ REGRAS DO JSON:
 - "secoes": entre 3 e 5 seções H2. Pelo menos 1 deve ter H3s sugeridos; pelo menos 1 deve ficar sem H3 (para receber lista de bullet points)
 - "faq_perguntas": exatamente 4 perguntas reais que um contador ou empresário faria
 - "fontes_primarias": leis ou normas reais relacionadas ao tema (ex: "LC 123/2006")
-- "dado_recente": use um dado real do seu conhecimento sobre o tema (estatística, percentual, prazo, dado de órgão oficial). Pode ser de 2024 ou 2025. Inclua uma URL real e verificável do órgão — use apenas URLs que você tem certeza que existem (ex: gov.br, ibge.gov.br, receita.fazenda.gov.br, sebrae.com.br). NUNCA invente URL.
+- "dado_recente": ${dadoClaude?.fato ? `use EXATAMENTE o dado fornecido acima — não invente outro.` : `use um dado real do seu conhecimento. Para a URL use APENAS: https://www.gov.br/receitafederal/pt-br | https://www.ibge.gov.br | https://sebrae.com.br | https://cfc.org.br | https://www.planalto.gov.br — ou "" se não se aplicar. NUNCA construa URL específica.`}
 
 Responda SOMENTE com o JSON abaixo. Nenhum texto antes ou depois. Nenhum bloco de código.
 
@@ -29,9 +40,9 @@ Responda SOMENTE com o JSON abaixo. Nenhum texto antes ou depois. Nenhum bloco d
   "intencao_busca": "Informacional + Estratégia",
   "angulo_diferenciado": "ângulo que diferencia este artigo de resultados genéricos do Google",
   "dado_recente": {
-    "fato": "dado concreto de 2025/2026 encontrado na busca",
+    "fato": "dado concreto verificado",
     "fonte": "Nome do órgão ou portal",
-    "url": "https://url-real-encontrada.com.br"
+    "url": "url exata"
   },
   "secoes": [
     { "h2": "Título da seção 1", "h3s": ["subtópico a", "subtópico b"], "foco": "o que abordar nesta seção" },
@@ -111,6 +122,16 @@ NUNCA corte conteúdo — apenas redistribua em subdivisões.
 
 REGRA 4 — PELO MENOS 1 SEÇÃO COM H3s:
 O artigo inteiro deve ter ao menos 1 seção H2 com H3s. Não pode ter zero H3s no total.
+
+REGRA 5 — ENCERRAMENTO OBRIGATÓRIO DE CADA SEÇÃO H2:
+Cada seção H2 deve terminar com uma frase de texto corrido que encerre o raciocínio.
+NUNCA termine uma seção H2 com bullet point como última coisa — após a lista, adicione 1 frase curta de fechamento.
+NUNCA corte uma seção no meio de um argumento — se o espaço estiver acabando, conclua a ideia antes de abrir novo H2.
+Exemplo de encerramento correto:
+  - Item 3: prazo de 30 dias
+  Esses são os pontos que o escritório precisa verificar antes do envio.  ← frase de fechamento
+Exemplo PROIBIDO:
+  - Item 3: prazo de 30 dias  ← seção termina aqui, no bullet. ERRADO.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TAMANHO DOS PARÁGRAFOS
@@ -199,9 +220,11 @@ EXEMPLOS DE VOZ PASSIVA → ATIVA:
 ❌ "os dados serão processados pelo sistema" → ✅ "o sistema processa os dados"
 ❌ "a multa é aplicada automaticamente" → ✅ "a Receita aplica a multa automaticamente"
 
-REGRA DE TRANSIÇÃO: pelo menos 3 em cada 10 frases devem ter uma palavra de transição.
+REGRA DE TRANSIÇÃO: pelo menos 3 em cada 10 frases devem ter uma palavra de transição — isso equivale a 30% do texto.
+Estratégia prática: a cada parágrafo que você escreve, verifique se ao menos 1 frase tem transição. Se não tiver, adicione antes de passar para o próximo.
 Posição variada: início ("Além disso, a empresa..."), meio ("A empresa, portanto, deve..."), fim ("...reduz a multa, inclusive.")
-Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, inclusive, conforme, já que, bem como, contudo, todavia, pois, logo, de fato, em razão disso, nesse sentido
+Diversifique — não repita a mesma transição em parágrafos consecutivos.
+Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, inclusive, conforme, já que, bem como, contudo, todavia, pois, logo, de fato, em razão disso, nesse sentido, ainda assim, por exemplo, por outro lado, uma vez que, em seguida
 
 AUTO-CHECAGEM OBRIGATÓRIA: antes de entregar o texto, releia e verifique:
 1. Há alguma expressão da lista de proibidas? → substitua
@@ -244,40 +267,63 @@ FORMATO DE SAÍDA
 CONTEXTO: artigo sobre "${tema}" (keyword: "${p.keyword_primaria}")
 Início do artigo já escrito: ${corpo.slice(0, 300)}...
 
-Escreva SOMENTE a seção de FAQ com as 4 perguntas abaixo. Nada antes ou depois.
+Escreva SOMENTE a seção de FAQ. Nada antes ou depois.
 
-PERGUNTAS:
-${p.faq_perguntas.map((q, i) => (i + 1) + ". " + q).join("\n")}
+ATENÇÃO: você deve escrever EXATAMENTE 4 blocos de pergunta e resposta — não 3, não 2. Exatamente 4.
+Cada bloco começa com ### seguido do texto exato da pergunta.
 
-REGRAS:
+REGRAS DE RESPOSTA:
 - Cada resposta começa diretamente com a resposta — sem introdução, sem "Boa pergunta"
 - 3 a 4 frases por resposta, diretas e objetivas
 - Tom: contador respondendo pessoalmente a um cliente — sem enrolação
 - Frases curtas, diretas. Parágrafos de 1 a 2 frases por resposta.
-- O mesmo estilo Sittax se aplica: sem enrolação, sem academicismo, com números concretos quando disponíveis.
 - Use dados concretos quando aplicável (prazos, alíquotas, valores)
 - NUNCA cite número de lei sem certeza — use "conforme a legislação vigente"
 - PROIBIDO: "É importante ressaltar", "Vale destacar", "É fundamental", "Neste contexto", "Cabe destacar"
 - Mínimo 350 palavras no total da seção
 
-FORMATO DE SAÍDA:
+TAREFA — escreva os 4 blocos na ordem exata abaixo:
+
+BLOCO 1:
+### ${p.faq_perguntas[0] || "Pergunta 1"}
+
+[Resposta direta, 3-4 frases, estilo Sittax]
+
+BLOCO 2:
+### ${p.faq_perguntas[1] || "Pergunta 2"}
+
+[Resposta direta, 3-4 frases, estilo Sittax]
+
+BLOCO 3:
+### ${p.faq_perguntas[2] || "Pergunta 3"}
+
+[Resposta direta, 3-4 frases, estilo Sittax]
+
+BLOCO 4:
+### ${p.faq_perguntas[3] || "Pergunta 4"}
+
+[Resposta direta, 3-4 frases, estilo Sittax]
+
+AUTO-CHECAGEM antes de responder: conte os blocos ### no texto que vai entregar. Se não forem exatamente 4 (além do ## Perguntas Frequentes), corrija agora.
+
+FORMATO DE SAÍDA FINAL:
 ## Perguntas Frequentes
 
-### [Pergunta 1 exata]
+### [Pergunta 1 — texto exato do BLOCO 1]
 
-[Resposta direta, 3-4 frases]
+[Resposta]
 
-### [Pergunta 2 exata]
+### [Pergunta 2 — texto exato do BLOCO 2]
 
-[Resposta direta, 3-4 frases]
+[Resposta]
 
-### [Pergunta 3 exata]
+### [Pergunta 3 — texto exato do BLOCO 3]
 
-[Resposta direta, 3-4 frases]
+[Resposta]
 
-### [Pergunta 4 exata]
+### [Pergunta 4 — texto exato do BLOCO 4]
 
-[Resposta direta, 3-4 frases]`,
+[Resposta]`,
 
   // ─── CONCLUSÃO ────────────────────────────────────────────────────────────────
   conclusao: (tema, p) => `Você é especialista tributário da Sittax.
@@ -544,27 +590,29 @@ ATENÇÃO: os campos "percentual_transicao" e "percentual_passiva" devem ser cal
   // ChatGPT identifica leis e dados citados e retorna URLs reais do seu conhecimento
   buscarFontes: (textoCompleto) => `Você é especialista em fontes do direito tributário brasileiro.
 
-Analise o trecho abaixo e identifique menções a leis, normas e dados que deveriam ter uma URL de fonte.
-Para cada item identificado, forneça a URL oficial real com base no seu conhecimento.
+Analise o trecho abaixo e identifique menções a leis específicas que aparecem no texto.
+Use APENAS as URLs da whitelist abaixo — não invente nenhuma outra.
 
-Fontes prioritárias (use apenas URLs que você conhece com certeza):
-- Leis federais → planalto.gov.br (ex: https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp123.htm)
-- Receita Federal → gov.br/receitafederal ou normas.receita.fazenda.gov.br
-- IBGE → ibge.gov.br
-- Sebrae → sebrae.com.br
-- CFC → cfc.org.br
+WHITELIST DE URLs VERIFICADAS (use exatamente como escrito):
+- LC 123/2006 → https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp123.htm
+- LC 116/2003 → https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp116.htm
+- CTN (Lei 5.172/1966) → https://www.planalto.gov.br/ccivil_03/leis/l5172compilado.htm
+- CF/1988 → https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm
+- Lei 6.404/1976 → https://www.planalto.gov.br/ccivil_03/leis/l6404consol.htm
+- Receita Federal (geral) → https://www.gov.br/receitafederal/pt-br
+- IBGE (geral) → https://www.ibge.gov.br
+- Sebrae (geral) → https://sebrae.com.br
+- CFC (geral) → https://cfc.org.br
 
-REGRAS:
-- Inclua no JSON APENAS URLs reais que você conhece com certeza — NUNCA invente ou deduza URLs
-- Se não tiver certeza da URL exata de um item, não o inclua
-- Máximo 4 fontes
-- Se não encontrar nenhuma com certeza, retorne {"fontes":[]}
+REGRA ABSOLUTA: se a lei ou fonte mencionada no artigo NÃO estiver nessa whitelist, NÃO inclua.
+Retorne {"fontes":[]} se nenhuma lei da whitelist aparecer no trecho.
+NUNCA construa uma URL que não esteja exatamente na whitelist acima.
 
 Responda SOMENTE com o JSON abaixo. Nenhum texto antes ou depois.
-{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"https://url-real-conhecida.gov.br"}]}
+{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"url exata da whitelist"}]}
 
 TRECHO DO ARTIGO:
-${textoCompleto.slice(0, 800)}`,
+${textoCompleto.slice(0, 1500)}`,
 
   // ─── INSERIR FONTES ───────────────────────────────────────────────────────────
   inserirFontes: (textoCompleto, fontes) => `Você é editor de conteúdo da Sittax.
@@ -691,14 +739,21 @@ SE A8 (hiperlinks insuficientes): adicione hiperlinks reais nos trechos que cita
 Formato: [âncora natural](url). Use URLs de: planalto.gov.br, gov.br/receitafederal, sebrae.com.br, ibge.gov.br, contabeis.com.br, cfc.org.br.
 NUNCA invente URLs — só insira links de fontes que você conhece com certeza.
 
-SE A9 (parágrafos longos): quebre todo parágrafo acima de 55 palavras em dois. Se houver dois parágrafos acima de 40 palavras seguidos, insira um parágrafo curto (15 a 25 palavras) entre eles. Bullet points estão isentos.
+SE A9 (parágrafos longos): percorra o artigo parágrafo a parágrafo. Para cada bloco de texto corrido (não título, não bullet):
+  PASSO 1 — conte as palavras. Se > 55 palavras: divida em dois no ponto mais natural (após "." no meio do parágrafo).
+  PASSO 2 — verifique se há dois parágrafos seguidos com > 40 palavras. Se sim: insira um parágrafo curto (15-25 palavras) entre eles.
+  PASSO 3 — confirme que nenhum parágrafo de texto corrido ficou com mais de 55 palavras.
+Bullet points ("-"), listas e títulos H1/H2/H3 estão isentos dessa regra. Não perca conteúdo — apenas redistribua.
 
 SE A10 (seção H2 > 300 palavras): não corte conteúdo. Localize o ponto natural de divisão e insira um ### com subtítulo descritivo. Se não couber H3, crie um novo ## e continue o conteúdo lá.
 
 SE A11 (H3 sem parágrafo antes): insira 1 parágrafo de 1 a 2 frases antes do H3, apresentando o conteúdo da seção.
 
-SE B1 (transição < 30%): insira palavras de transição nas frases mais "soltas", variando posição (início, meio ou fim).
-Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, bem como, contudo, todavia, inclusive, pois, logo, de fato, nesse sentido, em razão disso.
+SE B1 (transição < 30%): o artigo precisa ter pelo menos 1 transição a cada 3 frases.
+  PASSO 1 — leia parágrafo a parágrafo. Para cada parágrafo sem nenhuma transição: adicione 1.
+  PASSO 2 — priorize parágrafos com 3+ frases seguidas sem transição — são os que mais puxam o percentual para baixo.
+  PASSO 3 — diversifique: não repita a mesma palavra de transição em parágrafos adjacentes.
+Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, bem como, contudo, todavia, inclusive, pois, logo, de fato, nesse sentido, em razão disso, por exemplo, uma vez que, em seguida.
 
 SE B2 (voz passiva > 10%): reescreva as frases passivas na voz ativa.
 Passiva: "o imposto é calculado pela Receita" → Ativa: "a Receita calcula o imposto"
@@ -1247,8 +1302,24 @@ export default function App() {
 
     try {
       setFase("pesquisa");
+      // ── Busca inicial — Claude com web_search (tokens mínimos) ──────────────
+      log_("Buscando dado atualizado na web... (Claude)");
+      let dadoClaude = null;
+      try {
+        const rawClaude = await callClaudeSearch(PROMPTS.buscaInicial(tema), 300);
+        dadoClaude = parseJSON(rawClaude);
+        if (dadoClaude?.fato) {
+          log_(`✓ Dado verificado: "${dadoClaude.fato.slice(0, 80)}..."`, "ok");
+        } else {
+          log_("⚠ Claude não encontrou dado recente — GPT usará conhecimento próprio.", "warn");
+          dadoClaude = null;
+        }
+      } catch (e) {
+        log_(`⚠ Busca Claude falhou (${e.message}) — continuando sem dado externo.`, "warn");
+      }
+      // ── Planejamento estrutural — GPT ────────────────────────────────────────
       log_("Definindo estratégia de keywords e estrutura... (ChatGPT)");
-      const rawP = await callGPT(PROMPTS.pesquisa(tema), 1500);
+      const rawP = await callGPT(PROMPTS.pesquisa(tema, dadoClaude), 1500);
       const pd = parseJSON(rawP);
       if (!pd) throw new Error(`Resposta inválida da API na pesquisa. Conteúdo: "${rawP.slice(0, 120)}..."`);
       if (!pd.keyword_primaria) throw new Error("JSON retornado sem campo 'keyword_primaria'. Tente novamente.");
@@ -1276,14 +1347,14 @@ export default function App() {
       setFase("corpo");
       log_("Escrevendo introdução e seções principais... (ChatGPT)");
       await pausa(2, "", log_);
-      const corpoPart = await callGPT(PROMPTS.corpo(tema, pd), 2500);
+      const corpoPart = await callGPT(PROMPTS.corpo(tema, pd), 3500);
       if (corpoPart.length < 400) throw new Error("Corpo do artigo muito curto. Tente um tema mais específico.");
       log_(`✓ Corpo: ~${contarPalavras(corpoPart)} palavras`, "ok");
 
       setFase("faq");
       log_("Escrevendo seção de Perguntas Frequentes... (ChatGPT)");
       await pausa(2, "", log_);
-      const faqPart = await callGPT(PROMPTS.faq(tema, pd, corpoPart), 900);
+      const faqPart = await callGPT(PROMPTS.faq(tema, pd, corpoPart), 1200);
       if (faqPart.length < 100) throw new Error("FAQ não gerado corretamente.");
       log_(`✓ FAQ: ~${contarPalavras(faqPart)} palavras`, "ok");
 
@@ -1308,7 +1379,7 @@ export default function App() {
 
       // ── Expansão automática se abaixo de 1.500 palavras ──────────────────
       if (totalPalavras < 1500) {
-        log_(`⚠ Artigo com ${totalPalavras} palavras — abaixo do mínimo de 1.500. Expandindo... (Claude)`, "warn");
+        log_(`⚠ Artigo com ${totalPalavras} palavras — abaixo do mínimo de 1.500. Expandindo... (ChatGPT)`, "warn");
         await pausa(2, "", log_);
         try {
           const expandido = await callGPT(PROMPTS.expansao(textoCompleto, totalPalavras), 6000);
@@ -1879,7 +1950,7 @@ export default function App() {
       {/* Dica inferior */}
       {fase === "idle" && (
         <div style={{ marginTop: "14px", maxWidth: "760px", width: "100%", padding: "13px 18px", borderRadius: BRAND.radius, background: "#F5F5F5", border: "1px solid #E4E4E4", fontSize: "13px", color: BRAND.textMuted, lineHeight: "1.65" }}>
-          <strong>Como usar:</strong> Digite o tema e clique em "Gerar artigo". O processo leva ~3 minutos — inclui polimento Yoast (transição + voz ativa) e <strong>2 rodadas de auditoria/revisão</strong> para score ≥ 90. Depois baixe e converta para PDF com Ctrl+P.
+          <strong>Como usar:</strong> Digite o tema e clique em "Gerar artigo". O processo leva ~3 minutos — inclui busca de dados reais na web (Claude), redação e polimento Yoast (transição + voz ativa) e auditoria com revisão automática para score ≥ 90. Depois baixe e converta para PDF com Ctrl+P.
         </div>
       )}
 
