@@ -576,15 +576,15 @@ Responda SOMENTE em JSON válido. Nenhum texto antes ou depois. Nenhum bloco de 
   },
   "problemas": [],
   "yoast": {
-    "percentual_transicao": CALCULE_VOCE_MESMO,
-    "status_transicao": "verde_ou_vermelho",
-    "percentual_passiva": CALCULE_VOCE_MESMO,
-    "status_passiva": "verde_ou_vermelho"
+    "percentual_transicao": 0,
+    "status_transicao": "verde",
+    "percentual_passiva": 0,
+    "status_passiva": "verde"
   },
-  "resumo": "Veredicto em 1-2 frases"
+  "resumo": "Veredicto em 1 frase"
 }
 
-ATENÇÃO: os campos "percentual_transicao" e "percentual_passiva" devem ser calculados por você com base na leitura real do artigo. NÃO use valores padrão ou de memória. Cada artigo terá percentuais diferentes.`,
+Substitua os números 0 pelos percentuais reais calculados por você lendo o artigo acima. "status_transicao": "verde" se ≥30%, senão "vermelho". "status_passiva": "verde" se ≤10%, senão "vermelho". Retorne SOMENTE o JSON, sem nenhum texto antes ou depois.`,
 
   // ─── BUSCAR FONTES ────────────────────────────────────────────────────────────
   // ChatGPT identifica leis e dados citados e retorna URLs reais do seu conhecimento
@@ -963,8 +963,23 @@ function parseJSON(text) {
   const match = clean.match(/\{[\s\S]*\}/);
   if (match) {
     try { return JSON.parse(match[0]); } catch (_) { }
+    // 4. JSON truncado — tentar fechar automaticamente
+    try {
+      let truncated = match[0];
+      // Contar chaves abertas vs fechadas
+      let open = (truncated.match(/\{/g) || []).length;
+      let close = (truncated.match(/\}/g) || []).length;
+      // Remover vírgula final pendente
+      truncated = truncated.replace(/,\s*$/, "");
+      // Fechar strings abertas
+      const quoteCount = (truncated.match(/(?<!\\)"/g) || []).length;
+      if (quoteCount % 2 !== 0) truncated += "\"";
+      // Fechar chaves faltantes
+      for (let i = 0; i < open - close; i++) truncated += "}";
+      return JSON.parse(truncated);
+    } catch (_) { }
   }
-  // 4. Falhou — retornar null com log
+  // 5. Falhou — retornar null com log
   console.error("parseJSON falhou. Texto recebido:", text.slice(0, 500));
   return null;
 }
@@ -1444,7 +1459,7 @@ export default function App() {
       setFase("auditoria");
       log_("Auditoria de qualidade — checklist completo... (ChatGPT)");
       await pausa(2, "", log_);
-      const rawAudit = await callGPT(PROMPTS.auditoria(textoFinal, 1), 1500);
+      const rawAudit = await callGPT(PROMPTS.auditoria(textoFinal, 1), 2000);
       const adFinal = parseJSON(rawAudit);
       if (adFinal) {
         const { score: scoreCalc } = calcularScore(adFinal.checklist);
@@ -1500,7 +1515,7 @@ export default function App() {
       setFase("auditoria");
       log_("Auditoria de melhoria — identificando problemas... (ChatGPT)");
       await pausa(2, "", log_);
-      const rawA = await callGPT(PROMPTS.auditoria(textoAtual, 1), 1500);
+      const rawA = await callGPT(PROMPTS.auditoria(textoAtual, 1), 2000);
       const ad = parseJSON(rawA);
       if (!ad) { log_("⚠ Auditoria não retornou JSON válido.", "warn"); setMelhorando(false); setFase("pronto"); return; }
       setAudit(ad);
@@ -1687,37 +1702,58 @@ export default function App() {
 
         {/* Progress bar */}
         {!["idle", "erro"].includes(fase) && (
-          <div style={{ padding: "16px 28px", borderBottom: `1px solid ${BRAND.border}`, background: "#FAFAFA" }}>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              {FASES.map((f, i) => {
-                const done = fase === "pronto" || faseIdx > i;
-                const active = faseIdx === i && fase !== "pronto";
-                return (
-                  <div key={f.id} style={{ display: "flex", alignItems: "center", flex: i < FASES.length - 1 ? 1 : undefined }}>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                      <div style={{
-                        width: "24px", height: "24px",
-                        borderRadius: "50%",
-                        background: done ? BRAND.primary : active ? BRAND.primaryLight : "#EBEBEB",
-                        border: active ? `2px solid ${BRAND.primary}` : "2px solid transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "9px", fontWeight: "700",
-                        color: done ? "#fff" : active ? BRAND.primary : "#ABABAB",
-                        transition: "background 0.2s",
-                      }}>
-                        {done ? "✓" : active ? f.icon : i + 1}
-                      </div>
-                      <span style={{ fontSize: "8px", color: done || active ? BRAND.text : "#BDBDBD", whiteSpace: "nowrap", fontWeight: active ? "600" : "400" }}>
-                        {f.label}
-                      </span>
-                    </div>
-                    {i < FASES.length - 1 && (
-                      <div style={{ flex: 1, height: "2px", margin: "0 2px", marginBottom: "16px", background: done ? BRAND.primary : "#E8E8E8", transition: "background 0.3s" }} />
-                    )}
-                  </div>
-                );
-              })}
+          <div style={{ padding: "12px 20px", borderBottom: `1px solid ${BRAND.border}`, background: "#FAFAFA" }}>
+            {/* Linha ativa — fase atual em destaque */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "10px" }}>
+              <div style={{
+                width: "28px", height: "28px", borderRadius: "50%",
+                background: fase === "pronto" ? BRAND.primary : BRAND.primaryLight,
+                border: `2px solid ${BRAND.primary}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "13px",
+              }}>
+                {fase === "pronto" ? "✓" : FASES[faseIdx]?.icon}
+              </div>
+              <span style={{ fontSize: "13px", fontWeight: "700", color: BRAND.primary }}>
+                {fase === "pronto" ? "Pronto!" : FASES[faseIdx]?.label}
+              </span>
+              <span style={{ fontSize: "11px", color: BRAND.textMuted }}>
+                ({faseIdx + 1}/{FASES.length})
+              </span>
             </div>
+            {/* Bolinhas — duas fileiras de 5 */}
+            {[FASES.slice(0, 5), FASES.slice(5)].map((grupo, gi) => (
+              <div key={gi} style={{ display: "flex", alignItems: "center", marginBottom: gi === 0 ? "6px" : 0 }}>
+                {grupo.map((f, li) => {
+                  const i = gi * 5 + li;
+                  const done = fase === "pronto" || faseIdx > i;
+                  const active = faseIdx === i && fase !== "pronto";
+                  return (
+                    <div key={f.id} style={{ display: "flex", alignItems: "center", flex: li < grupo.length - 1 ? 1 : undefined }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px" }}>
+                        <div style={{
+                          width: "20px", height: "20px", borderRadius: "50%",
+                          background: done ? BRAND.primary : active ? BRAND.primaryLight : "#EBEBEB",
+                          border: active ? `2px solid ${BRAND.primary}` : "2px solid transparent",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: "8px", fontWeight: "700",
+                          color: done ? "#fff" : active ? BRAND.primary : "#ABABAB",
+                          transition: "background 0.2s",
+                        }}>
+                          {done ? "✓" : i + 1}
+                        </div>
+                        <span style={{ fontSize: "8px", color: done || active ? BRAND.text : "#BDBDBD", whiteSpace: "nowrap", fontWeight: active ? "700" : "400" }}>
+                          {f.label}
+                        </span>
+                      </div>
+                      {li < grupo.length - 1 && (
+                        <div style={{ flex: 1, height: "2px", margin: "0 3px", marginBottom: "14px", background: done ? BRAND.primary : "#E8E8E8", transition: "background 0.3s" }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         )}
 
