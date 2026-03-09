@@ -1075,21 +1075,16 @@ const BRAND = {
 };
 
 const FASES = [
-  { id: "pesquisa",       label: "Pesquisa",    icon: "🔍" },
-  { id: "corpo",          label: "Corpo",       icon: "✍️" },
-  { id: "faq",            label: "FAQ",         icon: "❓" },
-  { id: "cta",            label: "Concl./CTA",  icon: "🎯" },
-  { id: "polimento",      label: "Polimento",   icon: "✨" },
-  { id: "auditoria1",     label: "Auditoria 1", icon: "🔎" },
-  { id: "revisao1",       label: "Revisão 1",   icon: "🛠️" },
-  { id: "fontes",         label: "Fontes",      icon: "🔗" },
-  { id: "links_blog",     label: "Links Blog",  icon: "🏠" },
-  { id: "auditoria2",     label: "Auditoria 2", icon: "🔎" },
-  { id: "revisao2",        label: "Revisão 2",   icon: "✅" },
-  { id: "polimento_final", label: "Pol. Final",  icon: "🪄" },
-  { id: "auditoria_yoast", label: "Yoast",       icon: "📊" },
-  { id: "revisao_yoast",   label: "Rev. Yoast",  icon: "🔤" },
-  { id: "pronto",          label: "Pronto",      icon: "🎉" },
+  { id: "pesquisa",   label: "Pesquisa",   icon: "🔍" },
+  { id: "corpo",      label: "Corpo",      icon: "✍️" },
+  { id: "faq",        label: "FAQ",        icon: "❓" },
+  { id: "cta",        label: "Concl./CTA", icon: "🎯" },
+  { id: "fontes",     label: "Fontes",     icon: "🔗" },
+  { id: "links_blog", label: "Links Blog", icon: "🏠" },
+  { id: "polimento",  label: "Polimento",  icon: "✨" },
+  { id: "auditoria",  label: "Auditoria",  icon: "🔎" },
+  { id: "revisao",    label: "Revisão",    icon: "🛠️" },
+  { id: "pronto",     label: "Pronto",     icon: "🎉" },
 ];
 
 export default function App() {
@@ -1270,60 +1265,7 @@ export default function App() {
         }
       }
 
-      let auditFinal = null;
-
-      setFase("polimento");
-      log_("Polindo transição e voz ativa... (ChatGPT)");
-      await pausa(2, "", log_);
-      try {
-        const polido = await callGPT(PROMPTS.polimento(textoCompleto), 6000);
-        if (polido?.length > 500) {
-          const polidoQ = quebrarParagrafosLongos(polido);
-          textoFinal = polidoQ; setArtigo(polidoQ);
-          log_(`✓ Polimento aplicado — ${contarPalavras(polidoQ)} palavras`, "ok");
-        } else {
-          log_("⚠ Polimento retornou texto muito curto, mantendo original.", "warn");
-        }
-      } catch (e) {
-        log_(`⚠ Polimento falhou (${e.message}). Continuando.`, "warn");
-      }
-
-      // ── Fluxo de auditorias ───────────────────────────────────────────────
-      // ── Auditoria 1 ───────────────────────────────────────────────────────────
-      setFase("auditoria1");
-      log_("Auditoria 1/2 — verificando qualidade, Yoast e linguagem... (ChatGPT)");
-      await pausa(2, "", log_);
-      const rawA1 = await callGPT(PROMPTS.auditoria(textoFinal, 1), 1500);
-      const ad1 = parseJSON(rawA1);
-      if (ad1) {
-        const { score: score1Calc } = calcularScore(ad1.checklist);
-        ad1.score_geral = score1Calc;
-        auditFinal = ad1;
-        const yoast1Ok = !ad1.yoast || (ad1.yoast.status_transicao === "verde" && ad1.yoast.status_passiva === "verde");
-        const score1Ok = score1Calc >= 90 && yoast1Ok;
-        log_(
-          `✓ Score rodada 1: ${score1Calc}/100` +
-          (ad1.yoast ? ` | Transição: ${ad1.yoast.percentual_transicao}% (${ad1.yoast.status_transicao}) | Passiva: ${ad1.yoast.percentual_passiva}% (${ad1.yoast.status_passiva})` : "") +
-          (score1Ok ? " — aprovado ✓" : " — revisando..."),
-          score1Ok ? "ok" : "warn"
-        );
-        const problemas1 = (ad1.problemas || []).filter(p => p?.trim() && p.length > 5);
-        if (!score1Ok || problemas1.length > 0) {
-          // ── Revisão 1 ───────────────────────────────────────────────────────
-          setFase("revisao1");
-          log_(`Revisão 1/2 — corrigindo ${problemas1.length} problema(s)... (ChatGPT)`, "warn");
-          problemas1.forEach(p => log_(`  → ${p}`, "warn"));
-          await pausa(2, "", log_);
-          const revisado1 = await callGPT(PROMPTS.revisar(textoFinal, problemas1), 6000);
-          if (revisado1?.length > 500) {
-            const rev1Q = quebrarParagrafosLongos(revisado1);
-            textoFinal = rev1Q; setArtigo(rev1Q);
-            log_(`✓ Revisão 1 aplicada — ${contarPalavras(rev1Q)} palavras`, "ok");
-          } else { log_("⚠ Revisão 1 retornou texto curto, mantendo versão anterior.", "warn"); }
-        } else { log_(`✓ Artigo aprovado na rodada 1 (score ${ad1.score_geral}/100)`, "ok"); }
-      } else { log_("⚠ Auditoria 1 não retornou JSON válido, pulando.", "warn"); }
-
-      // ── Fontes externas — sempre executado ───────────────────────────────────
+      // ── Fontes externas ──────────────────────────────────────────────────────
       setFase("fontes");
       log_("Buscando URLs de fontes oficiais... (ChatGPT)");
       await pausa(2, "", log_);
@@ -1331,7 +1273,7 @@ export default function App() {
         const rawFontes = await callGPT(PROMPTS.buscarFontes(textoFinal), 600);
         const jsonFontes = parseJSON(rawFontes);
         if (jsonFontes?.fontes?.length > 0) {
-          log_("✓ " + jsonFontes.fontes.length + " fonte(s) encontrada(s) — inserindo no artigo... (ChatGPT)", "ok");
+          log_("✓ " + jsonFontes.fontes.length + " fonte(s) encontrada(s) — inserindo... (ChatGPT)", "ok");
           await pausa(2, "", log_);
           const comLinks = await callGPT(PROMPTS.inserirFontes(textoFinal, jsonFontes.fontes), 5000);
           const h1idx = comLinks.indexOf("#");
@@ -1344,7 +1286,7 @@ export default function App() {
         } else { log_("⚠ Nenhuma fonte encontrada — pulando etapa.", "warn"); }
       } catch (e) { log_(`⚠ Etapa de fontes falhou (${e.message}). Continuando.`, "warn"); }
 
-      // ── Links internos do blog Sittax — sempre executado ─────────────────────
+      // ── Links internos do blog Sittax ─────────────────────────────────────
       setFase("links_blog");
       log_("Inserindo links internos do blog Sittax... (ChatGPT)");
       await pausa(2, "", log_);
@@ -1359,98 +1301,63 @@ export default function App() {
         } else { log_("⚠ Links internos retornou texto curto — mantendo versão anterior.", "warn"); }
       } catch (e) { log_(`⚠ Links internos falhou (${e.message}). Continuando.`, "warn"); }
 
-      // ── Auditoria 2 ───────────────────────────────────────────────────────────
-      setFase("auditoria2");
-      log_("Auditoria 2/2 — verificação final de qualidade... (ChatGPT)");
-      await pausa(2, "", log_);
-      const rawA2 = await callGPT(PROMPTS.auditoria(textoFinal, 2), 1500);
-      const ad2 = parseJSON(rawA2);
-      if (ad2) {
-        const { score: score2Calc } = calcularScore(ad2.checklist);
-        ad2.score_geral = score2Calc;
-        auditFinal = ad2;
-        const yoast2Ok = !ad2.yoast || (ad2.yoast.status_transicao === "verde" && ad2.yoast.status_passiva === "verde");
-        const score2Ok = score2Calc >= 90 && yoast2Ok;
-        log_(
-          `✓ Score rodada 2: ${score2Calc}/100` +
-          (ad2.yoast ? ` | Transição: ${ad2.yoast.percentual_transicao}% (${ad2.yoast.status_transicao}) | Passiva: ${ad2.yoast.percentual_passiva}% (${ad2.yoast.status_passiva})` : "") +
-          (score2Ok ? " — aprovado ✓" : " — entregando melhor versão"),
-          score2Ok ? "ok" : "warn"
-        );
-        const problemas2 = (ad2.problemas || []).filter(p => p?.trim() && p.length > 5);
-        if (!score2Ok || problemas2.length > 0) {
-          // ── Revisão 2 ─────────────────────────────────────────────────────
-          setFase("revisao2");
-          log_(`Revisão 2/2 — corrigindo ${problemas2.length} problema(s)... (ChatGPT)`, "warn");
-          problemas2.forEach(p => log_(`  → ${p}`, "warn"));
-          await pausa(2, "", log_);
-          const revisado2 = await callGPT(PROMPTS.revisar(textoFinal, problemas2), 6000);
-          if (revisado2?.length > 500) {
-            const rev2Q = quebrarParagrafosLongos(revisado2);
-            textoFinal = rev2Q; setArtigo(rev2Q);
-            log_(`✓ Revisão 2 aplicada — ${contarPalavras(rev2Q)} palavras`, "ok");
-          } else { log_("⚠ Revisão 2 retornou texto curto, mantendo versão anterior.", "warn"); }
-        } else { log_(`✓ Artigo aprovado na rodada 2 (score ${ad2.score_geral}/100)`, "ok"); }
-      } else { log_("⚠ Auditoria 2 não retornou JSON válido, pulando.", "warn"); }
-
-      // ── Polimento Yoast final — garante transição ≥30% e passiva ≤10% ────
-      setFase("polimento_final");
-      log_("Polimento Yoast final — ajustando transição e voz passiva... (ChatGPT)");
+      // ── Polimento único — após todos os links inseridos ───────────────────
+      setFase("polimento");
+      log_("Polindo voz ativa, transições e parágrafos... (ChatGPT)");
       await pausa(2, "", log_);
       try {
-        const polFinal = await callGPT(PROMPTS.polimento(textoFinal), 6000);
-        if (polFinal?.length > 500) {
-          textoFinal = polFinal; setArtigo(polFinal);
-          log_("✓ Polimento final aplicado", "ok");
-        } else { log_("⚠ Polimento final retornou texto curto — mantendo versão anterior.", "warn"); }
-      } catch (e) { log_(`⚠ Polimento final falhou (${e.message}). Continuando.`, "warn"); }
+        const polido = await callGPT(PROMPTS.polimento(textoFinal), 6000);
+        if (polido?.length > 500) {
+          const polidoQ = quebrarParagrafosLongos(polido);
+          textoFinal = polidoQ; setArtigo(polidoQ);
+          log_(`✓ Polimento aplicado — ${contarPalavras(polidoQ)} palavras`, "ok");
+        } else {
+          log_("⚠ Polimento retornou texto muito curto, mantendo original.", "warn");
+        }
+      } catch (e) {
+        log_(`⚠ Polimento falhou (${e.message}). Continuando.`, "warn");
+      }
+
+      // ── Auditoria única — pós-links e pós-polimento ───────────────────────
+      let auditFinal = null;
+      setFase("auditoria");
+      log_("Auditoria de qualidade — checklist completo... (ChatGPT)");
+      await pausa(2, "", log_);
+      const rawAudit = await callGPT(PROMPTS.auditoria(textoFinal, 1), 1500);
+      const adFinal = parseJSON(rawAudit);
+      if (adFinal) {
+        const { score: scoreCalc } = calcularScore(adFinal.checklist);
+        adFinal.score_geral = scoreCalc;
+        auditFinal = adFinal;
+        const yoastOk = !adFinal.yoast || (adFinal.yoast.status_transicao === "verde" && adFinal.yoast.status_passiva === "verde");
+        const aprovado = scoreCalc >= 90 && yoastOk;
+        log_(
+          `✓ Score: ${scoreCalc}/100` +
+          (adFinal.yoast ? ` | Transição: ${adFinal.yoast.percentual_transicao}% (${adFinal.yoast.status_transicao}) | Passiva: ${adFinal.yoast.percentual_passiva}% (${adFinal.yoast.status_passiva})` : "") +
+          (aprovado ? " — aprovado ✓" : " — revisando..."),
+          aprovado ? "ok" : "warn"
+        );
+
+        // ── Revisão — só roda se houver problemas reais ───────────────────
+        const problemas = (adFinal.problemas || []).filter(p => p?.trim() && p.length > 5);
+        if (!aprovado || problemas.length > 0) {
+          setFase("revisao");
+          log_(`Revisão — corrigindo ${problemas.length} problema(s)... (ChatGPT)`, "warn");
+          problemas.forEach(p => log_(`  → ${p}`, "warn"));
+          await pausa(2, "", log_);
+          const revisado = await callGPT(PROMPTS.revisar(textoFinal, problemas), 6000);
+          if (revisado?.length > 500) {
+            const revisadoQ = quebrarParagrafosLongos(revisado);
+            textoFinal = revisadoQ; setArtigo(revisadoQ);
+            log_(`✓ Revisão aplicada — ${contarPalavras(revisadoQ)} palavras`, "ok");
+          } else { log_("⚠ Revisão retornou texto curto, mantendo versão anterior.", "warn"); }
+        } else {
+          log_(`✓ Artigo aprovado sem revisão (score ${adFinal.score_geral}/100)`, "ok");
+          setFase("revisao"); // avança a barra de progresso visualmente
+        }
+      } else { log_("⚠ Auditoria não retornou JSON válido, pulando.", "warn"); }
 
       setAudit(auditFinal);
-
-      // ── Auditoria Yoast dedicada — só roda se B1 ou B2 reprovaram ────────
-      const precisaYoast = !auditFinal?.checklist?.B1_transicao_verde || !auditFinal?.checklist?.B2_passiva_verde;
-      if (!precisaYoast) {
-        log_("✓ Yoast — transição e voz passiva já aprovados na auditoria. Pulando etapa.", "ok");
-        setFase("auditoria_yoast");
-      } else {
-      setFase("auditoria_yoast");
-      log_("Auditoria Yoast — verificando transição e voz passiva... (ChatGPT)");
-      await pausa(2, "", log_);
-      try {
-        const rawYoast = await callGPT(PROMPTS.auditoriaYoast(textoFinal), 1500);
-        const dyoast = parseJSON(rawYoast);
-        if (dyoast) {
-          const yAprovado = dyoast.aprovado;
-          log_(
-            `✓ Yoast — Transição: ${dyoast.transicao?.percentual ?? "?"}% (${dyoast.transicao?.status ?? "?"}) | Passiva: ${dyoast.passiva?.percentual ?? "?"}% (${dyoast.passiva?.status ?? "?"})` +
-            (yAprovado ? " — aprovado ✓" : " — corrigindo..."),
-            yAprovado ? "ok" : "warn"
-          );
-          if (!yAprovado) {
-            // ── Revisão Yoast ───────────────────────────────────────────────
-            setFase("revisao_yoast");
-            const problemaDesc = [
-              dyoast.transicao?.status === "vermelho"
-                ? "TRANSIÇÃO: " + dyoast.transicao.percentual + "% das frases têm transição (meta: ≥30%). Frases candidatas:\n" +
-                  (dyoast.transicao.frases_sem_transicao || []).map(f => "  - " + f).join("\n")
-                : null,
-              dyoast.passiva?.status === "vermelho"
-                ? "VOZ PASSIVA: " + dyoast.passiva.percentual + "% das frases estão na voz passiva (meta: ≤10%). Frases a corrigir:\n" +
-                  (dyoast.passiva.frases_encontradas || []).map(f => "  - " + f).join("\n")
-                : null,
-            ].filter(Boolean).join("\n\n");
-            log_("Rev. Yoast — aplicando correções cirúrgicas... (ChatGPT)", "warn");
-            await pausa(2, "", log_);
-            const revisadoYoast = await callGPT(PROMPTS.revisaoYoast(textoFinal, problemaDesc), 6000);
-            if (revisadoYoast?.length > 500) {
-              textoFinal = revisadoYoast; setArtigo(revisadoYoast);
-              log_(`✓ Rev. Yoast aplicada — ${contarPalavras(revisadoYoast)} palavras`, "ok");
-            } else { log_("⚠ Rev. Yoast retornou texto curto — mantendo versão anterior.", "warn"); }
-          }
-        } else { log_("⚠ Auditoria Yoast não retornou JSON válido, pulando.", "warn"); }
-      } catch (e) { log_(`⚠ Auditoria Yoast falhou (${e.message}). Continuando.`, "warn"); }
-      } // fecha if precisaYoast
-
       setFase("pronto");
 
     } catch (err) {
@@ -1469,8 +1376,8 @@ export default function App() {
       log_("── Iniciando melhoria pós-entrega ──────────────────", "ok");
       let textoAtual = artigo;
 
-      setFase("auditoria1");
-      log_("Auditoria de melhoria — identificando problemas... (Claude)");
+      setFase("auditoria");
+      log_("Auditoria de melhoria — identificando problemas... (ChatGPT)");
       await pausa(2, "", log_);
       const rawA = await callGPT(PROMPTS.auditoria(textoAtual, 1), 1500);
       const ad = parseJSON(rawA);
@@ -1483,15 +1390,15 @@ export default function App() {
 
       if (!scoreSuficiente) {
         const problemas = (ad.problemas || []).filter(p => p?.trim() && p.length > 5);
-        setFase("revisao1");
-        log_(`Revisão de melhoria — corrigindo ${problemas.length} problema(s)... (Claude)`, "warn");
+        setFase("revisao");
+        log_(`Revisão de melhoria — corrigindo ${problemas.length} problema(s)... (ChatGPT)`, "warn");
         problemas.forEach(p => log_(`  → ${p}`, "warn"));
         await pausa(2, "", log_);
         const revisado = await callGPT(PROMPTS.revisar(textoAtual, problemas), 6000);
         if (revisado?.length > 500) { textoAtual = revisado; setArtigo(revisado); log_(`✓ Revisão aplicada — ${contarPalavras(revisado)} palavras`, "ok"); }
 
-        setFase("polimento_final");
-        log_("Polimento Yoast final... (Claude)");
+        setFase("polimento");
+        log_("Polimento final... (ChatGPT)");
         await pausa(2, "", log_);
         const polFinal = await callGPT(PROMPTS.polimento(textoAtual), 6000);
         if (polFinal?.length > 500) { textoAtual = polFinal; setArtigo(polFinal); log_("✓ Polimento aplicado", "ok"); }
