@@ -1082,6 +1082,8 @@ export default function App() {
   const [keyAnthropic, setKeyAnthropic] = useState("");
   const [fase,         setFase]         = useState("idle");
   const [melhorando,   setMelhorando]   = useState(false);
+  const [wpStatus,     setWpStatus]     = useState("idle"); // idle | enviando | ok | erro
+  const [wpUrl,        setWpUrl]        = useState("");
   const [log,          setLog]          = useState([]);
   const [pesquisa,     setPesquisa]     = useState(null);
   const [artigo,       setArtigo]       = useState("");
@@ -1486,6 +1488,40 @@ export default function App() {
   }
 
   const busy = !["idle", "pronto", "erro"].includes(fase);
+
+  // ── Enviar rascunho para o WordPress ────────────────────────────────────────
+  async function enviarWordPress() {
+    if (!artigo || wpStatus === "enviando") return;
+    setWpStatus("enviando");
+    try {
+      // Extrai título H1 do artigo markdown
+      const linhas = artigo.split("\n");
+      const linhaH1 = linhas.find(l => l.startsWith("# "));
+      const titulo = linhaH1 ? linhaH1.replace(/^# /, "").trim() : (pesquisa?.meta_title || "Artigo Sittax");
+
+      // Remove o H1 do conteúdo (WP usa o title separado)
+      const conteudoSemH1 = artigo.replace(/^# .+\n?/m, "").trim();
+
+      const res = await fetch("/api/wordpress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titulo,
+          conteudo:        conteudoSemH1,
+          slug:            pesquisa?.slug            || "",
+          metaTitle:       pesquisa?.meta_title      || "",
+          metaDescription: pesquisa?.meta_description || "",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro desconhecido");
+      setWpUrl(data.editUrl || data.link || "");
+      setWpStatus("ok");
+    } catch (e) {
+      console.error(e);
+      setWpStatus("erro");
+    }
+  }
   const faseIdx = FASES.findIndex(f => f.id === fase);
 
   return (
@@ -1791,8 +1827,58 @@ export default function App() {
                   ⏳ Melhorando artigo...
                 </div>
               )}
+              {/* Botão WordPress */}
+              {wpStatus === "idle" && (
+                <button
+                  onClick={enviarWordPress}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                    padding: "12px 24px", borderRadius: BRAND.radius, border: "none",
+                    background: "#3858E9", color: "#fff",
+                    fontSize: "14px", fontWeight: "600", cursor: "pointer",
+                    boxShadow: "0 2px 10px rgba(56,88,233,0.30)",
+                    fontFamily: BRAND.font,
+                  }}
+                >
+                  🔗 Enviar para WordPress
+                </button>
+              )}
+              {wpStatus === "enviando" && (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 20px", background: "#EEF2FF", borderRadius: BRAND.radius, fontSize: "13px", color: "#3858E9", fontWeight: "500" }}>
+                  ⏳ Enviando para WordPress...
+                </div>
+              )}
+              {wpStatus === "ok" && (
+                <a
+                  href={wpUrl} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                    padding: "12px 24px", borderRadius: BRAND.radius, border: "none",
+                    background: "#16A34A", color: "#fff", textDecoration: "none",
+                    fontSize: "14px", fontWeight: "600",
+                    boxShadow: "0 2px 10px rgba(22,163,74,0.30)",
+                    fontFamily: BRAND.font,
+                  }}
+                >
+                  ✓ Rascunho criado — Abrir no WordPress
+                </a>
+              )}
+              {wpStatus === "erro" && (
+                <button
+                  onClick={() => setWpStatus("idle")}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                    padding: "12px 20px", borderRadius: BRAND.radius,
+                    border: "1.5px solid #FCA5A5", background: "#FEF2F2", color: "#DC2626",
+                    fontSize: "13px", fontWeight: "500", cursor: "pointer", fontFamily: BRAND.font,
+                  }}
+                >
+                  ✗ Falha ao enviar — Tentar novamente
+                </button>
+              )}
+
               <button
-                onClick={() => { setFase("idle"); setTema(""); setLog([]); setPesquisa(null); setArtigo(""); setAudit(null); setMelhorando(false); }}
+                onClick={() => { setFase("idle"); setTema(""); setLog([]); setPesquisa(null); setArtigo(""); setAudit(null); setMelhorando(false); setWpStatus("idle"); setWpUrl(""); }}
                 style={{
                   padding: "12px 20px", borderRadius: BRAND.radius,
                   border: `1.5px solid ${BRAND.border}`,
