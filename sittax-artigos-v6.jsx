@@ -170,13 +170,43 @@ Verbos corporativos: alavancar, delinear, impulsionar, potencializar, mergulhar 
 Outros: Sinergias, Paradigma, Ecossistema (fora de contexto técnico real)
 Teste: se a frase parece de relatório corporativo genérico, reescreva como um contador falaria para um cliente.
 
+EXEMPLOS DE SUBSTITUIÇÃO (few-shot):
+❌ "É crucial que os contadores entendam o impacto desta mudança"
+✅ "Os contadores precisam entender o que muda na prática"
+
+❌ "Vale ressaltar que a legislação passou por transformações robustas"
+✅ "A legislação mudou — e as mudanças são concretas"
+
+❌ "Neste contexto, as empresas devem alavancar seus processos contábeis"
+✅ "As empresas precisam revisar os processos contábeis agora"
+
+❌ "É importante destacar que o prazo é improrrogável"
+✅ "O prazo não pode ser prorrogado"
+
+❌ "Diante disso, torna-se fundamental adotar uma abordagem holística"
+✅ "Por isso, o contador precisa agir em todas as frentes"
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VOZ ATIVA E TRANSIÇÃO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Máximo 10% das frases na voz passiva. Prefira sempre o sujeito ativo.
-  ERRADO: "o imposto é calculado pela Receita" | CERTO: "a Receita calcula o imposto"
-- Pelo menos 30% das frases devem ter uma palavra de transição, em posição variada (início, meio ou fim).
-  Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, inclusive, conforme, já que, bem como, contudo, todavia, pois, logo, de fato, em razão disso, nesse sentido
+REGRA RÍGIDA DE VOZ PASSIVA: máximo 1 frase passiva a cada 10 frases escritas.
+Enquanto escreve, verifique: "quem faz a ação?" — coloque esse agente como sujeito.
+
+EXEMPLOS DE VOZ PASSIVA → ATIVA:
+❌ "o imposto é calculado pela Receita" → ✅ "a Receita calcula o imposto"
+❌ "as alíquotas foram aprovadas pelo Congresso" → ✅ "o Congresso aprovou as alíquotas"
+❌ "a declaração deve ser entregue até março" → ✅ "o contribuinte entrega a declaração até março"
+❌ "os dados serão processados pelo sistema" → ✅ "o sistema processa os dados"
+❌ "a multa é aplicada automaticamente" → ✅ "a Receita aplica a multa automaticamente"
+
+REGRA DE TRANSIÇÃO: pelo menos 3 em cada 10 frases devem ter uma palavra de transição.
+Posição variada: início ("Além disso, a empresa..."), meio ("A empresa, portanto, deve..."), fim ("...reduz a multa, inclusive.")
+Use: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, inclusive, conforme, já que, bem como, contudo, todavia, pois, logo, de fato, em razão disso, nesse sentido
+
+AUTO-CHECAGEM OBRIGATÓRIA: antes de entregar o texto, releia e verifique:
+1. Há alguma expressão da lista de proibidas? → substitua
+2. Há mais de 1 frase passiva a cada 10? → converta para ativa
+3. Há menos de 3 frases com transição a cada 10? → insira transições
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORMATO DE SAÍDA
@@ -327,24 +357,38 @@ Revise o artigo abaixo aplicando as 4 correções abaixo. Não altere mais nada 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CORREÇÃO 1 — PALAVRAS DE TRANSIÇÃO (meta: ≥ 30% das frases)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. Separe todas as frases do artigo (por "." "!" "?"). Ignore títulos H1/H2/H3, itens de lista e URLs.
-2. Conte quantas frases têm pelo menos uma palavra de transição da lista abaixo.
-3. Se o percentual for menor que 30%, insira transições nas frases que estiverem mais "soltas".
-4. Varie a posição: início ("Além disso, a empresa..."), meio ("A empresa, portanto, deve..."), fim ("...o que reduz a multa, inclusive.")
-5. A inserção deve soar natural — nunca mecânica ou forçada.
+PASSO A: separe todas as frases do artigo (delimite por "." "!" "?"). Ignore: títulos H1/H2/H3, itens de lista com "-" e URLs.
+PASSO B: para cada frase, verifique se contém pelo menos uma das palavras de transição abaixo. Calcule o percentual: (frases com transição ÷ total) × 100.
+PASSO C: se o resultado for menor que 30%, identifique as frases SEM transição que ficam mais "soltas" — sem conexão lógica com a anterior ou a posterior. Insira transições nessas frases.
 
 Palavras válidas: portanto, assim, além disso, no entanto, por isso, dessa forma, ou seja, ainda assim, conforme, por outro lado, já que, uma vez que, bem como, em seguida, por exemplo, contudo, todavia, inclusive, pois, logo, apesar disso, de fato, ao mesmo tempo, anteriormente, posteriormente, sobretudo, certamente, então, entretanto, aliás, afinal, principalmente, em razão disso, nesse sentido
+
+REGRAS DE INSERÇÃO:
+- Varie a posição: início ("Além disso, a empresa..."), meio ("A empresa, portanto, deve..."), fim ("...o que reduz a multa, inclusive.")
+- Nunca inicie dois parágrafos seguidos com a mesma transição
+- Evite "Além disso," repetido — substitua por: "Por isso,", "Dessa forma,", "Nesse sentido,", "O resultado é que..."
+- Se uma frase já tem ritmo forte e curto, não force transição — priorize as mais longas e "soltas"
+- Após inserir, reconfirme que o percentual atingiu 30%
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CORREÇÃO 2 — VOZ PASSIVA (meta: ≤ 10% das frases)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Identifique frases com voz passiva: construções com ser/estar/foi/são/foram/será/serão + particípio.
-Reescreva-as na voz ativa colocando o agente como sujeito.
-Exemplos:
+PASSO A: identifique TODAS as frases com voz passiva no texto.
+Voz passiva = verbo ser/estar/foi/são/foram/será/serão/sendo + particípio.
+Sinais de alerta: "é calculado", "foi aprovado", "são definidas", "será regulamentado", "deve ser entregue", "pode ser aplicada", "está previsto", "são considerados".
+
+PASSO B: converta CADA frase passiva encontrada para voz ativa.
+Padrão: identifique quem faz a ação → coloque como sujeito.
   "o imposto é calculado pela Receita" → "a Receita calcula o imposto"
   "as alíquotas foram aprovadas pelo Congresso" → "o Congresso aprovou as alíquotas"
-  "a declaração deve ser entregue" → "o contribuinte deve entregar a declaração"
-Se a conversão deixar a frase visivelmente mais curta, expanda com um detalhe já presente no artigo (prazo, percentual, exemplo). Nunca invente dados.
+  "a declaração deve ser entregue" → "o contribuinte entrega a declaração"
+  "a multa é aplicada automaticamente" → "o fisco aplica a multa automaticamente"
+  "o prazo pode ser prorrogado" → "a Receita pode prorrogar o prazo"
+  "os dados serão processados" → "o sistema processa os dados"
+Se não houver agente explícito, use sujeito genérico claro: "o contador", "a empresa", "o contribuinte".
+Se a conversão encurtar muito a frase, adicione um detalhe já presente no artigo. Nunca invente dados.
+
+PASSO C: confirme que o percentual de passiva resultante é ≤ 10%.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CORREÇÃO 3 — TAMANHO DE PARÁGRAFO
@@ -616,9 +660,24 @@ COMO CORRIGIR CADA TIPO DE PROBLEMA
 
 SE A1 (legislação): substitua qualquer lei com número duvidoso por "conforme a legislação tributária vigente". Mantenha apenas LC 123/2006, LC 116/2003, CTN e CF/1988 se já estiverem corretos.
 
-SE A3 (linguagem de IA): substitua as expressões proibidas por linguagem direta de contador.
-Proibidas: "robusto", "abrangente", "alavancar", "transformador", "dinâmico", "holístico", "é crucial", "vale ressaltar", "neste contexto", "em suma", "mais do que nunca", "cabe destacar", "diante disso", "impulsionar", "potencializar".
-Substitua por linguagem direta: em vez de "é crucial entender", escreva "o contador precisa entender"; em vez de "alavancar resultados", escreva "melhorar os resultados".
+SE A3 (linguagem de IA): FAÇA UMA BUSCA GLOBAL no artigo por cada expressão proibida. Substitua todas as ocorrências.
+Proibidas: "robusto", "abrangente", "alavancar", "transformador", "dinâmico", "holístico", "é crucial", "vale ressaltar", "neste contexto", "em suma", "mais do que nunca", "cabe destacar", "diante disso", "impulsionar", "potencializar", "no cenário atual", "não se trata apenas de", "é fundamental", "é importante destacar", "é importante ressaltar", "vale destacar".
+
+Substituições diretas (use exatamente este padrão):
+"é crucial" → "é necessário" / "o contador precisa" / "a empresa precisa"
+"vale ressaltar" / "vale destacar" / "cabe destacar" → remova e escreva diretamente o fato
+"neste contexto" → remova (a frase funciona sem ela) ou substitua pelo contexto específico
+"em suma" → remova ou use "no final das contas" / "o resultado é"
+"mais do que nunca" → remova ou use "hoje" / "em 2025"
+"diante disso" → "por isso" / "com isso"
+"alavancar" → "melhorar" / "aumentar" / "expandir"
+"impulsionar" → "acelerar" / "aumentar" / "fortalecer"
+"potencializar" → "maximizar" / "melhorar" / "ampliar"
+"robusto" → "sólido" / "completo" / descreva o que é robusto de forma concreta
+"abrangente" → descreva o que é abrangente ("cobre todos os regimes tributários" em vez de "uma solução abrangente")
+"transformador" / "disruptivo" → descreva a mudança de forma concreta
+"holístico" → "completo" / "integrado" / descreva o que cobre
+"não se trata apenas de" → reescreva a frase de forma direta
 
 SE A4 (FAQ incompleto): adicione as perguntas faltantes seguindo o formato ### [pergunta] / [resposta de 3-4 frases].
 
