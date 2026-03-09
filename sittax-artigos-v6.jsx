@@ -590,29 +590,19 @@ ATENÇÃO: os campos "percentual_transicao" e "percentual_passiva" devem ser cal
   // ChatGPT identifica leis e dados citados e retorna URLs reais do seu conhecimento
   buscarFontes: (textoCompleto) => `Você é especialista em fontes do direito tributário brasileiro.
 
-Analise o trecho abaixo e identifique menções a leis específicas que aparecem no texto.
-Use APENAS as URLs da whitelist abaixo — não invente nenhuma outra.
+Leia o trecho do artigo abaixo e identifique até 4 leis, normas ou órgãos citados que tenham URL pública verificável.
+Para cada um, busque na web a URL oficial real e atual (planalto.gov.br, gov.br, ibge.gov.br, sebrae.com.br, cfc.org.br ou similar).
 
-WHITELIST DE URLs VERIFICADAS (use exatamente como escrito):
-- LC 123/2006 → https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp123.htm
-- LC 116/2003 → https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp116.htm
-- CTN (Lei 5.172/1966) → https://www.planalto.gov.br/ccivil_03/leis/l5172compilado.htm
-- CF/1988 → https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm
-- Lei 6.404/1976 → https://www.planalto.gov.br/ccivil_03/leis/l6404consol.htm
-- Receita Federal (geral) → https://www.gov.br/receitafederal/pt-br
-- IBGE (geral) → https://www.ibge.gov.br
-- Sebrae (geral) → https://sebrae.com.br
-- CFC (geral) → https://cfc.org.br
-
-REGRA ABSOLUTA: se a lei ou fonte mencionada no artigo NÃO estiver nessa whitelist, NÃO inclua.
-Retorne {"fontes":[]} se nenhuma lei da whitelist aparecer no trecho.
-NUNCA construa uma URL que não esteja exatamente na whitelist acima.
+REGRAS:
+- Retorne SOMENTE URLs que você encontrou na busca e que existem de fato
+- Se não tiver certeza da URL, omita — prefira retornar menos fontes que URLs erradas
+- Não inclua links internos do blog sittax.com.br
 
 Responda SOMENTE com o JSON abaixo. Nenhum texto antes ou depois.
-{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"url exata da whitelist"}]}
+{"fontes":[{"ancora":"texto exato que aparece no artigo","url":"url real encontrada na busca"}]}
 
 TRECHO DO ARTIGO:
-${textoCompleto.slice(0, 1500)}`,
+\${textoCompleto.slice(0, 1500)}`,
 
   // ─── INSERIR FONTES ───────────────────────────────────────────────────────────
   inserirFontes: (textoCompleto, fontes) => `Você é editor de conteúdo da Sittax.
@@ -1398,10 +1388,10 @@ export default function App() {
 
       // ── Fontes externas ──────────────────────────────────────────────────────
       setFase("fontes");
-      log_("Buscando URLs de fontes oficiais... (ChatGPT)");
+      log_("Buscando URLs de fontes oficiais na web... (ChatGPT Search)");
       await pausa(2, "", log_);
       try {
-        const rawFontes = await callGPT(PROMPTS.buscarFontes(textoFinal), 600);
+        const rawFontes = await callClaudeSearch(PROMPTS.buscarFontes(textoFinal), 600);
         const jsonFontes = parseJSON(rawFontes);
         if (jsonFontes?.fontes?.length > 0) {
           log_("✓ " + jsonFontes.fontes.length + " fonte(s) encontrada(s) — inserindo... (ChatGPT)", "ok");
