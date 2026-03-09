@@ -137,6 +137,30 @@ Para qualquer outra lei, omita o número e use: "conforme a legislação tribut�
 PROIBIDO ABSOLUTO: inventar número de lei, instrução normativa ou resolução.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VOZ E ESTILO DA SITTAX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Escreva como a Sittax escreve: direto, assertivo, sem enrolação. O leitor é contador ou empresário contábil — fale de igual para igual.
+
+RITMO DE FRASE — compatível com o limite de palavras por parágrafo:
+Frases curtas dominam. Parágrafos de 1 a 3 frases. O próprio ritmo curto já ajuda a respeitar o limite de 55 palavras por parágrafo — as duas regras se reforçam, não conflitam.
+Quando usar uma frase longa, siga com uma frase curta que "aterra" a ideia. Não em todo parágrafo — apenas onde o impacto justificar.
+
+EFEITOS DE IMPACTO — use com moderação, variando ao longo do artigo:
+- Em alguns momentos, começar um parágrafo com "E" ou "Mas" reforça a ideia anterior e cria ritmo. Use quando soar natural — nunca como regra fixa.
+- Ponto final onde poderia ter vírgula cria pausa e peso. Reserve para momentos de virada, não para todo período.
+- A construção "Antes X. Agora Y." funciona para mostrar mudança de cenário — use no máximo uma vez por artigo.
+- A construção "A decisão de X não é mais Y. É Z." é boa para viradas de perspectiva — uma vez por artigo é suficiente.
+Atenção: esses recursos são guias de estilo, não fórmulas. Usá-los em excesso destrói o efeito. Varie.
+
+EXPRESSÕES QUE SOAM NATURAIS NA SITTAX — não repita as mesmas no mesmo artigo:
+"Na prática", "Isso significa que", "O problema é", "Na maioria dos escritórios", "Até o dia em que", "Em cinco anos", "O erro deixou de ser exceção"
+
+ASSERTIVIDADE:
+- Opine quando o contexto pedir. Não tenha medo de ser direto.
+- Use números concretos sempre que possível: valores em R$, prazos em meses, percentuais reais.
+- Urgência sem alarmismo: "você ainda tem tempo" — nunca "você está atrasado".
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PALAVRAS PROIBIDAS (linguagem de IA)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 O artigo será reprovado se qualquer uma dessas aparecer:
@@ -199,6 +223,8 @@ REGRAS:
 - Cada resposta começa diretamente com a resposta — sem introdução, sem "Boa pergunta"
 - 3 a 4 frases por resposta, diretas e objetivas
 - Tom: contador respondendo pessoalmente a um cliente — sem enrolação
+- Frases curtas, diretas. Parágrafos de 1 a 2 frases por resposta.
+- O mesmo estilo Sittax se aplica: sem enrolação, sem academicismo, com números concretos quando disponíveis.
 - Use dados concretos quando aplicável (prazos, alíquotas, valores)
 - NUNCA cite número de lei sem certeza — use "conforme a legislação vigente"
 - PROIBIDO: "É importante ressaltar", "Vale destacar", "É fundamental", "Neste contexto", "Cabe destacar"
@@ -236,6 +262,8 @@ ESTRUTURA OBRIGATÓRIA:
 - 3º parágrafo (opcional): passo concreto que o leitor pode dar hoje
 
 TOM: como encerrar uma reunião de consultoria — direto, útil, sem discurso.
+Frases curtas. Pode começar um parágrafo com "E" ou "Mas" se reforçar a ideia anterior.
+Não repita fórmulas — varie o ritmo.
 
 PROIBIDO: "Em suma", "Por fim", "Concluindo", "Em conclusão", "É crucial", "Vale ressaltar", "Neste contexto", "Transforme"
 
@@ -257,7 +285,8 @@ REGRAS:
 - 2 a 3 frases
 - Começa com uma frase sobre o impacto prático do tema para o leitor
 - Convida o leitor a falar com a Sittax para analisar o caso específico da empresa dele
-- Tom consultivo e direto — não promocional
+- Tom consultivo e direto — não promocional. Frases curtas, sem enrolação.
+- Pode usar uma frase de impacto curta seguida de uma frase de convite — mas sem forçar fórmulas.
 - PROIBIDO: "Em suma", "Por fim", "Concluindo", "Portanto", "Transforme", "É crucial"`,
 
   // ─── EXPANSÃO ─────────────────────────────────────────────────────────────────
@@ -273,6 +302,8 @@ COMO EXPANDIR (escolha o que fizer mais sentido):
 - Aprofunde seções H2 existentes com mais detalhes práticos, exemplos reais ou dados numéricos
 - Expanda respostas do FAQ com mais contexto e orientações práticas
 - Adicione alíquotas, prazos ou valores onde faltarem
+
+TOM: mantenha o mesmo estilo do artigo original — frases curtas, parágrafos de 1 a 3 frases, números concretos, sem linguagem de IA. O conteúdo expandido deve ser indistinguível do original em voz e ritmo.
 
 PROIBIDO:
 - Criar novas seções H2 fora da estrutura atual
